@@ -5,7 +5,7 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;  // Make canvas width dynamic
 canvas.height = window.innerHeight; // Make canvas height dynamic
 
-let player, bullets, invaders, invaderBullets, gameOver, rightPressed, leftPressed, spacePressed;
+let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
 let invaderSpeed = 0.3;
@@ -30,9 +30,7 @@ player.image.src = 'spaceship.png'; // Path to spaceship image
 
 // Bullet object
 bullets = [];
-invaderBullets = [];
 const bulletSpeed = 4;
-const invaderBulletSpeed = 2;
 
 // Invader object
 invaders = [];
@@ -145,19 +143,6 @@ function drawBullets() {
   }
 }
 
-// Function to draw invader bullets
-function drawInvaderBullets() {
-  for (let i = 0; i < invaderBullets.length; i++) {
-    if (invaderBullets[i].y > canvas.height) {
-      invaderBullets.splice(i, 1);
-      continue;
-    }
-    ctx.fillStyle = '#00FF00';
-    ctx.fillRect(invaderBullets[i].x, invaderBullets[i].y, invaderBullets[i].width, invaderBullets[i].height);
-    invaderBullets[i].y += invaderBullets[i].dy;
-  }
-}
-
 // Function to draw invaders
 function drawInvaders() {
   for (let c = 0; c < invaderColumnCount; c++) {
@@ -202,7 +187,7 @@ function detectCollisions() {
   }
 }
 
-// Function to check if all invaders are destroyed
+// Check if all invaders are destroyed
 function checkWin() {
   for (let c = 0; c < invaderColumnCount; c++) {
     for (let r = 0; r < invaderRowCount; r++) {
@@ -259,30 +244,27 @@ function moveInvaders() {
   }
 }
 
-// Function to let invaders shoot back starting from level 5
-function invaderShoot() {
-  if (level >= 5) {
-    for (let c = 0; c < invaderColumnCount; c++) {
-      for (let r = 0; r < invaderRowCount; r++) {
-        let invader = invaders[c][r];
-        if (invader.status === 1 && Math.random() < 0.02) { // 2% chance to shoot
-          let invaderBullet = {
-            x: invader.x + invaderWidth / 2 - 2,
-            y: invader.y + invaderHeight,
-            width: 4,
-            height: 10,
-            dy: invaderBulletSpeed,
-          };
-          invaderBullets.push(invaderBullet);
-        }
-      }
-    }
-  }
+// Function to draw the score
+function drawScore() {
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '16px Arial';
+  ctx.fillText('Score: ' + score, 8, 20);
+}
+
+// Function to draw the level
+function drawLevel() {
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '16px Arial';
+  ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
 // Function to draw the game over screen with summary
 function drawGameOver() {
-  gameOverSound.play(); // Play the game over sound
+  // Ensure that the game over sound is played only once
+  if (!gameOverSound.played) {
+    gameOverSound.play(); // Play the game over sound
+  }
+
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
@@ -297,6 +279,8 @@ function gameOverCondition() {
   gameOver = true;
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
+  // Play the game over sound when the game ends
+  gameOverSound.play();
 }
 
 // Restart the game when clicked
@@ -328,11 +312,9 @@ function draw() {
   drawInvaders();
   drawScore();
   drawLevel();
-  drawInvaderBullets(); // Draw invader bullets
   detectCollisions();
   movePlayer();
   moveInvaders();
-  invaderShoot(); // Let invaders shoot back if level >= 5
 }
 
 // Initialize the game
