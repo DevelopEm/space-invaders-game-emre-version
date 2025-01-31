@@ -5,7 +5,7 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;  // Make canvas width dynamic
 canvas.height = window.innerHeight; // Make canvas height dynamic
 
-let player, bullets, invaders, invaderBullets, gameOver, rightPressed, leftPressed, spacePressed;
+let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
 let invaderSpeed = 0.3;
@@ -14,6 +14,11 @@ let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
 let restartTextHeight = 60; // Distance of restart text from center of canvas
+
+let invaderBulletTimer = 0; // Timer for invader bullets
+const invaderBulletSpeed = 2; // Speed of invader bullets
+const invaderBulletCooldown = 40; // Cooldown in frames before the invaders can shoot again
+let invaderBullets = []; // Array for invader bullets
 
 // Player object (spaceship)
 player = {
@@ -39,12 +44,6 @@ const invaderHeight = 40;
 const invaderPadding = 10;
 const invaderOffsetTop = 30;
 const invaderOffsetLeft = 30;
-
-// Invader Bullets array
-invaderBullets = [];
-const invaderBulletSpeed = 2; // Speed of invader bullets
-const invaderBulletCooldown = 60; // How frequently invaders shoot (in game ticks)
-let invaderBulletTimer = 0;
 
 gameOver = false;
 
@@ -250,6 +249,64 @@ function moveInvaders() {
   }
 }
 
+// Function to make invaders shoot (level 5 and beyond)
+function invaderShoot() {
+  if (level >= 5) {  // Only start shooting from level 5 onwards
+    invaderBulletTimer++;  // Increment the bullet timer
+
+    if (invaderBulletTimer % invaderBulletCooldown === 0) {  // Every few frames, have invaders shoot
+      // Check for shooting only from the front row invaders
+      for (let c = 0; c < invaderColumnCount; c++) {
+        for (let r = invaderRowCount - 1; r < invaderRowCount; r++) {  // Only the last row
+          let invader = invaders[c][r];
+
+          if (invader.status === 1) {  // Only shoot from active invaders
+            // 3% chance of invader shooting (adjust this percentage as needed)
+            if (Math.random() < 0.03) {  // 3% chance
+              let bullet = {
+                x: invader.x + invaderWidth / 2 - 2,  // Center the bullet with the invader
+                y: invader.y + invaderHeight,  // Position the bullet just below the invader
+                width: 4,
+                height: 10,
+                dy: invaderBulletSpeed,  // Move the bullet downward
+              };
+              invaderBullets.push(bullet);  // Add the bullet to the invader bullets array
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Function to draw invader bullets
+function drawInvaderBullets() {
+  for (let i = 0; i < invaderBullets.length; i++) {
+    if (invaderBullets[i].y > canvas.height) {
+      invaderBullets.splice(i, 1);
+      continue;
+    }
+    ctx.fillStyle = '#00FF00';  // Green color for invader bullets
+    ctx.fillRect(invaderBullets[i].x, invaderBullets[i].y, invaderBullets[i].width, invaderBullets[i].height);
+    invaderBullets[i].y += invaderBullets[i].dy;
+  }
+}
+
+// Function to detect collisions between player and invader bullets
+function detectInvaderBulletCollisions() {
+  for (let i = 0; i < invaderBullets.length; i++) {
+    if (
+      invaderBullets[i].x > player.x &&
+      invaderBullets[i].x < player.x + player.width &&
+      invaderBullets[i].y > player.y &&
+      invaderBullets[i].y < player.y + player.height
+    ) {
+      gameOverCondition(); // End the game if the player is hit by an invader bullet
+      return;
+    }
+  }
+}
+
 // Function to draw the score
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
@@ -279,7 +336,6 @@ function drawGameOver() {
 // Function to end the game
 function gameOverCondition() {
   gameOver = true;
-  gameOverSound.play(); // Play the game over sound
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
 }
@@ -294,69 +350,11 @@ function restartGame() {
     invaderDirection = 1;
     invaderRowCount = 3;
     invaderColumnCount = 5;
+    invaderBullets = [];
     gameOver = false;
     createInvaders();
     backgroundMusic.play(); // Restart background music
     gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
-  }
-}
-
-// Function to have invaders shoot back (only the forefront invaders)
-function invaderShoot() {
-  if (level >= 5) {  // Only start shooting from level 5 onwards
-    invaderBulletTimer++;  // Increment the bullet timer
-
-    if (invaderBulletTimer % invaderBulletCooldown === 0) {  // Every few frames, have invaders shoot
-      // Check for shooting only from the front row invaders
-      for (let c = 0; c < invaderColumnCount; c++) {
-        for (let r = invaderRowCount - 1; r < invaderRowCount; r++) {  // Only the last row
-          let invader = invaders[c][r];
-
-          if (invader.status === 1) {  // Only shoot from active invaders
-            // 0.5% chance of invader shooting
-            if (Math.random() < 0.005) {
-              let bullet = {
-                x: invader.x + invaderWidth / 2 - 2,  // Center the bullet with the invader
-                y: invader.y + invaderHeight,  // Position the bullet just below the invader
-                width: 4,
-                height: 10,
-                dy: invaderBulletSpeed,  // Move the bullet downward
-              };
-              invaderBullets.push(bullet);  // Add the bullet to the invader bullets array
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-// Function to move invader bullets
-function moveInvaderBullets() {
-  for (let i = 0; i < invaderBullets.length; i++) {
-    invaderBullets[i].y += invaderBulletSpeed;  // Move bullet down
-
-    // Remove bullets that go off-screen
-    if (invaderBullets[i].y > canvas.height) {
-      invaderBullets.splice(i, 1);
-      continue;
-    }
-
-    // Draw the invader bullets
-    ctx.fillStyle = '#00FF00'; // Color of invader bullets
-    ctx.fillRect(invaderBullets[i].x, invaderBullets[i].y, invaderBullets[i].width, invaderBullets[i].height);
-
-    // Check for collision with the player
-    if (
-      invaderBullets[i].x > player.x &&
-      invaderBullets[i].x < player.x + player.width &&
-      invaderBullets[i].y > player.y &&
-      invaderBullets[i].y < player.y + player.height
-    ) {
-      gameOverCondition(); // End the game if player is hit
-      invaderBullets.splice(i, 1); // Remove the bullet
-      continue;
-    }
   }
 }
 
@@ -370,13 +368,14 @@ function draw() {
   drawPlayer();
   drawBullets();
   drawInvaders();
+  drawInvaderBullets();
   drawScore();
   drawLevel();
   detectCollisions();
+  detectInvaderBulletCollisions();  // Check if player is hit by invader bullets
   movePlayer();
   moveInvaders();
-  invaderShoot(); // Invaders shoot back
-  moveInvaderBullets(); // Move invader bullets
+  invaderShoot();  // Allow invaders to shoot back
 }
 
 // Initialize the game
