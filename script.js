@@ -184,19 +184,28 @@ function movePlayer() {
 
 // Function to move the invaders
 function moveInvaders() {
+  let shouldMoveDown = false;
+  
   for (let c = 0; c < invaderColumnCount; c++) {
     for (let r = 0; r < invaderRowCount; r++) {
       let invader = invaders[c][r];
       if (invader.status === 1) {
         invader.x += invaderSpeed * invaderDirection;
 
-        // If invader hits the screen border, change direction
+        // Check if invader reaches the edge of the screen
         if (invader.x + invaderWidth > canvas.width || invader.x < 0) {
           invaderDirection = -invaderDirection;
-          for (let i = 0; i < invaderRowCount; i++) {
-            invaders[c][i].y += invaderHeight; // Move down a row
-          }
-          break;
+          shouldMoveDown = true;
+        }
+      }
+    }
+  }
+  
+  if (shouldMoveDown) {
+    for (let c = 0; c < invaderColumnCount; c++) {
+      for (let r = 0; r < invaderRowCount; r++) {
+        if (invaders[c][r].status === 1) {
+          invaders[c][r].y += invaderHeight; // Move all invaders down a row
         }
       }
     }
