@@ -187,7 +187,7 @@ function movePlayer() {
 // Function to move the invaders
 function moveInvaders() {
   let shouldMoveDown = false;
-  
+
   for (let c = 0; c < invaderColumnCount; c++) {
     for (let r = 0; r < invaderRowCount; r++) {
       let invader = invaders[c][r];
@@ -202,7 +202,7 @@ function moveInvaders() {
       }
     }
   }
-  
+
   if (shouldMoveDown) {
     for (let c = 0; c < invaderColumnCount; c++) {
       for (let r = 0; r < invaderRowCount; r++) {
@@ -235,11 +235,16 @@ function drawGameOver() {
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2);
 }
 
+// Function to end the game
+function gameOverCondition() {
+  gameOver = true;
+  drawGameOver();
+  clearInterval(gameInterval); // Stop the game
+}
+
 // Main game loop
 function draw() {
   if (gameOver) {
-    drawGameOver();
-    clearInterval(gameInterval); // Stop the game
     return;
   }
 
