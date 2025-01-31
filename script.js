@@ -151,7 +151,7 @@ function detectCollisions() {
               invaderSpeed = Math.min(invaderSpeed + 0.3, 2); // Increase speed as levels go up, up to a max speed
               invaderRowCount = Math.min(invaderRowCount + 1, 6); // Max 6 rows
               invaderColumnCount = Math.min(invaderColumnCount + 1, 10); // Max 10 columns
-              createInvaders();  // Reset the invaders with new difficulty
+              createInvaders();  // Regenerate the invaders with updated count and speed
             }
             break;
           }
