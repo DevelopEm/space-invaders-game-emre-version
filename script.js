@@ -249,6 +249,19 @@ function draw() {
   moveInvaders();
 }
 
+// Player object (spaceship)
+player = {
+  x: canvas.width / 2 - 20,
+  y: canvas.height - 100, // 100px from the bottom
+  width: 40,
+  height: 40,
+  speed: 5,
+  dx: 0,
+  image: new Image(),
+};
+
+player.image.src = 'spaceship.png'; // Path to spaceship image
+
 // Initialize the game
 createInvaders();
 gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
