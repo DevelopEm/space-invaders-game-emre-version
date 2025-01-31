@@ -5,7 +5,7 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;  // Make canvas width dynamic
 canvas.height = window.innerHeight; // Make canvas height dynamic
 
-let player, bullets, invaders, invaderBullets, gameOver, rightPressed, leftPressed, spacePressed;
+let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
 let invaderSpeed = 0.3;
@@ -30,9 +30,7 @@ player.image.src = 'spaceship.png'; // Path to spaceship image
 
 // Bullet object
 bullets = [];
-invaderBullets = [];
 const bulletSpeed = 4;
-const invaderBulletSpeed = 2;
 
 // Invader object
 invaders = [];
@@ -145,44 +143,12 @@ function drawBullets() {
   }
 }
 
-// Function to draw invader bullets
-function drawInvaderBullets() {
-  for (let i = 0; i < invaderBullets.length; i++) {
-    if (invaderBullets[i].y > canvas.height) {
-      invaderBullets.splice(i, 1);
-      continue;
-    }
-    ctx.fillStyle = '#00FF00';
-    ctx.fillRect(invaderBullets[i].x, invaderBullets[i].y, invaderBullets[i].width, invaderBullets[i].height);
-    invaderBullets[i].y += invaderBullets[i].dy;
-  }
-}
-
 // Function to draw invaders
 function drawInvaders() {
   for (let c = 0; c < invaderColumnCount; c++) {
     for (let r = 0; r < invaderRowCount; r++) {
       if (invaders[c][r].status === 1) {
         ctx.drawImage(invaders[c][r].image, invaders[c][r].x, invaders[c][r].y, invaderWidth, invaderHeight);
-      }
-    }
-  }
-}
-
-// Function to handle invader shooting after level 5
-function invaderShoot() {
-  if (level >= 5) {
-    for (let c = 0; c < invaderColumnCount; c++) {
-      let invader = invaders[c][0]; // Only first row invaders shoot
-      if (invader.status === 1 && Math.random() < 0.05) { // 5% chance to shoot
-        let invaderBullet = {
-          x: invader.x + invaderWidth / 2 - 2, // Bullet's X position
-          y: invader.y + invaderHeight, // Bullet's Y position just below the invader
-          width: 4,
-          height: 10,
-          dy: invaderBulletSpeed, // Speed of invader bullet
-        };
-        invaderBullets.push(invaderBullet);
       }
     }
   }
@@ -204,6 +170,15 @@ function detectCollisions() {
             invader.status = 0; // Destroy the invader
             bullets.splice(i, 1); // Remove the bullet
             score += 10; // Increase score
+            if (checkWin()) {
+              level++;
+              invaderSpeed = Math.min(invaderSpeed + 0.2, 2); // Increase speed as levels go up, up to a max speed
+              if (level <= 5) {
+                invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
+                invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
+              }
+              createInvaders();  // Regenerate the invaders with updated count and speed
+            }
             break;
           }
         }
@@ -212,7 +187,7 @@ function detectCollisions() {
   }
 }
 
-// Function to check if all invaders are destroyed
+// Check if all invaders are destroyed
 function checkWin() {
   for (let c = 0; c < invaderColumnCount; c++) {
     for (let r = 0; r < invaderRowCount; r++) {
@@ -222,6 +197,15 @@ function checkWin() {
     }
   }
   return true;
+}
+
+// Function to move the player
+function movePlayer() {
+  if (rightPressed && player.x < canvas.width - player.width) {
+    player.x += player.speed;
+  } else if (leftPressed && player.x > 0) {
+    player.x -= player.speed;
+  }
 }
 
 // Function to move the invaders
@@ -260,6 +244,62 @@ function moveInvaders() {
   }
 }
 
+// Function to draw the score
+function drawScore() {
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '16px Arial';
+  ctx.fillText('Score: ' + score, 8, 20);
+}
+
+// Function to draw the level
+function drawLevel() {
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '16px Arial';
+  ctx.fillText('Level: ' + level, canvas.width - 80, 20);
+}
+
+// Function to draw the game over screen with summary
+function drawGameOver() {
+  // Ensure that the game over sound is played only once
+  if (!gameOverSound.played) {
+    gameOverSound.play(); // Play the game over sound
+  }
+
+  ctx.fillStyle = 'white';
+  ctx.font = '30px Arial';
+  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
+  ctx.font = '20px Arial';
+  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
+  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
+  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
+}
+
+// Function to end the game
+function gameOverCondition() {
+  gameOver = true;
+  drawGameOver();
+  clearInterval(gameInterval); // Stop the game
+  // Play the game over sound when the game ends
+  gameOverSound.play();
+}
+
+// Restart the game when clicked
+function restartGame() {
+  if (gameOver) {
+    // Reset everything for a fresh start
+    score = 0;
+    level = 1;
+    invaderSpeed = 0.3;
+    invaderDirection = 1;
+    invaderRowCount = 3;
+    invaderColumnCount = 5;
+    gameOver = false;
+    createInvaders();
+    backgroundMusic.play(); // Restart background music
+    gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
+  }
+}
+
 // Main game loop
 function draw() {
   if (gameOver) {
@@ -270,13 +310,11 @@ function draw() {
   drawPlayer();
   drawBullets();
   drawInvaders();
-  drawInvaderBullets();
+  drawScore();
+  drawLevel();
   detectCollisions();
   movePlayer();
   moveInvaders();
-  invaderShoot();  // Check if invaders shoot after level 5
-  drawScore();
-  drawLevel();
 }
 
 // Initialize the game
