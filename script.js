@@ -43,6 +43,8 @@ const invaderOffsetLeft = 30;
 // Invader Bullets array
 invaderBullets = [];
 const invaderBulletSpeed = 2; // Speed of invader bullets
+const invaderBulletCooldown = 60; // How frequently invaders shoot (in game ticks)
+let invaderBulletTimer = 0;
 
 gameOver = false;
 
@@ -303,22 +305,26 @@ function restartGame() {
 function invaderShoot() {
   // Only shoot if the level is 5 or greater
   if (level >= 5) {
-    // For each invader in the front row (the row closest to the player)
-    for (let c = 0; c < invaderColumnCount; c++) {
-      for (let r = invaderRowCount - 1; r >= invaderRowCount - 1; r--) { // Only check the last row (front row)
-        let invader = invaders[c][r];
+    invaderBulletTimer++;  // Increment the bullet timer
 
-        if (invader.status === 1) {
-          // Give a 0.5% chance of the invader shooting
-          if (Math.random() < 0.005) { // 0.5% chance
-            let bullet = {
-              x: invader.x + invaderWidth / 2 - 2, // Center the bullet with the invader
-              y: invader.y + invaderHeight, // Position the bullet just below the invader
-              width: 4,
-              height: 10,
-              dy: invaderBulletSpeed, // Move the bullet downward
-            };
-            invaderBullets.push(bullet); // Add the bullet to the invader bullets array
+    // Shoot a bullet for invaders in the front row with controlled timing
+    if (invaderBulletTimer % invaderBulletCooldown === 0) {
+      for (let c = 0; c < invaderColumnCount; c++) {
+        for (let r = invaderRowCount - 1; r >= invaderRowCount - 1; r--) { // Only check the last row (front row)
+          let invader = invaders[c][r];
+
+          if (invader.status === 1) {
+            // Give a 0.5% chance of the invader shooting
+            if (Math.random() < 0.1) { // Slight increase in chance for consistent shooting
+              let bullet = {
+                x: invader.x + invaderWidth / 2 - 2, // Center the bullet with the invader
+                y: invader.y + invaderHeight, // Position the bullet just below the invader
+                width: 4,
+                height: 10,
+                dy: invaderBulletSpeed, // Move the bullet downward
+              };
+              invaderBullets.push(bullet); // Add the bullet to the invader bullets array
+            }
           }
         }
       }
