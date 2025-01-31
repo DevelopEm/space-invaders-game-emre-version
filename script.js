@@ -252,7 +252,7 @@ function moveInvaders() {
 
 // Function to make invaders shoot (level 5 and beyond)
 function invaderShoot() {
-  const shootingChance = level >= 5 ? 0.03 : 0.01; // 3% chance after level 5, 1% before
+  const shootingChance = level >= 5 ? 0.005 : 0;  // 0.5% chance after level 5, 0% before
   const currentTime = Date.now();
 
   for (let c = 0; c < invaderColumnCount; c++) {
