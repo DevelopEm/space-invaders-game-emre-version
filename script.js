@@ -51,30 +51,44 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
-// Function to check if the click is within the 'Click to Restart' area
-function isClickOnRestartArea(x, y) {
-  const restartX = canvas.width / 2 - 80;
-  const restartY = canvas.height / 2 + restartTextHeight;
-  const restartWidth = 160;
-  const restartHeight = 20;
+// Touch event listeners for mobile control
+let touchStartX = 0;  // for touch movement tracking
+let touchStartY = 0;  // for touch movement tracking
 
-  return (
-    x >= restartX &&
-    x <= restartX + restartWidth &&
-    y >= restartY &&
-    y <= restartY + restartHeight
-  );
-}
+// Trigger to start background music after first interaction
+let musicStarted = false;
 
-// Add event listener for 'click' event to handle game restart
-canvas.addEventListener('click', function(e) {
-  if (gameOver) {
-    const clickX = e.clientX;
-    const clickY = e.clientY;
+// Touchstart event to trigger background music and track player movement
+canvas.addEventListener('touchstart', function(e) {
+  e.preventDefault();  // Prevent default touch behavior (like scrolling)
+  
+  if (!musicStarted) {
+    backgroundMusic.play(); // Play background music after first touch
+    musicStarted = true; // Prevent restarting background music on subsequent touches
+  }
 
-    if (isClickOnRestartArea(clickX, clickY)) {
-      restartGame(); // Restart the game if the click is on 'Click to Restart'
-    }
+  touchStartX = e.touches[0].clientX;  // Track the starting X position of touch
+  touchStartY = e.touches[0].clientY;  // Track the starting Y position of touch
+});
+
+// Touchmove event to track player movement
+canvas.addEventListener('touchmove', function(e) {
+  e.preventDefault();
+  let touchEndX = e.touches[0].clientX;  // Track the current X position of touch
+  if (touchEndX < touchStartX && player.x > 0) {
+    player.x -= player.speed;  // Move left
+  } else if (touchEndX > touchStartX && player.x < canvas.width - player.width) {
+    player.x += player.speed;  // Move right
+  }
+  touchStartX = touchEndX;  // Update the touch start X to current position for continuous movement
+});
+
+// Touch event to fire bullets
+canvas.addEventListener('touchstart', function(e) {
+  if (!gameOver) {
+    shootBullet();  // Fire a bullet when the screen is touched
+  } else {
+    restartGame();  // Restart the game if game over screen is active
   }
 });
 
@@ -246,10 +260,9 @@ function drawLevel() {
 
 // Function to draw the game over screen with summary
 function drawGameOver() {
-  // Play the game over sound only once
+  // Ensure that the game over sound is played only once
   if (!gameOverSound.played) {
     gameOverSound.play(); // Play the game over sound
-    gameOverSound.played = true; // Set a flag to indicate the sound has played
   }
 
   ctx.fillStyle = 'white';
@@ -281,8 +294,7 @@ function restartGame() {
     invaderRowCount = 3;
     invaderColumnCount = 5;
     gameOver = false;
-    gameOverSound.played = false; // Reset the sound flag
-    createInvaders(); // Create the initial set of invaders
+    createInvaders();
     backgroundMusic.play(); // Restart background music
     gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
   }
