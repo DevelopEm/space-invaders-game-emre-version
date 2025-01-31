@@ -174,7 +174,7 @@ function invaderShoot() {
   if (level >= 5) {
     for (let c = 0; c < invaderColumnCount; c++) {
       let invader = invaders[c][0]; // Only first row invaders shoot
-      if (invader.status === 1 && Math.random() < 0.01) { // 1% chance to shoot
+      if (invader.status === 1 && Math.random() < 0.05) { // 5% chance to shoot
         let invaderBullet = {
           x: invader.x + invaderWidth / 2 - 2, // Bullet's X position
           y: invader.y + invaderHeight, // Bullet's Y position just below the invader
