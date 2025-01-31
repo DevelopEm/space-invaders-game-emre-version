@@ -185,15 +185,6 @@ function detectCollisions() {
             invader.status = 0; // Destroy the invader
             bullets.splice(i, 1); // Remove the bullet
             score += 10; // Increase score
-            if (checkWin()) {
-              level++;
-              invaderSpeed = Math.min(invaderSpeed + 0.2, 2); // Increase speed as levels go up, up to a max speed
-              if (level <= 5) {
-                invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
-                invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
-              }
-              createInvaders();  // Regenerate the invaders with updated count and speed
-            }
             break;
           }
         }
@@ -261,20 +252,18 @@ function moveInvaders() {
 
 // Function to make invaders shoot bullets
 function invaderShoot() {
-  if (level >= 5) {
-    for (let c = 0; c < invaderColumnCount; c++) {
-      for (let r = 0; r < invaderRowCount; r++) {
-        let invader = invaders[c][r];
-        if (invader.status === 1 && Math.random() < 0.02) {  // 2% chance to shoot
-          let invaderBullet = {
-            x: invader.x + invaderWidth / 2 - 2,
-            y: invader.y + invaderHeight,
-            width: 4,
-            height: 10,
-            dy: invaderBulletSpeed,
-          };
-          invaderBullets.push(invaderBullet);
-        }
+  for (let c = 0; c < invaderColumnCount; c++) {
+    for (let r = 0; r < invaderRowCount; r++) {
+      let invader = invaders[c][r];
+      if (invader.status === 1 && Math.random() < 0.02) {  // 2% chance to shoot
+        let invaderBullet = {
+          x: invader.x + invaderWidth / 2 - 2,
+          y: invader.y + invaderHeight,
+          width: 4,
+          height: 10,
+          dy: invaderBulletSpeed,
+        };
+        invaderBullets.push(invaderBullet);
       }
     }
   }
@@ -363,7 +352,7 @@ function draw() {
   detectInvaderBulletCollisions(); // Check for collisions with invader bullets
   movePlayer();
   moveInvaders();
-  invaderShoot(); // Let invaders shoot back if level >= 5
+  invaderShoot(); // Let invaders shoot back from level 1
 }
 
 // Initialize the game
