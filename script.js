@@ -255,7 +255,7 @@ function invaderShoot() {
     invaderBulletTimer++;  // Increment the bullet timer
 
     if (invaderBulletTimer % invaderBulletCooldown === 0) {  // Every few frames, have invaders shoot
-      // Check for shooting only from the front row invaders
+      // Only invaders in the front row shoot
       for (let c = 0; c < invaderColumnCount; c++) {
         for (let r = invaderRowCount - 1; r < invaderRowCount; r++) {  // Only the last row
           let invader = invaders[c][r];
