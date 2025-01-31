@@ -124,6 +124,7 @@ function createInvaders() {
         y: r * (invaderHeight + invaderPadding) + invaderOffsetTop,
         status: 1,
         image: new Image(),
+        lastShotTime: 0, // Track time of last shot for cooldown management
       };
       invaders[c][r].image.src = 'invader.png'; // Path to invader image
     }
@@ -251,28 +252,24 @@ function moveInvaders() {
 
 // Function to make invaders shoot (level 5 and beyond)
 function invaderShoot() {
-  if (level >= 5) {  // Only start shooting from level 5 onwards
-    invaderBulletTimer++;  // Increment the bullet timer
+  const shootingChance = level >= 5 ? 0.03 : 0.01; // 3% chance after level 5, 1% before
+  const currentTime = Date.now();
 
-    if (invaderBulletTimer % invaderBulletCooldown === 0) {  // Every few frames, have invaders shoot
-      // Only invaders in the front row shoot
-      for (let c = 0; c < invaderColumnCount; c++) {
-        for (let r = invaderRowCount - 1; r < invaderRowCount; r++) {  // Only the last row
-          let invader = invaders[c][r];
+  for (let c = 0; c < invaderColumnCount; c++) {
+    for (let r = 0; r < invaderRowCount; r++) {
+      let invader = invaders[c][r];
 
-          if (invader.status === 1) {  // Only shoot from active invaders
-            // 3% chance of invader shooting (adjust this percentage as needed)
-            if (Math.random() < 0.03) {  // 3% chance
-              let bullet = {
-                x: invader.x + invaderWidth / 2 - 2,  // Center the bullet with the invader
-                y: invader.y + invaderHeight,  // Position the bullet just below the invader
-                width: 4,
-                height: 10,
-                dy: invaderBulletSpeed,  // Move the bullet downward
-              };
-              invaderBullets.push(bullet);  // Add the bullet to the invader bullets array
-            }
-          }
+      if (invader.status === 1 && currentTime - invader.lastShotTime > invaderBulletCooldown) {
+        if (Math.random() < shootingChance) {  // Only shoot based on chance
+          let bullet = {
+            x: invader.x + invaderWidth / 2 - 2,
+            y: invader.y + invaderHeight,  // Position the bullet just below the invader
+            width: 4,
+            height: 10,
+            dy: invaderBulletSpeed,  // Move the bullet downward
+          };
+          invaderBullets.push(bullet);  // Add the bullet to the invader bullets array
+          invader.lastShotTime = currentTime;  // Update the last shot time for the invader
         }
       }
     }
