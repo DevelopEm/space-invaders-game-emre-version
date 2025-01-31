@@ -139,7 +139,7 @@ function drawBullets() {
       bullets.splice(i, 1);
       continue;
     }
-    ctx.fillStyle = '#FF0000';
+    ctx.fillStyle = '#FF0000';  // Player bullets will be red
     ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
     bullets[i].y += bullets[i].dy;
   }
@@ -326,7 +326,7 @@ function drawGameOver() {
   ctx.font = '20px Arial';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
+  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
 }
 
 // Function to end the game
@@ -338,7 +338,7 @@ function gameOverCondition() {
   gameOverSound.play();
 }
 
-// Restart the game when clicked
+// Restart the game when touched
 function restartGame() {
   if (gameOver) {
     // Reset everything for a fresh start
