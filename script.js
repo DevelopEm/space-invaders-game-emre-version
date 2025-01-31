@@ -55,9 +55,18 @@ backgroundMusic.volume = 0.3; // Adjust volume if needed
 let touchStartX = 0;  // for touch movement tracking
 let touchStartY = 0;  // for touch movement tracking
 
-// Touchstart event to track player movement
+// Trigger to start background music after first interaction
+let musicStarted = false;
+
+// Touchstart event to trigger background music and track player movement
 canvas.addEventListener('touchstart', function(e) {
   e.preventDefault();  // Prevent default touch behavior (like scrolling)
+  
+  if (!musicStarted) {
+    backgroundMusic.play(); // Play background music after first touch
+    musicStarted = true; // Prevent restarting background music on subsequent touches
+  }
+
   touchStartX = e.touches[0].clientX;  // Track the starting X position of touch
   touchStartY = e.touches[0].clientY;  // Track the starting Y position of touch
 });
@@ -251,25 +260,24 @@ function drawLevel() {
 
 // Function to draw the game over screen with summary
 function drawGameOver() {
-  gameOverSound.play(); // Play the game over sound when the game ends
+  gameOverSound.play(); // Play the game over sound
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
   ctx.font = '20px Arial';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + 60);
+  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
 }
 
 // Function to end the game
 function gameOverCondition() {
   gameOver = true;
-  backgroundMusic.pause(); // Stop background music when game ends
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
 }
 
-// Restart the game when touched on game over screen
+// Restart the game when clicked
 function restartGame() {
   if (gameOver) {
     // Reset everything for a fresh start
@@ -280,8 +288,8 @@ function restartGame() {
     invaderRowCount = 3;
     invaderColumnCount = 5;
     gameOver = false;
-    backgroundMusic.play(); // Restart background music
     createInvaders();
+    backgroundMusic.play(); // Restart background music
     gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
   }
 }
@@ -305,5 +313,4 @@ function draw() {
 
 // Initialize the game
 createInvaders();
-backgroundMusic.play(); // Start playing background music
 gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
