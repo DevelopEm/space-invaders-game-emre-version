@@ -17,7 +17,7 @@ let gameInterval;
 // Player object (spaceship)
 player = {
   x: canvas.width / 2 - 20,
-  y: canvas.height - 30,
+  y: canvas.height - 100, // 100px from the bottom
   width: 40,
   height: 40,
   speed: 5,
@@ -62,12 +62,6 @@ canvas.addEventListener('touchmove', function(e) {
     player.x += player.speed;  // Move right
   }
   touchStartX = touchEndX;  // Update the touch start X to current position for continuous movement
-});
-
-// Touchend event to stop movement (optional)
-canvas.addEventListener('touchend', function(e) {
-  touchStartX = 0;
-  touchStartY = 0;
 });
 
 // Touch event to fire bullets
@@ -154,10 +148,10 @@ function detectCollisions() {
             score += 10; // Increase score
             if (checkWin()) {
               level++;
-              invaderSpeed = Math.min(invaderSpeed + 0.1, 1.5); // Cap speed to 1.5
+              invaderSpeed = Math.min(invaderSpeed + 0.2, 2); // Increase speed as levels go up
               invaderRowCount = Math.min(invaderRowCount + 1, 6); // Max 6 rows
               invaderColumnCount = Math.min(invaderColumnCount + 1, 10); // Max 10 columns
-              createInvaders();
+              createInvaders();  // Reset the invaders with new difficulty
             }
             break;
           }
@@ -248,19 +242,6 @@ function draw() {
   movePlayer();
   moveInvaders();
 }
-
-// Player object (spaceship)
-player = {
-  x: canvas.width / 2 - 20,
-  y: canvas.height - 100, // 100px from the bottom
-  width: 40,
-  height: 40,
-  speed: 5,
-  dx: 0,
-  image: new Image(),
-};
-
-player.image.src = 'spaceship.png'; // Path to spaceship image
 
 // Initialize the game
 createInvaders();
