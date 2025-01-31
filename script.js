@@ -234,13 +234,15 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to draw the game over screen
+// Function to draw the game over screen with summary
 function drawGameOver() {
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
-  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2);
+  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
   ctx.font = '20px Arial';
-  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + 40);
+  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
+  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
+  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + 60);
 }
 
 // Function to end the game
@@ -253,6 +255,7 @@ function gameOverCondition() {
 // Restart the game when clicked
 canvas.addEventListener('click', function() {
   if (gameOver) {
+    // Reset everything for a fresh start
     score = 0;
     level = 1;
     invaderSpeed = 0.3;
