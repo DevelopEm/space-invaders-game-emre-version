@@ -303,27 +303,26 @@ function restartGame() {
 
 // Function to have invaders shoot back (only the forefront invaders)
 function invaderShoot() {
-  // Only shoot if the level is 5 or greater
-  if (level >= 5) {
+  if (level >= 5) {  // Only start shooting from level 5 onwards
     invaderBulletTimer++;  // Increment the bullet timer
 
-    // Shoot a bullet for invaders in the front row with controlled timing
-    if (invaderBulletTimer % invaderBulletCooldown === 0) {
+    if (invaderBulletTimer % invaderBulletCooldown === 0) {  // Every few frames, have invaders shoot
+      // Check for shooting only from the front row invaders
       for (let c = 0; c < invaderColumnCount; c++) {
-        for (let r = invaderRowCount - 1; r >= invaderRowCount - 1; r--) { // Only check the last row (front row)
+        for (let r = invaderRowCount - 1; r < invaderRowCount; r++) {  // Only the last row
           let invader = invaders[c][r];
 
-          if (invader.status === 1) {
-            // Give a 0.5% chance of the invader shooting
-            if (Math.random() < 0.1) { // Slight increase in chance for consistent shooting
+          if (invader.status === 1) {  // Only shoot from active invaders
+            // 0.5% chance of invader shooting
+            if (Math.random() < 0.005) {
               let bullet = {
-                x: invader.x + invaderWidth / 2 - 2, // Center the bullet with the invader
-                y: invader.y + invaderHeight, // Position the bullet just below the invader
+                x: invader.x + invaderWidth / 2 - 2,  // Center the bullet with the invader
+                y: invader.y + invaderHeight,  // Position the bullet just below the invader
                 width: 4,
                 height: 10,
-                dy: invaderBulletSpeed, // Move the bullet downward
+                dy: invaderBulletSpeed,  // Move the bullet downward
               };
-              invaderBullets.push(bullet); // Add the bullet to the invader bullets array
+              invaderBullets.push(bullet);  // Add the bullet to the invader bullets array
             }
           }
         }
@@ -335,7 +334,7 @@ function invaderShoot() {
 // Function to move invader bullets
 function moveInvaderBullets() {
   for (let i = 0; i < invaderBullets.length; i++) {
-    invaderBullets[i].y += invaderBulletSpeed; // Move bullet down
+    invaderBullets[i].y += invaderBulletSpeed;  // Move bullet down
 
     // Remove bullets that go off-screen
     if (invaderBullets[i].y > canvas.height) {
