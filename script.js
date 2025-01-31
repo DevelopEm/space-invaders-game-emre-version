@@ -260,7 +260,11 @@ function drawLevel() {
 
 // Function to draw the game over screen with summary
 function drawGameOver() {
-  gameOverSound.play(); // Play the game over sound
+  // Ensure that the game over sound is played only once
+  if (!gameOverSound.played) {
+    gameOverSound.play(); // Play the game over sound
+  }
+
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
@@ -275,6 +279,8 @@ function gameOverCondition() {
   gameOver = true;
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
+  // Play the game over sound when the game ends
+  gameOverSound.play();
 }
 
 // Restart the game when clicked
