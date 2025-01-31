@@ -13,6 +13,7 @@ let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
+let restartTextHeight = 60; // Distance of restart text from center of canvas
 
 // Player object (spaceship)
 player = {
@@ -40,6 +41,10 @@ const invaderOffsetTop = 30;
 const invaderOffsetLeft = 30;
 
 gameOver = false;
+
+// Sounds
+const shootSound = new Audio('shoot.wav'); // Path to shoot sound
+const gameOverSound = new Audio('GameOver.mp3'); // Path to game over sound
 
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
@@ -82,6 +87,9 @@ function shootBullet() {
     dy: -bulletSpeed,
   };
   bullets.push(bullet);
+
+  // Play the shoot sound
+  shootSound.play();
 }
 
 // Function to create invaders
@@ -236,6 +244,7 @@ function drawLevel() {
 
 // Function to draw the game over screen with summary
 function drawGameOver() {
+  gameOverSound.play(); // Play the game over sound when the game ends
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
