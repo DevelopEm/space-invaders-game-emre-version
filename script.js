@@ -2,16 +2,24 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// Dynamically adjust canvas size
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;  // Make canvas width dynamic
+canvas.height = window.innerHeight; // Make canvas height dynamic
+
+let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
+let score = 0;
+let level = 1;
+let invaderSpeed = 0.3;
+let invaderDirection = 1; // 1 for right, -1 for left
+let invaderRowCount = 3;
+let invaderColumnCount = 5;
+let gameInterval;
 
 // Player object (spaceship)
-let player = {
-  x: canvas.width / 2 - 40 / 2, // Centered horizontally
-  y: canvas.height - 50,        // At the bottom of the screen
-  width: 40,                    // Width of the player
-  height: 40,                   // Height of the player
+player = {
+  x: canvas.width / 2 - 20,
+  y: canvas.height - 30,
+  width: 40,
+  height: 40,
   speed: 5,
   dx: 0,
   image: new Image(),
@@ -20,26 +28,18 @@ let player = {
 player.image.src = 'spaceship.png'; // Path to spaceship image
 
 // Bullet object
-let bullets = [];
+bullets = [];
 const bulletSpeed = 4;
 
 // Invader object
-let invaders = [];
+invaders = [];
 const invaderWidth = 40;
 const invaderHeight = 40;
 const invaderPadding = 10;
 const invaderOffsetTop = 30;
 const invaderOffsetLeft = 30;
 
-// Initialize game state
-let score = 0;
-let level = 1;
-let invaderSpeed = 0.3;
-let invaderDirection = 1; // 1 for right, -1 for left
-let invaderRowCount = 3;
-let invaderColumnCount = 5;
-let gameOver = false;
-let gameInterval;
+gameOver = false;
 
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
@@ -50,11 +50,6 @@ canvas.addEventListener('touchstart', function(e) {
   e.preventDefault();  // Prevent default touch behavior (like scrolling)
   touchStartX = e.touches[0].clientX;  // Track the starting X position of touch
   touchStartY = e.touches[0].clientY;  // Track the starting Y position of touch
-  
-  // If the touch is in the bottom area, fire a bullet
-  if (touchStartY > canvas.height - 100) {
-    shootBullet();  // Fire a bullet when the screen is touched at the bottom
-  }
 });
 
 // Touchmove event to track player movement
@@ -73,6 +68,13 @@ canvas.addEventListener('touchmove', function(e) {
 canvas.addEventListener('touchend', function(e) {
   touchStartX = 0;
   touchStartY = 0;
+});
+
+// Touch event to fire bullets
+canvas.addEventListener('touchstart', function(e) {
+  if (!gameOver) {
+    shootBullet();  // Fire a bullet when the screen is touched
+  }
 });
 
 // Function to shoot a bullet
