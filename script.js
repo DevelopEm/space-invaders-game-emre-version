@@ -45,6 +45,11 @@ gameOver = false;
 // Sounds
 const shootSound = new Audio('shoot.wav'); // Path to shoot sound
 const gameOverSound = new Audio('GameOver.mp3'); // Path to game over sound
+const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background music
+
+// Background music settings
+backgroundMusic.loop = true; // Loop background music
+backgroundMusic.volume = 0.3; // Adjust volume if needed
 
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
@@ -73,6 +78,8 @@ canvas.addEventListener('touchmove', function(e) {
 canvas.addEventListener('touchstart', function(e) {
   if (!gameOver) {
     shootBullet();  // Fire a bullet when the screen is touched
+  } else {
+    restartGame();  // Restart the game if game over screen is active
   }
 });
 
@@ -251,18 +258,19 @@ function drawGameOver() {
   ctx.font = '20px Arial';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + 60);
+  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + 60);
 }
 
 // Function to end the game
 function gameOverCondition() {
   gameOver = true;
+  backgroundMusic.pause(); // Stop background music when game ends
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
 }
 
-// Restart the game when clicked
-canvas.addEventListener('click', function() {
+// Restart the game when touched on game over screen
+function restartGame() {
   if (gameOver) {
     // Reset everything for a fresh start
     score = 0;
@@ -272,10 +280,11 @@ canvas.addEventListener('click', function() {
     invaderRowCount = 3;
     invaderColumnCount = 5;
     gameOver = false;
+    backgroundMusic.play(); // Restart background music
     createInvaders();
     gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
   }
-});
+}
 
 // Main game loop
 function draw() {
@@ -296,4 +305,5 @@ function draw() {
 
 // Initialize the game
 createInvaders();
+backgroundMusic.play(); // Start playing background music
 gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
