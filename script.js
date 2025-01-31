@@ -199,6 +199,12 @@ function moveInvaders() {
           invaderDirection = -invaderDirection;
           shouldMoveDown = true;
         }
+
+        // Check if invader reaches the bottom (player)
+        if (invader.y + invaderHeight >= player.y && invader.status === 1) {
+          gameOverCondition(); // End the game
+          return;
+        }
       }
     }
   }
@@ -233,6 +239,8 @@ function drawGameOver() {
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2);
+  ctx.font = '20px Arial';
+  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + 40);
 }
 
 // Function to end the game
@@ -241,6 +249,21 @@ function gameOverCondition() {
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
 }
+
+// Restart the game when clicked
+canvas.addEventListener('click', function() {
+  if (gameOver) {
+    score = 0;
+    level = 1;
+    invaderSpeed = 0.3;
+    invaderDirection = 1;
+    invaderRowCount = 3;
+    invaderColumnCount = 5;
+    gameOver = false;
+    createInvaders();
+    gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
+  }
+});
 
 // Main game loop
 function draw() {
