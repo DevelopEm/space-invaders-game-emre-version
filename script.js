@@ -2,31 +2,17 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// Adjust the canvas size to fit the screen dynamically
+// Dynamically adjust canvas size
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// Calculate scaling factors based on canvas size
-const scaleX = canvas.width / 600; // Base canvas width is 600
-const scaleY = canvas.height / 400; // Base canvas height is 400
-
-// Game variables
-let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
-let score = 0;
-let level = 1;
-let invaderSpeed = 0.3;
-let invaderDirection = 1; // 1 for right, -1 for left
-let invaderRowCount = 3;
-let invaderColumnCount = 5;
-let gameInterval;
-
 // Player object (spaceship)
-player = {
-  x: canvas.width / 2 - 20 * scaleX, // Scale position based on canvas size
-  y: canvas.height - 30 * scaleY,   // Scale position based on canvas size
-  width: 40 * scaleX,               // Scale width based on canvas size
-  height: 40 * scaleY,              // Scale height based on canvas size
-  speed: 5 * scaleX,                // Scale speed based on canvas size
+let player = {
+  x: canvas.width / 2 - 40 / 2, // Centered horizontally
+  y: canvas.height - 50,        // At the bottom of the screen
+  width: 40,                    // Width of the player
+  height: 40,                   // Height of the player
+  speed: 5,
   dx: 0,
   image: new Image(),
 };
@@ -34,18 +20,26 @@ player = {
 player.image.src = 'spaceship.png'; // Path to spaceship image
 
 // Bullet object
-bullets = [];
-const bulletSpeed = 4 * scaleY; // Scale bullet speed based on canvas size
+let bullets = [];
+const bulletSpeed = 4;
 
 // Invader object
-invaders = [];
-const invaderWidth = 40 * scaleX;
-const invaderHeight = 40 * scaleY;
-const invaderPadding = 10 * scaleX;
-const invaderOffsetTop = 30 * scaleY;
-const invaderOffsetLeft = 30 * scaleX;
+let invaders = [];
+const invaderWidth = 40;
+const invaderHeight = 40;
+const invaderPadding = 10;
+const invaderOffsetTop = 30;
+const invaderOffsetLeft = 30;
 
-gameOver = false;
+// Initialize game state
+let score = 0;
+let level = 1;
+let invaderSpeed = 0.3;
+let invaderDirection = 1; // 1 for right, -1 for left
+let invaderRowCount = 3;
+let invaderColumnCount = 5;
+let gameOver = false;
+let gameInterval;
 
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
@@ -85,10 +79,10 @@ canvas.addEventListener('touchend', function(e) {
 function shootBullet() {
   if (gameOver) return;
   let bullet = {
-    x: player.x + player.width / 2 - 2 * scaleX,
+    x: player.x + player.width / 2 - 2,
     y: player.y,
-    width: 4 * scaleX,
-    height: 10 * scaleY,
+    width: 4,
+    height: 10,
     dy: -bulletSpeed,
   };
   bullets.push(bullet);
@@ -217,21 +211,21 @@ function moveInvaders() {
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
   ctx.font = '16px Arial';
-  ctx.fillText('Score: ' + score, 8 * scaleX, 20 * scaleY);
+  ctx.fillText('Score: ' + score, 8, 20);
 }
 
 // Function to draw the level
 function drawLevel() {
   ctx.fillStyle = '#FFFFFF';
   ctx.font = '16px Arial';
-  ctx.fillText('Level: ' + level, canvas.width - 80 * scaleX, 20 * scaleY);
+  ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
 // Function to draw the game over screen
 function drawGameOver() {
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
-  ctx.fillText('GAME OVER', canvas.width / 2 - 100 * scaleX, canvas.height / 2);
+  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2);
 }
 
 // Main game loop
