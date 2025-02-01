@@ -110,6 +110,11 @@ function shootBullet() {
   };
   bullets.push(bullet);
 
+  // Speed up bullet shooting as levels progress
+  if (level > 4) {
+    bullet.dy = -bulletSpeed - 1; // Faster bullets after level 4
+  }
+
   // Play the shoot sound
   shootSound.play();
 }
@@ -148,13 +153,13 @@ function drawBullets() {
     if (level > 4) {
       ctx.shadowColor = '#00FFFF'; // Cyan glow effect
       ctx.shadowBlur = 15; // The glow intensity
-
       ctx.fillStyle = '#00FFFF'; // Cyan bullet color
       ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
-
-      // Remove the glow effect after drawing the bullet
-      ctx.shadowColor = 'transparent';
+      ctx.shadowColor = 'transparent'; // Remove the glow effect after drawing the bullet
       ctx.shadowBlur = 0;
+
+      // Make the bullets travel faster after level 4
+      bullets[i].dy = -bulletSpeed - 2; // Increase speed (you can adjust this value)
     } else {
       ctx.fillStyle = '#FF0000'; // Red bullet color before level 4
       ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
@@ -292,7 +297,12 @@ function drawGameOver() {
   ctx.font = '20px Arial';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
+  
+  // Draw the leaderboard button
+  ctx.fillStyle = '#FF0000'; // Red for the restart button
+  ctx.fillRect(canvas.width / 2 - 100, canvas.height / 2 + 70, 200, 40);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillText('Touch to Restart', canvas.width / 2, canvas.height / 2 + 90);  // Button text
 }
 
 // Function to end the game
