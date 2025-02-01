@@ -4,14 +4,63 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Space Invaders</title>
-  <link rel="stylesheet" href="style.css">
+
   <!-- Importing the retro "Press Start 2P" font from Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <style>
+    /* Make sure the entire page has a black background for space theme */
+    body {
+      margin: 0;
+      background-color: grey;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Style for the canvas */
+    canvas {
+      display: block; /* Make sure canvas takes full screen size */
+      background-color: black;
+    }
+
+    /* Apply retro font to all game text */
+    .game-text {
+      font-family: 'Press Start 2P', cursive;
+      color: #FFFF00; /* Bright yellow color for text */
+    }
+
+    /* Style for the "Click to Restart" button */
+    .restart-button {
+      background-color: red;
+      color: white;
+      font-family: 'Press Start 2P', cursive;
+      padding: 10px 20px;
+      font-size: 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
+      box-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+      transition: all 0.3s ease;
+    }
+
+    .restart-button:hover {
+      background-color: darkred;
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.9);
+    }
+  </style>
 </head>
 <body>
-  <div id="gameArea">
-    <canvas id="gameCanvas"></canvas>
+  <canvas id="gameCanvas"></canvas>
+  <div id="gameOverScreen" style="display: none;">
+    <div class="game-text" style="font-size: 50px; text-align: center;">GAME OVER</div>
+    <div class="game-text" style="text-align: center;">Level: <span id="finalLevel"></span></div>
+    <div class="game-text" style="text-align: center;">Score: <span id="finalScore"></span></div>
+    <button class="restart-button" onclick="restartGame()">Click to Restart</button>
   </div>
-  <script src="script.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>
