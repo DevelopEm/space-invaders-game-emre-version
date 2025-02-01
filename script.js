@@ -265,4 +265,109 @@ function drawLeaderboard() {
   ctx.font = '20px Arial';
   ctx.fillText('Top Scores:', 20, canvas.height - 100);
   for (let i = 0; i < topScores.length; i++) {
-    ctx.fillText(`${i + 1}. ${topScores[i].name}: ${top
+    ctx.fillText(`${i + 1}. ${topScores[i].name}: ${topScores[i].score}`, 20, canvas.height - 80 + i * 30);
+  }
+}
+
+// Function to draw the game over screen with name input and restart button
+let nameInput = ''; // Store player name input
+let isNameEntered = false;
+function drawGameOver() {
+  // Ensure that the game over sound is played only once
+  if (!gameOverSound.played) {
+    gameOverSound.play(); // Play the game over sound
+  }
+
+  ctx.fillStyle = 'white';
+  ctx.font = '30px Arial';
+  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
+  ctx.font = '20px Arial';
+  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
+  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
+
+  // Input field for name
+  if (!isNameEntered) {
+    ctx.fillText('Enter your name: ', canvas.width / 2 - 100, canvas.height / 2 + 60);
+    ctx.fillText(nameInput, canvas.width / 2 - 60, canvas.height / 2 + 90); // Display typed name
+  }
+
+  // Restart button
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(canvas.width / 2 - 50, canvas.height / 2 + 150, 100, 50);
+  ctx.fillStyle = 'white';
+  ctx.font = '20px Arial';
+  ctx.fillText('Restart', canvas.width / 2 - 35, canvas.height / 2 + 180);
+
+  // Display leaderboard
+  drawLeaderboard();
+}
+
+// Function to handle name input
+canvas.addEventListener('keydown', (e) => {
+  if (!gameOver || isNameEntered) return;
+
+  if (e.key === 'Backspace') {
+    nameInput = nameInput.slice(0, -1); // Remove last character
+  } else if (e.key.length === 1) {
+    nameInput += e.key; // Add character to name input
+  } else if (e.key === 'Enter' && nameInput.length > 0) {
+    // When Enter is pressed, save score and name to localStorage
+    saveScore(nameInput, score);
+    isNameEntered = true;
+  }
+});
+
+// Save score and name to localStorage
+function saveScore(name, score) {
+  let topScores = getTopScores();
+  topScores.push({ name, score });
+  topScores.sort((a, b) => b.score - a.score); // Sort by score descending
+  topScores = topScores.slice(0, 3); // Keep top 3 scores
+  localStorage.setItem('topScores', JSON.stringify(topScores));
+}
+
+// Get top 3 scores from localStorage
+function getTopScores() {
+  let topScores = JSON.parse(localStorage.getItem('topScores'));
+  if (!topScores) topScores = [];
+  return topScores;
+}
+
+// Function to restart the game
+function restartGame() {
+  // Reset everything for a fresh start
+  score = 0;
+  level = 1;
+  invaderSpeed = 0.3;
+  invaderDirection = 1;
+  invaderRowCount = 3;
+  invaderColumnCount = 5;
+  gameOver = false;
+  nameInput = ''; // Reset name input
+  isNameEntered = false;
+  createInvaders();
+  backgroundMusic.play(); // Restart background music
+  gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
+}
+
+// Main game loop
+function draw() {
+  if (gameOver) {
+    drawGameOver(); // Display game over screen
+    return;
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+  drawPlayer();
+  drawBullets();
+  drawInvaders();
+  drawScore();
+  drawLevel();
+  detectCollisions();
+  movePlayer();
+  moveInvaders();
+}
+
+// Initialize the game
+createInvaders();
+gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
