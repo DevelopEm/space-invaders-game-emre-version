@@ -52,12 +52,16 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
-// Background music start trigger
-let musicStarted = false;
+// Touch event listeners for mobile control
+let touchStartX = 0;  // for touch movement tracking
+let touchStartY = 0;  // for touch movement tracking
 
 // Trigger to start background music after first interaction
+let musicStarted = false;
+
+// Touchstart event to trigger background music and track player movement
 canvas.addEventListener('touchstart', function(e) {
-  e.preventDefault();
+  e.preventDefault();  // Prevent default touch behavior (like scrolling)
   
   if (!musicStarted) {
     backgroundMusic.play(); // Play background music after first touch
@@ -92,7 +96,6 @@ canvas.addEventListener('touchstart', function(e) {
 // Function to shoot a bullet
 function shootBullet() {
   if (gameOver) return;
-  
   let bullet = {
     x: player.x + player.width / 2 - 2,
     y: player.y,
@@ -100,41 +103,12 @@ function shootBullet() {
     height: 10,
     dy: -bulletSpeed,
     isGlue: level >= 5,  // Enable glue effect after level 5
-    glueTimer: level >= 5 ? Date.now() : null,  // Track the glue duration
-    color: getBulletColor(level),  // Get bullet color based on level
-    glow: getBulletGlow(level),  // Get glow effect based on level
+    glueTimer: level >= 5 ? Date.now() : null  // Track the glue duration
   };
-  
   bullets.push(bullet);
 
-  // Play the shoot sound with a fancy effect
+  // Play the shoot sound
   shootSound.play();
-}
-
-// Function to get the bullet color based on the current level
-function getBulletColor(level) {
-  if (level <= 4) {
-    return 'red';  // Red for levels 1-4
-  } else if (level <= 10) {
-    return 'cyan';  // Cyan for levels 5-10
-  } else if (level <= 15) {
-    return 'yellow';  // Yellow for levels 10-15
-  } else {
-    return 'purple';  // Purple for levels 16 and beyond
-  }
-}
-
-// Function to get the bullet glow effect based on the current level
-function getBulletGlow(level) {
-  if (level <= 4) {
-    return 'rgba(255, 0, 0, 0.6)';  // Red glow for levels 1-4
-  } else if (level <= 10) {
-    return 'rgba(0, 255, 255, 0.6)';  // Cyan glow for levels 5-10
-  } else if (level <= 15) {
-    return 'rgba(255, 255, 0, 0.6)';  // Yellow glow for levels 10-15
-  } else {
-    return 'rgba(128, 0, 128, 0.6)';  // Purple glow for levels 16 and beyond
-  }
 }
 
 // Function to create invaders
@@ -159,7 +133,7 @@ function drawPlayer() {
   ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
 }
 
-// Function to draw bullets with dynamic effects based on level
+// Function to draw bullets
 function drawBullets() {
   for (let i = 0; i < bullets.length; i++) {
     if (bullets[i].y < 0) {
@@ -167,11 +141,7 @@ function drawBullets() {
       continue;
     }
 
-    // Apply the color and glow effect based on the current bullet
-    ctx.fillStyle = bullets[i].color;
-    ctx.shadowColor = bullets[i].glow;
-    ctx.shadowBlur = 10;
-
+    ctx.fillStyle = (bullets[i].isGlue && Date.now() - bullets[i].glueTimer < bulletGlueTime) ? 'cyan' : '#FF0000';
     ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
     bullets[i].y += bullets[i].dy;
 
@@ -179,10 +149,6 @@ function drawBullets() {
     if (bullets[i].isGlue && Date.now() - bullets[i].glueTimer > bulletGlueTime) {
       bullets[i].isGlue = false;
     }
-
-    // Reset shadow effect for the next bullet
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
   }
 }
 
@@ -292,13 +258,6 @@ function moveInvaders() {
   }
 }
 
-// Function to trigger the game over
-function gameOverCondition() {
-  gameOver = true;
-  clearInterval(gameInterval); // Stop the game loop
-  gameOverSound.play(); // Play game over sound
-}
-
 // Function to draw the score
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
@@ -313,39 +272,32 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to draw the game over screen with a retro, space-themed look
+// Function to draw the game over screen with summary
 function drawGameOver() {
+  // Ensure that the game over sound is played only once
+  if (!gameOverSound.played) {
+    gameOverSound.play(); // Play the game over sound
+  }
+
   ctx.fillStyle = 'white';
-  ctx.font = '50px "Press Start 2P", monospace';  // Retro pixel font
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
+  ctx.font = '30px Arial';
+  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
+  ctx.font = '20px Arial';
+  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
+  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
+  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
 
-  // Create a glowing text effect
-  ctx.shadowColor = 'rgba(0, 255, 255, 0.8)';  // Cyan glow
-  ctx.shadowBlur = 10;
+  // Show leaderboard prompt
+  showLeaderboard();
+}
 
-  ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 40);
-
-  // Reset shadow effect for the next text
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-
-  // Draw "Level" and "Score" with a more retro feel
-  ctx.fillStyle = 'cyan';  // Retro neon cyan
-  ctx.font = '30px "Press Start 2P", monospace';
-  ctx.fillText('Level: ' + level, canvas.width / 2, canvas.height / 2 + 10);
-  ctx.fillText('Score: ' + score, canvas.width / 2, canvas.height / 2 + 40);
-
-  // Add some extra glow effect for "Click to Restart"
-  ctx.fillStyle = 'yellow';  // A warm, inviting retro color for restart text
-  ctx.font = '24px "Press Start 2P", monospace';
-  ctx.fillText('Click to Restart', canvas.width / 2, canvas.height / 2 + 80);
-
-  // Glowing effect on the restart text for extra flair
-  ctx.shadowColor = 'rgba(255, 255, 0, 0.8)';  // Yellow glow
-  ctx.shadowBlur = 15;
-  ctx.fillText('Click to Restart', canvas.width / 2, canvas.height / 2 + 80);
-  ctx.shadowColor = 'transparent';  // Reset the glow effect
+// Function to end the game
+function gameOverCondition() {
+  gameOver = true;
+  drawGameOver();
+  clearInterval(gameInterval); // Stop the game
+  // Play the game over sound when the game ends
+  gameOverSound.play();
 }
 
 // Restart the game when clicked
@@ -365,10 +317,28 @@ function restartGame() {
   }
 }
 
+// Show leaderboard and prompt for player's name
+function showLeaderboard() {
+  let playerName = prompt("Enter your name to save your score:");
+  if (playerName) {
+    let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+    leaderboard.push({ name: playerName, score: score });
+    leaderboard.sort((a, b) => b.score - a.score); // Sort by score in descending order
+    leaderboard = leaderboard.slice(0, 3); // Keep top 3 scores
+    localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+
+    // Display the leaderboard
+    let leaderboardText = "Top 3 Players:\n";
+    leaderboard.forEach((entry, index) => {
+      leaderboardText += ${index + 1}. ${entry.name}: ${entry.score}\n;
+    });
+    alert(leaderboardText);
+  }
+}
+
 // Main game loop
 function draw() {
   if (gameOver) {
-    drawGameOver(); // Show the game over screen if the game is over
     return;
   }
 
@@ -382,3 +352,7 @@ function draw() {
   movePlayer();
   moveInvaders();
 }
+
+// Initialize the game
+createInvaders();
+gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
