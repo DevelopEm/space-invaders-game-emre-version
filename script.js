@@ -299,12 +299,14 @@ function drawGameOver() {
   ctx.font = '20px Arial';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
 
-  // Show the leaderboard
-  ctx.fillText('Top 3 Scores:', canvas.width / 2 - 60, canvas.height / 2 + 80);
+  // Show the leaderboard in spacey font and style
+  ctx.fillStyle = '#FFD700';  // Gold text for leaderboard
+  ctx.font = '24px "Space Mono", monospace';  // Use a space-like font
+
+  ctx.fillText('Top 3 Scores:', canvas.width / 2 - 80, canvas.height / 2 + 80);
   leaderboard.slice(0, 3).forEach((entry, index) => {
-    ctx.fillText(`${index + 1}. ${entry.name}: ${entry.score}`, canvas.width / 2 - 60, canvas.height / 2 + 110 + index * 30);
+    ctx.fillText(`${index + 1}. ${entry.name}: ${entry.score}`, canvas.width / 2 - 80, canvas.height / 2 + 110 + index * 40);
   });
 
   // Display the restart button
