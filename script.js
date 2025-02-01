@@ -15,6 +15,10 @@ let invaderColumnCount = 5;
 let gameInterval;
 let restartTextHeight = 60; // Distance of restart text from center of canvas
 
+// Leaderboard data
+let leaderboard = []; // Array to hold leaderboard data (name, score)
+let playerName = ''; // Name of the player
+
 // Player object (spaceship)
 player = {
   x: canvas.width / 2 - 20,
@@ -258,52 +262,97 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to draw the game over screen with summary
-function drawGameOver() {
-  // Ensure that the game over sound is played only once
-  if (!gameOverSound.played) {
-    gameOverSound.play(); // Play the game over sound
-  }
-
+// Function to display leaderboard
+function displayLeaderboard() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
   ctx.font = '20px Arial';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
+  ctx.fillText('Top 3 Scores:', canvas.width / 2 - 70, canvas.height / 2 + 80);
+
+  leaderboard.forEach((entry, index) => {
+    ctx.fillText((index + 1) + ". " + entry.name + ": " + entry.score, canvas.width / 2 - 50, canvas.height / 2 + 120 + (index * 30));
+  });
+
+  drawRestartButton(); // Draw restart button after displaying leaderboard
+}
+
+// Function to draw the red pill restart button
+function drawRestartButton() {
+  const buttonWidth = 200;
+  const buttonHeight = 50;
+  const buttonX = canvas.width / 2 - buttonWidth / 2;
+  const buttonY = canvas.height / 2 + 180;
+
+  ctx.fillStyle = '#FF0000'; // Red color
+  ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+
+  ctx.fillStyle = 'white';
+  ctx.font = '20px Arial';
+  ctx.fillText("Touch to Restart", buttonX + 40, buttonY + 30);
+}
+
+// Event listener for the red pill button to restart the game
+canvas.addEventListener('touchstart', function(e) {
+  const touchX = e.touches[0].clientX;
+  const touchY = e.touches[0].clientY;
+  
+  const buttonWidth = 200;
+  const buttonHeight = 50;
+  const buttonX = canvas.width / 2 - buttonWidth / 2;
+  const buttonY = canvas.height / 2 + 180;
+
+  // Check if touch is within the button bounds
+  if (
+    touchX >= buttonX && touchX <= buttonX + buttonWidth &&
+    touchY >= buttonY && touchY <= buttonY + buttonHeight
+  ) {
+    restartGame(); // Restart the game if the button is pressed
+  }
+});
+
+// Function to prompt for name and save score when game over
+function promptForNameAndSaveScore() {
+  playerName = prompt("Game Over! Enter your name to save your score:", "Player");
+
+  if (playerName && playerName.trim() !== "") {
+    leaderboard.push({ name: playerName, score: score });
+    leaderboard.sort((a, b) => b.score - a.score); // Sort leaderboard by score in descending order
+    leaderboard = leaderboard.slice(0, 3); // Keep only top 3 scores
+  }
+
+  displayLeaderboard(); // Display leaderboard
 }
 
 // Function to end the game
 function gameOverCondition() {
   gameOver = true;
-  drawGameOver();
+  promptForNameAndSaveScore(); // Prompt for name and save score
   clearInterval(gameInterval); // Stop the game
-  // Play the game over sound when the game ends
-  gameOverSound.play();
+  gameOverSound.play(); // Play the game over sound
 }
 
-// Restart the game when clicked
+// Restart the game
 function restartGame() {
-  if (gameOver) {
-    // Reset everything for a fresh start
-    score = 0;
-    level = 1;
-    invaderSpeed = 0.3;
-    invaderDirection = 1;
-    invaderRowCount = 3;
-    invaderColumnCount = 5;
-    gameOver = false;
-    createInvaders();
-    backgroundMusic.play(); // Restart background music
-    gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
-  }
+  score = 0;
+  level = 1;
+  invaderSpeed = 0.3;
+  invaderDirection = 1;
+  invaderRowCount = 3;
+  invaderColumnCount = 5;
+  gameOver = false;
+  createInvaders();
+  backgroundMusic.play(); // Restart background music
+  gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
 }
 
 // Main game loop
 function draw() {
   if (gameOver) {
-    return;
+    return; // Don't draw anything during game over
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
