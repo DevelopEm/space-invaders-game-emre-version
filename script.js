@@ -258,47 +258,29 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to draw the game over screen with summary and leaderboard
+// Function to draw the game over screen with summary
 function drawGameOver() {
-  // Ensure that the game over sound is played only once
-  if (!gameOverSound.played) {
-    gameOverSound.play(); // Play the game over sound
-  }
+  // Add background effects or space theme
+  ctx.fillStyle = 'black';  // Set a space-like background color
+  ctx.fillRect(0, 0, canvas.width, canvas.height); // Dark background
 
-  ctx.fillStyle = 'white';
-  ctx.font = '30px Arial';
-  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px Arial';
-  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
-  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
+  // Draw text and buttons
+  ctx.fillStyle = '#FFFF00';  // Retro yellow color for text
+  ctx.font = '50px "Press Start 2P", cursive';
+  ctx.textAlign = 'center';
+  ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 40);
 
-  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
-  
-  // Display leaderboard
-  ctx.fillText('Leaderboard (Top 3):', canvas.width / 2 - 80, canvas.height / 2 + 100);
-  
-  let leaderboard = getLeaderboard();
-  for (let i = 0; i < leaderboard.length; i++) {
-    ctx.fillText(`${i + 1}. ${leaderboard[i].name} - ${leaderboard[i].score}`, canvas.width / 2 - 80, canvas.height / 2 + 130 + i * 30);
-  }
-}
+  // Display Score and Level
+  ctx.font = '30px "Press Start 2P", cursive';
+  ctx.fillText('Score: ' + score, canvas.width / 2, canvas.height / 2 + 30);
+  ctx.fillText('Level: ' + level, canvas.width / 2, canvas.height / 2 + 70);
 
-// Function to get the top 3 leaderboard
-function getLeaderboard() {
-  // Get saved leaderboard data from localStorage
-  let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-  leaderboard.push({ name: prompt('Enter your name: '), score: score });
-
-  // Sort leaderboard by score (descending)
-  leaderboard.sort((a, b) => b.score - a.score);
-
-  // Keep only top 3 scores
-  leaderboard = leaderboard.slice(0, 3);
-
-  // Save leaderboard back to localStorage
-  localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-
-  return leaderboard;
+  // Create smooth restart button
+  ctx.fillStyle = '#FF4500';  // Red button
+  ctx.fillRect(canvas.width / 2 - 100, canvas.height / 2 + 100, 200, 50);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '20px "Press Start 2P", cursive';
+  ctx.fillText('Click to Restart', canvas.width / 2, canvas.height / 2 + 130);
 }
 
 // Function to end the game
@@ -306,8 +288,7 @@ function gameOverCondition() {
   gameOver = true;
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
-  // Play the game over sound when the game ends
-  gameOverSound.play();
+  gameOverSound.play(); // Play the game over sound
 }
 
 // Restart the game when clicked
