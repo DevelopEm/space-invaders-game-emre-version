@@ -88,7 +88,7 @@ canvas.addEventListener('touchstart', function(e) {
   if (!gameOver) {
     shootBullet();  // Fire a bullet when the screen is touched
   } else {
-    restartGame();  // Restart the game if game over screen is active
+    handleRestartButtonClick(e);  // Handle restart button tap
   }
 });
 
@@ -258,20 +258,51 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to display leaderboard
+// Function to draw the leaderboard (Top 3 scores)
 function drawLeaderboard() {
-  const topScores = getTopScores();
   ctx.fillStyle = 'white';
   ctx.font = '20px Arial';
-  ctx.fillText('Top Scores:', 20, canvas.height - 100);
+  ctx.fillText('Leaderboard:', canvas.width / 2 - 80, canvas.height / 2 + 100);
+  let topScores = getTopScores();
   for (let i = 0; i < topScores.length; i++) {
-    ctx.fillText(`${i + 1}. ${topScores[i].name}: ${topScores[i].score}`, 20, canvas.height - 80 + i * 30);
+    ctx.fillText(`${topScores[i].name}: ${topScores[i].score}`, canvas.width / 2 - 80, canvas.height / 2 + 130 + i * 30);
   }
 }
 
-// Function to draw the game over screen with name input and restart button
-let nameInput = ''; // Store player name input
-let isNameEntered = false;
+// Get top 3 scores from localStorage
+function getTopScores() {
+  let topScores = JSON.parse(localStorage.getItem('topScores'));
+  if (!topScores) topScores = [];
+  return topScores.slice(0, 3);
+}
+
+// Function to save score and name to localStorage
+function saveScore(name, score) {
+  let topScores = getTopScores();
+  topScores.push({ name, score });
+  topScores.sort((a, b) => b.score - a.score); // Sort by score descending
+  localStorage.setItem('topScores', JSON.stringify(topScores));
+}
+
+// Function to handle restart button click (after game over)
+function handleRestartButtonClick(e) {
+  const restartButtonX = canvas.width / 2 - 80;
+  const restartButtonY = canvas.height / 2 + restartTextHeight;
+  const restartButtonWidth = 160;
+  const restartButtonHeight = 40;
+  
+  // Check if the touch position is within the "Restart" button area
+  if (
+    e.touches[0].clientX > restartButtonX &&
+    e.touches[0].clientX < restartButtonX + restartButtonWidth &&
+    e.touches[0].clientY > restartButtonY &&
+    e.touches[0].clientY < restartButtonY + restartButtonHeight
+  ) {
+    restartGame();
+  }
+}
+
+// Function to draw the game over screen with summary
 function drawGameOver() {
   // Ensure that the game over sound is played only once
   if (!gameOverSound.played) {
@@ -285,75 +316,46 @@ function drawGameOver() {
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
 
-  // Input field for name
-  if (!isNameEntered) {
-    ctx.fillText('Enter your name: ', canvas.width / 2 - 100, canvas.height / 2 + 60);
-    ctx.fillText(nameInput, canvas.width / 2 - 60, canvas.height / 2 + 90); // Display typed name
-  }
-
-  // Restart button
+  // Draw Restart Button
   ctx.fillStyle = 'blue';
-  ctx.fillRect(canvas.width / 2 - 50, canvas.height / 2 + 150, 100, 50);
+  ctx.fillRect(canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight, 160, 40);
   ctx.fillStyle = 'white';
   ctx.font = '20px Arial';
-  ctx.fillText('Restart', canvas.width / 2 - 35, canvas.height / 2 + 180);
-
+  ctx.fillText('Restart', canvas.width / 2 - 40, canvas.height / 2 + restartTextHeight + 25);
+  
   // Display leaderboard
   drawLeaderboard();
 }
 
-// Function to handle name input
-canvas.addEventListener('keydown', (e) => {
-  if (!gameOver || isNameEntered) return;
-
-  if (e.key === 'Backspace') {
-    nameInput = nameInput.slice(0, -1); // Remove last character
-  } else if (e.key.length === 1) {
-    nameInput += e.key; // Add character to name input
-  } else if (e.key === 'Enter' && nameInput.length > 0) {
-    // When Enter is pressed, save score and name to localStorage
-    saveScore(nameInput, score);
-    isNameEntered = true;
-  }
-});
-
-// Save score and name to localStorage
-function saveScore(name, score) {
-  let topScores = getTopScores();
-  topScores.push({ name, score });
-  topScores.sort((a, b) => b.score - a.score); // Sort by score descending
-  topScores = topScores.slice(0, 3); // Keep top 3 scores
-  localStorage.setItem('topScores', JSON.stringify(topScores));
+// Function to end the game
+function gameOverCondition() {
+  gameOver = true;
+  drawGameOver();
+  clearInterval(gameInterval); // Stop the game
+  // Play the game over sound when the game ends
+  gameOverSound.play();
 }
 
-// Get top 3 scores from localStorage
-function getTopScores() {
-  let topScores = JSON.parse(localStorage.getItem('topScores'));
-  if (!topScores) topScores = [];
-  return topScores;
-}
-
-// Function to restart the game
+// Restart the game
 function restartGame() {
-  // Reset everything for a fresh start
-  score = 0;
-  level = 1;
-  invaderSpeed = 0.3;
-  invaderDirection = 1;
-  invaderRowCount = 3;
-  invaderColumnCount = 5;
-  gameOver = false;
-  nameInput = ''; // Reset name input
-  isNameEntered = false;
-  createInvaders();
-  backgroundMusic.play(); // Restart background music
-  gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
+  if (gameOver) {
+    // Reset everything for a fresh start
+    score = 0;
+    level = 1;
+    invaderSpeed = 0.3;
+    invaderDirection = 1;
+    invaderRowCount = 3;
+    invaderColumnCount = 5;
+    gameOver = false;
+    createInvaders();
+    backgroundMusic.play(); // Restart background music
+    gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
+  }
 }
 
 // Main game loop
 function draw() {
   if (gameOver) {
-    drawGameOver(); // Display game over screen
     return;
   }
 
