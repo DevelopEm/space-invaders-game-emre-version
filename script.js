@@ -14,9 +14,6 @@ let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
 let restartTextHeight = 60; // Distance of restart text from center of canvas
-let bulletSpeed = 4;
-let shootDelay = 500; // Delay between shots in milliseconds (for faster shooting after level 6)
-let lastShotTime = 0; // Time of the last shot (to control shooting speed)
 
 // Player object (spaceship)
 player = {
@@ -33,6 +30,7 @@ player.image.src = 'spaceship.png'; // Path to spaceship image
 
 // Bullet object
 bullets = [];
+const bulletSpeed = 4;
 
 // Invader object
 invaders = [];
@@ -87,9 +85,9 @@ canvas.addEventListener('touchmove', function(e) {
 
 // Touch event to fire bullets
 canvas.addEventListener('touchstart', function(e) {
-  if (!gameOver && Date.now() - lastShotTime > shootDelay) {
+  if (!gameOver) {
     shootBullet();  // Fire a bullet when the screen is touched
-  } else if (gameOver) {
+  } else {
     restartGame();  // Restart the game if game over screen is active
   }
 });
@@ -103,13 +101,11 @@ function shootBullet() {
     width: 4,
     height: 10,
     dy: -bulletSpeed,
-    color: getBulletColor(),
   };
   bullets.push(bullet);
 
   // Play the shoot sound
   shootSound.play();
-  lastShotTime = Date.now(); // Update the last shot time to prevent fast shooting
 }
 
 // Function to create invaders
@@ -141,13 +137,10 @@ function drawBullets() {
       bullets.splice(i, 1);
       continue;
     }
-    ctx.fillStyle = bullets[i].color;
-    ctx.shadowColor = bullets[i].color; // Apply glowing effect
-    ctx.shadowBlur = 20; // Set the glow effect size
+    ctx.fillStyle = '#FF0000';
     ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
     bullets[i].y += bullets[i].dy;
   }
-  ctx.shadowBlur = 0; // Reset shadow blur after drawing bullets
 }
 
 // Function to draw invaders
@@ -267,18 +260,27 @@ function drawLevel() {
 
 // Function to draw the game over screen with summary
 function drawGameOver() {
-  // Ensure that the game over sound is played only once
-  if (!gameOverSound.played) {
-    gameOverSound.play(); // Play the game over sound
-  }
+  // Add background effects or space theme
+  ctx.fillStyle = 'black';  // Set a space-like background color
+  ctx.fillRect(0, 0, canvas.width, canvas.height); // Dark background
 
-  ctx.fillStyle = 'white';
-  ctx.font = '30px Arial';
-  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px Arial';
-  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
-  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
+  // Draw text and buttons
+  ctx.fillStyle = '#FFFF00';  // Retro yellow color for text
+  ctx.font = '50px "Press Start 2P", cursive';
+  ctx.textAlign = 'center';
+  ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 40);
+
+  // Display Score and Level
+  ctx.font = '30px "Press Start 2P", cursive';
+  ctx.fillText('Score: ' + score, canvas.width / 2, canvas.height / 2 + 30);
+  ctx.fillText('Level: ' + level, canvas.width / 2, canvas.height / 2 + 70);
+
+  // Create smooth restart button
+  ctx.fillStyle = '#FF4500';  // Red button
+  ctx.fillRect(canvas.width / 2 - 100, canvas.height / 2 + 100, 200, 50);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '20px "Press Start 2P", cursive';
+  ctx.fillText('Click to Restart', canvas.width / 2, canvas.height / 2 + 130);
 }
 
 // Function to end the game
@@ -286,8 +288,7 @@ function gameOverCondition() {
   gameOver = true;
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
-  // Play the game over sound when the game ends
-  gameOverSound.play();
+  gameOverSound.play(); // Play the game over sound
 }
 
 // Restart the game when clicked
@@ -304,19 +305,6 @@ function restartGame() {
     createInvaders();
     backgroundMusic.play(); // Restart background music
     gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
-  }
-}
-
-// Function to get bullet color based on level
-function getBulletColor() {
-  if (level >= 26) {
-    return 'purple';
-  } else if (level >= 16) {
-    return 'yellow';
-  } else if (level >= 6) {
-    return 'cyan';
-  } else {
-    return 'red'; // Default color
   }
 }
 
