@@ -51,20 +51,21 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
-// Leaderboard
+// Leaderboard functionality
 let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-const restartButton = document.createElement('button');
+
+// Restart button for touch control
+let restartButton = document.createElement('button');
 restartButton.innerText = 'Touch to Restart';
 restartButton.style.position = 'absolute';
-restartButton.style.bottom = '50px';
+restartButton.style.top = '50%'; // Initial position of restart button
 restartButton.style.left = '50%';
-restartButton.style.transform = 'translateX(-50%)';
-restartButton.style.padding = '10px';
-restartButton.style.fontSize = '16px';
+restartButton.style.transform = 'translate(-50%, -50%)';
+restartButton.style.fontSize = '20px';
 restartButton.style.backgroundColor = 'red';
-restartButton.style.border = 'none';
-restartButton.style.borderRadius = '50%';
 restartButton.style.color = 'white';
+restartButton.style.border = 'none';
+restartButton.style.padding = '10px 20px';
 restartButton.style.display = 'none'; // Initially hidden
 document.body.appendChild(restartButton);
 
@@ -275,17 +276,6 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to update leaderboard
-function updateLeaderboard() {
-  const playerName = prompt('Enter your name:');
-  if (playerName) {
-    leaderboard.push({ name: playerName, score: score });
-    leaderboard.sort((a, b) => b.score - a.score); // Sort by score descending
-    leaderboard = leaderboard.slice(0, 3); // Keep only the top 3 scores
-    localStorage.setItem('leaderboard', JSON.stringify(leaderboard)); // Save to localStorage
-  }
-}
-
 // Function to draw the game over screen with leaderboard and restart button
 function drawGameOver() {
   // Ensure that the game over sound is played only once
@@ -293,24 +283,30 @@ function drawGameOver() {
     gameOverSound.play(); // Play the game over sound
   }
 
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas before drawing the game over screen
+  
+  // Game Over text
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
-  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px Arial';
-  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
-  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
+  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 80); // Added more vertical space
 
-  // Show the leaderboard in spacey font and style
+  // Score and Level text
+  ctx.font = '20px Arial';
+  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2 - 40);
+  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2);
+
+  // Show the leaderboard in spacey font and style with extra padding
   ctx.fillStyle = '#FFD700';  // Gold text for leaderboard
   ctx.font = '24px "Space Mono", monospace';  // Use a space-like font
-
-  ctx.fillText('Top 3 Scores:', canvas.width / 2 - 80, canvas.height / 2 + 80);
+  ctx.fillText('Top 3 Scores:', canvas.width / 2 - 90, canvas.height / 2 + 50);  // Spacing added
+  
   leaderboard.slice(0, 3).forEach((entry, index) => {
-    ctx.fillText(`${index + 1}. ${entry.name}: ${entry.score}`, canvas.width / 2 - 80, canvas.height / 2 + 110 + index * 40);
+    ctx.fillText(`${index + 1}. ${entry.name}: ${entry.score}`, canvas.width / 2 - 90, canvas.height / 2 + 80 + index * 40);
   });
 
-  // Display the restart button
-  restartButton.style.display = 'block';
+  // Adjust position of restart button (below the leaderboard)
+  restartButton.style.display = 'block';  // Ensure the restart button is shown
+  restartButton.style.top = `${canvas.height / 2 + 180 + leaderboard.length * 40}px`;  // Adjust the vertical position of the restart button to avoid overlap
 }
 
 // Function to end the game
@@ -346,24 +342,3 @@ function restartGame() {
     restartButton.style.display = 'none'; // Hide the restart button
   }
 }
-
-// Main game loop
-function draw() {
-  if (gameOver) {
-    return;
-  }
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-  drawPlayer();
-  drawBullets();
-  drawInvaders();
-  drawScore();
-  drawLevel();
-  detectCollisions();
-  movePlayer();
-  moveInvaders();
-}
-
-// Initialize the game
-createInvaders();
-gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
