@@ -53,7 +53,7 @@ backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
 // Font for "space-like" text
-ctx.font = '20px "Press Start 2P", cursive'; // Use the space-like font
+ctx.font = '16px "Press Start 2P", cursive'; // Use a smaller font size
 
 // Trigger to start background music after first interaction
 let musicStarted = false;
@@ -69,6 +69,9 @@ canvas.addEventListener('touchstart', function(e) {
 
   touchStartX = e.touches[0].clientX;  // Track the starting X position of touch
   touchStartY = e.touches[0].clientY;  // Track the starting Y position of touch
+
+  // Check if touch is on the screen to shoot
+  shootBullet();
 });
 
 // Function to shoot a bullet
@@ -226,21 +229,21 @@ function moveInvaders() {
 // Function to draw the score
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px "Press Start 2P", cursive';
+  ctx.font = '16px "Press Start 2P", cursive'; // Adjusted font size
   ctx.fillText('Score: ' + score, 8, 20);
 }
 
 // Function to draw the level
 function drawLevel() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px "Press Start 2P", cursive';
+  ctx.font = '16px "Press Start 2P", cursive'; // Adjusted font size
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
 // Function to draw the leaderboard (Top 3 scores)
 function drawLeaderboard() {
   ctx.fillStyle = 'white';
-  ctx.font = '20px "Press Start 2P", cursive';
+  ctx.font = '16px "Press Start 2P", cursive'; // Adjusted font size
   ctx.fillText('Leaderboard:', canvas.width / 2 - 100, 30);
   let topScores = getTopScores();
   for (let i = 0; i < topScores.length; i++) {
@@ -284,9 +287,9 @@ function handleRestartButtonClick(e) {
 // Function to draw the game over screen with summary
 function drawGameOver() {
   ctx.fillStyle = 'white';
-  ctx.font = '30px "Press Start 2P", cursive';
+  ctx.font = '20px "Press Start 2P", cursive'; // Adjusted font size
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px "Press Start 2P", cursive';
+  ctx.font = '16px "Press Start 2P", cursive'; // Adjusted font size
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
 
@@ -294,7 +297,7 @@ function drawGameOver() {
   ctx.fillStyle = 'blue';
   ctx.fillRect(canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight, 160, 40);
   ctx.fillStyle = 'white';
-  ctx.font = '20px "Press Start 2P", cursive';
+  ctx.font = '16px "Press Start 2P", cursive'; // Adjusted font size
   ctx.fillText('Restart', canvas.width / 2 - 40, canvas.height / 2 + restartTextHeight + 25);
   
   // Display leaderboard
