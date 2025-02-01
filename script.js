@@ -2,8 +2,14 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// Ensure that the canvas takes up the full window and has no padding/margin
 canvas.width = window.innerWidth;  // Make canvas width dynamic
 canvas.height = window.innerHeight; // Make canvas height dynamic
+
+// Remove margin/padding on the body or html if needed
+document.body.style.margin = 0;
+document.body.style.padding = 0;
+canvas.style.display = 'block';  // Ensure the canvas takes up the entire screen
 
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
@@ -14,10 +20,6 @@ let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
 let restartTextHeight = 60; // Distance of restart text from center of canvas
-
-// Leaderboard data
-let leaderboard = []; // Array to hold leaderboard data (name, score)
-let playerName = ''; // Name of the player
 
 // Player object (spaceship)
 player = {
@@ -35,7 +37,6 @@ player.image.src = 'spaceship.png'; // Path to spaceship image
 // Bullet object
 bullets = [];
 const bulletSpeed = 4;
-let bulletRate = 300; // milliseconds between shots
 
 // Invader object
 invaders = [];
@@ -135,15 +136,30 @@ function drawPlayer() {
   ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
 }
 
-// Function to draw bullets
+// Function to draw bullets with a fancy retro effect after level 4
 function drawBullets() {
   for (let i = 0; i < bullets.length; i++) {
     if (bullets[i].y < 0) {
       bullets.splice(i, 1);
       continue;
     }
-    ctx.fillStyle = '#FF0000';
-    ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
+
+    // Fancy cyan color and glowing effect after level 4
+    if (level > 4) {
+      ctx.shadowColor = '#00FFFF'; // Cyan glow effect
+      ctx.shadowBlur = 15; // The glow intensity
+
+      ctx.fillStyle = '#00FFFF'; // Cyan bullet color
+      ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
+
+      // Remove the glow effect after drawing the bullet
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+    } else {
+      ctx.fillStyle = '#FF0000'; // Red bullet color before level 4
+      ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
+    }
+
     bullets[i].y += bullets[i].dy;
   }
 }
@@ -263,120 +279,52 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to display leaderboard
-function displayLeaderboard() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#FFD700'; // Yellowish color
-  ctx.font = '30px "Press Start 2P", sans-serif'; // Spacey font similar to Galaga
-  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px "Press Start 2P", sans-serif'; // Spacey font
-  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
-  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-  ctx.fillText('Top 3 Scores:', canvas.width / 2 - 70, canvas.height / 2 + 80);
-
-  leaderboard.forEach((entry, index) => {
-    ctx.fillText((index + 1) + ". " + entry.name + ": " + entry.score, canvas.width / 2 - 50, canvas.height / 2 + 120 + (index * 30));
-  });
-
-  drawRestartButton(); // Draw restart button after displaying leaderboard
-}
-
-// Function to draw the red pill restart button with padding and fancy style
-function drawRestartButton() {
-  const buttonWidth = 220; // Increased width for padding
-  const buttonHeight = 50;
-  const buttonX = canvas.width / 2 - buttonWidth / 2;
-  const buttonY = canvas.height / 2 + 180;
-
-  ctx.fillStyle = '#FF0000'; // Red color
-  ctx.strokeStyle = '#FF8C00'; // Orange glow effect
-  ctx.lineWidth = 6;
-
-  // Draw a rounded rectangle for the button
-  ctx.beginPath();
-  ctx.moveTo(buttonX + 20, buttonY);
-  ctx.lineTo(buttonX + buttonWidth - 20, buttonY);
-  ctx.quadraticCurveTo(buttonX + buttonWidth, buttonY, buttonX + buttonWidth, buttonY + 20);
-  ctx.lineTo(buttonX + buttonWidth, buttonY + buttonHeight - 20);
-  ctx.quadraticCurveTo(buttonX + buttonWidth, buttonY + buttonHeight, buttonX + buttonWidth - 20, buttonY + buttonHeight);
-  ctx.lineTo(buttonX + 20, buttonY + buttonHeight);
-  ctx.quadraticCurveTo(buttonX, buttonY + buttonHeight, buttonX, buttonY + buttonHeight - 20);
-  ctx.lineTo(buttonX, buttonY + 20);
-  ctx.quadraticCurveTo(buttonX, buttonY, buttonX + 20, buttonY);
-  ctx.closePath();
-
-  ctx.fill();
-  ctx.stroke();
+// Function to draw the game over screen with summary
+function drawGameOver() {
+  // Ensure that the game over sound is played only once
+  if (!gameOverSound.played) {
+    gameOverSound.play(); // Play the game over sound
+  }
 
   ctx.fillStyle = 'white';
-  ctx.font = '20px "Press Start 2P", sans-serif'; // Spacey font
-  ctx.fillText("Touch to Restart", buttonX + 50, buttonY + 30);
-}
-
-// Event listener for the red pill button to restart the game
-canvas.addEventListener('touchstart', function(e) {
-  const touchX = e.touches[0].clientX;
-  const touchY = e.touches[0].clientY;
-  
-  const buttonWidth = 220;
-  const buttonHeight = 50;
-  const buttonX = canvas.width / 2 - buttonWidth / 2;
-  const buttonY = canvas.height / 2 + 180;
-
-  // Check if touch is within the button bounds
-  if (
-    touchX >= buttonX && touchX <= buttonX + buttonWidth &&
-    touchY >= buttonY && touchY <= buttonY + buttonHeight
-  ) {
-    restartGame(); // Restart the game if the button is pressed
-  }
-});
-
-// Function to prompt for name and save score when game over
-function promptForNameAndSaveScore() {
-  playerName = prompt("Game Over! Enter your name to save your score:", "Player");
-
-  if (playerName && playerName.trim() !== "") {
-    leaderboard.push({ name: playerName, score: score });
-    leaderboard.sort((a, b) => b.score - a.score); // Sort leaderboard by score in descending order
-    leaderboard = leaderboard.slice(0, 3); // Keep only top 3 scores
-  }
-
-  displayLeaderboard(); // Display leaderboard
+  ctx.font = '30px Arial';
+  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
+  ctx.font = '20px Arial';
+  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
+  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
+  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
 }
 
 // Function to end the game
 function gameOverCondition() {
   gameOver = true;
-  promptForNameAndSaveScore(); // Prompt for name and save score
+  drawGameOver();
   clearInterval(gameInterval); // Stop the game
-  gameOverSound.play(); // Play the game over sound
+  // Play the game over sound when the game ends
+  gameOverSound.play();
 }
 
-// Restart the game
+// Restart the game when clicked
 function restartGame() {
-  score = 0;
-  level = 1;
-  invaderSpeed = 0.3;
-  invaderDirection = 1;
-  invaderRowCount = 3;
-  invaderColumnCount = 5;
-  bulletRate = 300; // Reset bullet rate back to the default
-  gameOver = false;
-  createInvaders();
-  backgroundMusic.play(); // Restart background music
-  gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
+  if (gameOver) {
+    // Reset everything for a fresh start
+    score = 0;
+    level = 1;
+    invaderSpeed = 0.3;
+    invaderDirection = 1;
+    invaderRowCount = 3;
+    invaderColumnCount = 5;
+    gameOver = false;
+    createInvaders();
+    backgroundMusic.play(); // Restart background music
+    gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
+  }
 }
 
 // Main game loop
 function draw() {
   if (gameOver) {
-    return; // Don't draw anything during game over
-  }
-
-  // Adjust bullet firing rate after level 4
-  if (level > 4) {
-    bulletRate = 200; // Faster bullet firing rate
+    return;
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
