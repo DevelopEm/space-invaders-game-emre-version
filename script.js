@@ -90,11 +90,8 @@ canvas.addEventListener('touchmove', function(e) {
 canvas.addEventListener('touchstart', function(e) {
   if (!gameOver) {
     shootBullet();
-  } else if (leaderboardSubmitted) {
-    // Only allow restart when player has submitted name
-    if (e.target === restartButton) {
-      restartGame();
-    }
+  } else if (leaderboardSubmitted && e.target === restartButton.canvas) {
+    restartGame();
   } else {
     promptName();
   }
@@ -148,7 +145,7 @@ function drawBullets() {
     // Red bullets with glowing effect
     if (level <= 4) {
       ctx.shadowColor = '#FF0000';
-      ctx.shadowBlur = 15;
+      ctx.shadowBlur = 20;
 
       ctx.fillStyle = '#FF0000';
       ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
@@ -297,7 +294,6 @@ function drawGameOver() {
     });
   }
 
-  // Draw restart button
   if (leaderboardSubmitted) {
     restartButton = new Button('Restart', canvas.width / 2 - 50, canvas.height / 2 + 180, 100, 40, restartGame);
     restartButton.draw();
@@ -336,6 +332,7 @@ class Button {
     this.width = width;
     this.height = height;
     this.onClick = onClick;
+    this.canvas = canvas;
   }
 
   draw() {
