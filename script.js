@@ -22,7 +22,6 @@ let restartTextHeight = 60;
 let leaderboard = [];  // Top 3 leaderboard
 let playerName = '';
 let leaderboardSubmitted = false;
-let restartButton;
 
 // Player object
 player = {
@@ -90,7 +89,7 @@ canvas.addEventListener('touchmove', function(e) {
 canvas.addEventListener('touchstart', function(e) {
   if (!gameOver) {
     shootBullet();
-  } else if (leaderboardSubmitted && e.target === restartButton.canvas) {
+  } else if (leaderboardSubmitted) {
     restartGame();
   } else {
     promptName();
@@ -145,7 +144,7 @@ function drawBullets() {
     // Red bullets with glowing effect
     if (level <= 4) {
       ctx.shadowColor = '#FF0000';
-      ctx.shadowBlur = 20;
+      ctx.shadowBlur = 15;
 
       ctx.fillStyle = '#FF0000';
       ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
@@ -293,11 +292,6 @@ function drawGameOver() {
       ctx.fillText(`${index + 1}. ${entry.name} - ${entry.score}`, canvas.width / 2 - 70, canvas.height / 2 + 140 + index * 20);
     });
   }
-
-  if (leaderboardSubmitted) {
-    restartButton = new Button('Restart', canvas.width / 2 - 50, canvas.height / 2 + 180, 100, 40, restartGame);
-    restartButton.draw();
-  }
 }
 
 // Handle the game over condition
@@ -321,36 +315,6 @@ function updateLeaderboard() {
     leaderboard = leaderboard.slice(0, 3);  // Keep only top 3
   }
   leaderboardSubmitted = true;
-}
-
-// Button class for the restart button
-class Button {
-  constructor(text, x, y, width, height, onClick) {
-    this.text = text;
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-    this.onClick = onClick;
-    this.canvas = canvas;
-  }
-
-  draw() {
-    ctx.fillStyle = '#FF0000';
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '20px Arial';
-    ctx.fillText(this.text, this.x + 15, this.y + 25);
-  }
-
-  isClicked(x, y) {
-    return (
-      x >= this.x &&
-      x <= this.x + this.width &&
-      y >= this.y &&
-      y <= this.y + this.height
-    );
-  }
 }
 
 // Restart the game when clicked
@@ -382,7 +346,4 @@ function draw() {
   drawInvaders();
   drawScore();
   drawLevel();
-  detectCollisions();
-  movePlayer();
-  moveInvaders();
-}
+  detect
