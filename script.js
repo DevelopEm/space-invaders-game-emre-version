@@ -330,7 +330,7 @@ function showLeaderboard() {
     // Display the leaderboard
     let leaderboardText = "Top 3 Players:\n";
     leaderboard.forEach((entry, index) => {
-      leaderboardText += ${index + 1}. ${entry.name}: ${entry.score}\n;
+      leaderboardText += `${index + 1}. ${entry.name}: ${entry.score}\n`;
     });
     alert(leaderboardText);
   }
