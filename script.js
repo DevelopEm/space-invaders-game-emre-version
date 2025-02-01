@@ -281,47 +281,12 @@ function drawGameOver() {
   const gameOverScreen = document.getElementById("gameOverScreen");
   const finalScoreElement = document.getElementById("finalScore");
   const finalLevelElement = document.getElementById("finalLevel");
-  const leaderboardElement = document.getElementById("leaderboard");
 
   finalScoreElement.textContent = score;
   finalLevelElement.textContent = level;
 
-  // Prompt for player's name and store the score in localStorage
-  const playerName = prompt("Enter your name:", "");
-  if (playerName) {
-    addToLeaderboard(playerName, score);
-  }
-
-  // Display leaderboard (Top 5 scores)
-  leaderboardElement.innerHTML = "<h3>Leaderboard</h3>";
-  let leaderboard = getLeaderboard();
-  leaderboard.forEach((entry, index) => {
-    leaderboardElement.innerHTML += `<p>${index + 1}. ${entry.name}: ${entry.score}</p>`;
-  });
-
   gameOverScreen.style.display = "block";
   gameOverSound.play();
-}
-
-// Function to add a player's score to the leaderboard
-function addToLeaderboard(playerName, playerScore) {
-  let leaderboard = getLeaderboard();
-  leaderboard.push({ name: playerName, score: playerScore });
-  
-  // Sort leaderboard in descending order
-  leaderboard.sort((a, b) => b.score - a.score);
-  
-  // Keep only top 5 scores
-  leaderboard = leaderboard.slice(0, 5);
-
-  // Save leaderboard to localStorage
-  localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-}
-
-// Function to get the leaderboard from localStorage
-function getLeaderboard() {
-  let leaderboard = localStorage.getItem('leaderboard');
-  return leaderboard ? JSON.parse(leaderboard) : [];
 }
 
 // Function to end the game
