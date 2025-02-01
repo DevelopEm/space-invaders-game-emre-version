@@ -30,7 +30,7 @@ player.image.src = 'spaceship.png'; // Path to spaceship image
 
 // Bullet object
 bullets = [];
-const bulletSpeed = 4;
+let bulletSpeed = 4;  // Default bullet speed
 
 // Invader object
 invaders = [];
@@ -95,17 +95,41 @@ canvas.addEventListener('touchstart', function(e) {
 // Function to shoot a bullet
 function shootBullet() {
   if (gameOver) return;
+  let bulletColor = '#FF0000';  // Default color is red
+
+  if (level > 26) {
+    bulletColor = '#800080';  // Purple bullets after level 26
+  } else if (level > 16) {
+    bulletColor = '#FFFF00';  // Yellow bullets after level 16
+  } else if (level > 6) {
+    bulletColor = '#00FFFF';  // Cyan bullets after level 6
+  }
+
   let bullet = {
     x: player.x + player.width / 2 - 2,
     y: player.y,
     width: 4,
     height: 10,
     dy: -bulletSpeed,
+    color: bulletColor,
   };
   bullets.push(bullet);
 
   // Play the shoot sound
   shootSound.play();
+}
+
+// Adjust shooting speed as level increases
+function updateBulletSpeed() {
+  if (level <= 6) {
+    bulletSpeed = 4;  // Normal shooting speed
+  } else if (level <= 16) {
+    bulletSpeed = 5;  // Slightly faster shooting speed
+  } else if (level <= 26) {
+    bulletSpeed = 6;  // Even faster shooting speed
+  } else {
+    bulletSpeed = 7;  // Fastest shooting speed after level 26
+  }
 }
 
 // Function to create invaders
@@ -137,7 +161,7 @@ function drawBullets() {
       bullets.splice(i, 1);
       continue;
     }
-    ctx.fillStyle = '#FF0000';
+    ctx.fillStyle = bullets[i].color;  // Use dynamic color for the bullet
     ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
     bullets[i].y += bullets[i].dy;
   }
@@ -258,29 +282,54 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to draw the game over screen with summary
+// Function to draw the game over screen with summary and red pill button
 function drawGameOver() {
-  // Ensure that the game over sound is played only once
   if (!gameOverSound.played) {
     gameOverSound.play(); // Play the game over sound
   }
 
   ctx.fillStyle = 'white';
-  ctx.font = '30px Arial';
+  ctx.font = '40px Pixel, monospace'; // Retro pixel font
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px Arial';
+  ctx.font = '20px Pixel, monospace';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
-}
 
-// Function to end the game
-function gameOverCondition() {
-  gameOver = true;
-  drawGameOver();
-  clearInterval(gameInterval); // Stop the game
-  // Play the game over sound when the game ends
-  gameOverSound.play();
+  // Red pill button (for restart)
+  const buttonWidth = 120;
+  const buttonHeight = 40;
+  const buttonX = canvas.width / 2 - buttonWidth / 2;
+  const buttonY = canvas.height / 2 + restartTextHeight;
+
+  ctx.fillStyle = '#FF0000'; // Red pill color
+  ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+
+  ctx.fillStyle = 'white';
+  ctx.font = '18px Pixel, monospace';
+  ctx.fillText('Touch to Restart', buttonX + 10, buttonY + buttonHeight / 2 + 5);
+
+  // Handle restart button click and prompt for player name
+  canvas.addEventListener('touchstart', function(e) {
+    const touchX = e.touches[0].clientX;
+    const touchY = e.touches[0].clientY;
+
+    if (
+      touchX > buttonX &&
+      touchX < buttonX + buttonWidth &&
+      touchY > buttonY &&
+      touchY < buttonY + buttonHeight
+    ) {
+      // Prompt for player name after touching the red pill button
+      playerName = prompt("Enter your name:", "Player");
+
+      // Ensure a name is entered
+      if (playerName && playerName.trim() !== '') {
+        restartGame();
+      } else {
+        alert("Name is required to restart the game.");
+      }
+    }
+  });
 }
 
 // Restart the game when clicked
@@ -296,27 +345,47 @@ function restartGame() {
     gameOver = false;
     createInvaders();
     backgroundMusic.play(); // Restart background music
+
+    // Update leaderboard after player name is entered
+    updateLeaderboard();  // Update the leaderboard with the player's score
+    displayLeaderboard();  // Display the leaderboard after the game over
+
     gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
   }
 }
 
-// Main game loop
-function draw() {
-  if (gameOver) {
-    return;
-  }
+// Function to update the leaderboard (This can be adjusted to your needs)
+function updateLeaderboard() {
+  // Example leaderboard storage (You could save to localStorage or a backend if needed)
+  const leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+  leaderboard.push({ name: playerName, score: score });
+  leaderboard.sort((a, b) => b.score - a.score); // Sort by score descending
+  localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+}
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+// Function to display leaderboard
+function displayLeaderboard() {
+  const leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+  alert('Leaderboard:\n' + leaderboard.map(entry => `${entry.name}: ${entry.score}`).join('\n'));
+}
+
+// Main draw function
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawPlayer();
   drawBullets();
   drawInvaders();
-  drawScore();
-  drawLevel();
-  detectCollisions();
   movePlayer();
   moveInvaders();
+  detectCollisions();
+  drawScore();
+  drawLevel();
+
+  if (gameOver) {
+    drawGameOver();
+  }
 }
 
 // Initialize the game
 createInvaders();
-gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
+gameInterval = setInterval(draw, 1000 / 60); // Start the game loop
