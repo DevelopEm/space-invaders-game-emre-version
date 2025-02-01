@@ -55,10 +55,6 @@ backgroundMusic.volume = 0.3; // Adjust volume if needed
 // Font for "space-like" text
 ctx.font = '20px "Press Start 2P", cursive'; // Use the space-like font
 
-// Touch event listeners for mobile control
-let touchStartX = 0;  // for touch movement tracking
-let touchStartY = 0;  // for touch movement tracking
-
 // Trigger to start background music after first interaction
 let musicStarted = false;
 
@@ -73,27 +69,6 @@ canvas.addEventListener('touchstart', function(e) {
 
   touchStartX = e.touches[0].clientX;  // Track the starting X position of touch
   touchStartY = e.touches[0].clientY;  // Track the starting Y position of touch
-});
-
-// Touchmove event to track player movement
-canvas.addEventListener('touchmove', function(e) {
-  e.preventDefault();
-  let touchEndX = e.touches[0].clientX;  // Track the current X position of touch
-  if (touchEndX < touchStartX && player.x > 0) {
-    player.x -= player.speed;  // Move left
-  } else if (touchEndX > touchStartX && player.x < canvas.width - player.width) {
-    player.x += player.speed;  // Move right
-  }
-  touchStartX = touchEndX;  // Update the touch start X to current position for continuous movement
-});
-
-// Touch event to fire bullets
-canvas.addEventListener('touchstart', function(e) {
-  if (!gameOver) {
-    shootBullet();  // Fire a bullet when the screen is touched
-  } else {
-    handleRestartButtonClick(e);  // Handle restart button tap
-  }
 });
 
 // Function to shoot a bullet
@@ -266,10 +241,10 @@ function drawLevel() {
 function drawLeaderboard() {
   ctx.fillStyle = 'white';
   ctx.font = '20px "Press Start 2P", cursive';
-  ctx.fillText('Leaderboard:', canvas.width / 2 - 80, 30);
+  ctx.fillText('Leaderboard:', canvas.width / 2 - 100, 30);
   let topScores = getTopScores();
   for (let i = 0; i < topScores.length; i++) {
-    ctx.fillText(`${topScores[i].name}: ${topScores[i].score}`, canvas.width / 2 - 80, 60 + i * 30);
+    ctx.fillText(`${topScores[i].name}: ${topScores[i].score}`, canvas.width / 2 - 100, 60 + i * 30);
   }
 }
 
