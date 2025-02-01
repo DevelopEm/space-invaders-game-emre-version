@@ -304,11 +304,6 @@ function handleRestartButtonClick(e) {
 
 // Function to draw the game over screen with summary
 function drawGameOver() {
-  // Ensure that the game over sound is played only once
-  if (!gameOverSound.played) {
-    gameOverSound.play(); // Play the game over sound
-  }
-
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
