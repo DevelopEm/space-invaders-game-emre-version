@@ -96,20 +96,15 @@ canvas.addEventListener('touchstart', function(e) {
 // Function to shoot a bullet
 function shootBullet() {
   if (gameOver) return;
-
-  // Speed up shooting from level 5 onwards
-  const shootingSpeed = (level >= 5) ? 2 : 1;
-  
   let bullet = {
     x: player.x + player.width / 2 - 2,
     y: player.y,
     width: 4,
     height: 10,
-    dy: -bulletSpeed * shootingSpeed, // Increase shooting speed from level 5 onwards
+    dy: -bulletSpeed,
     isGlue: level >= 5,  // Enable glue effect after level 5
     glueTimer: level >= 5 ? Date.now() : null  // Track the glue duration
   };
-
   bullets.push(bullet);
 
   // Play the shoot sound
@@ -119,11 +114,6 @@ function shootBullet() {
 // Function to create invaders
 function createInvaders() {
   invaders = [];
-  
-  // Increase invader rows and columns as the level increases
-  invaderRowCount = Math.min(3 + Math.floor(level / 2), 5); // Max 5 rows
-  invaderColumnCount = Math.min(5 + Math.floor(level / 2), 8); // Max 8 columns
-
   for (let c = 0; c < invaderColumnCount; c++) {
     invaders[c] = [];
     for (let r = 0; r < invaderRowCount; r++) {
@@ -197,6 +187,10 @@ function detectCollisions() {
             if (checkWin()) {
               level++;
               invaderSpeed = Math.min(invaderSpeed + 0.2, 2); // Increase speed as levels go up, up to a max speed
+              if (level <= 5) {
+                invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
+                invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
+              }
               createInvaders();  // Regenerate the invaders with updated count and speed
             }
             break;
@@ -336,7 +330,7 @@ function showLeaderboard() {
     // Display the leaderboard
     let leaderboardText = "Top 3 Players:\n";
     leaderboard.forEach((entry, index) => {
-      leaderboardText += `${index + 1}. ${entry.name}: ${entry.score}\n`;
+      leaderboardText += ${index + 1}. ${entry.name}: ${entry.score}\n;
     });
     alert(leaderboardText);
   }
