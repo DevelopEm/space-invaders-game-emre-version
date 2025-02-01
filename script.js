@@ -2,36 +2,37 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-canvas.width = window.innerWidth;  // Make canvas width dynamic
-canvas.height = window.innerHeight; // Make canvas height dynamic
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
 let invaderSpeed = 0.3;
-let invaderDirection = 1; // 1 for right, -1 for left
+let invaderDirection = 1;
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
-let restartTextHeight = 60; // Distance of restart text from center of canvas
+let restartTextHeight = 60; 
+
+// Bullet properties
+let bulletSpeed = 4;
+let bulletColor = '#FF0000'; // Initial bullet color (red)
 
 // Player object (spaceship)
 player = {
   x: canvas.width / 2 - 20,
-  y: canvas.height - 100, // 100px from the bottom
+  y: canvas.height - 100, 
   width: 40,
   height: 40,
   speed: 5,
   dx: 0,
   image: new Image(),
 };
-
-player.image.src = 'spaceship.png'; // Path to spaceship image
+player.image.src = 'spaceship.png';
 
 // Bullet object
 bullets = [];
-const bulletSpeed = 4;
-const bulletGlueTime = 500; // Time in milliseconds for glue to last
 
 // Invader object
 invaders = [];
@@ -44,52 +45,45 @@ const invaderOffsetLeft = 30;
 gameOver = false;
 
 // Sounds
-const shootSound = new Audio('shoot.wav'); // Path to shoot sound
-const gameOverSound = new Audio('GameOver.mp3'); // Path to game over sound
-const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background music
+const shootSound = new Audio('shoot.wav');
+const gameOverSound = new Audio('GameOver.mp3');
+const backgroundMusic = new Audio('BackgroundMusic.wav');
+backgroundMusic.loop = true;
+backgroundMusic.volume = 0.3;
 
-// Background music settings
-backgroundMusic.loop = true; // Loop background music
-backgroundMusic.volume = 0.3; // Adjust volume if needed
-
-// Touch event listeners for mobile control
-let touchStartX = 0;  // for touch movement tracking
-let touchStartY = 0;  // for touch movement tracking
-
-// Trigger to start background music after first interaction
+let touchStartX = 0;
+let touchStartY = 0;
 let musicStarted = false;
 
-// Touchstart event to trigger background music and track player movement
+// Touch event listeners for mobile control
 canvas.addEventListener('touchstart', function(e) {
-  e.preventDefault();  // Prevent default touch behavior (like scrolling)
+  e.preventDefault();  
   
   if (!musicStarted) {
-    backgroundMusic.play(); // Play background music after first touch
-    musicStarted = true; // Prevent restarting background music on subsequent touches
+    backgroundMusic.play(); 
+    musicStarted = true; 
   }
 
-  touchStartX = e.touches[0].clientX;  // Track the starting X position of touch
-  touchStartY = e.touches[0].clientY;  // Track the starting Y position of touch
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
 });
 
-// Touchmove event to track player movement
 canvas.addEventListener('touchmove', function(e) {
   e.preventDefault();
-  let touchEndX = e.touches[0].clientX;  // Track the current X position of touch
+  let touchEndX = e.touches[0].clientX;
   if (touchEndX < touchStartX && player.x > 0) {
-    player.x -= player.speed;  // Move left
+    player.x -= player.speed;
   } else if (touchEndX > touchStartX && player.x < canvas.width - player.width) {
-    player.x += player.speed;  // Move right
+    player.x += player.speed;
   }
-  touchStartX = touchEndX;  // Update the touch start X to current position for continuous movement
+  touchStartX = touchEndX;
 });
 
-// Touch event to fire bullets
 canvas.addEventListener('touchstart', function(e) {
   if (!gameOver) {
-    shootBullet();  // Fire a bullet when the screen is touched
+    shootBullet();
   } else {
-    restartGame();  // Restart the game if game over screen is active
+    restartGame();
   }
 });
 
@@ -102,29 +96,24 @@ function shootBullet() {
     width: 4,
     height: 10,
     dy: -bulletSpeed,
-    isGlue: level >= 5,  // Enable glue effect after level 5
-    glueTimer: level >= 5 ? Date.now() : null  // Track the glue duration
+    color: bulletColor, // Set the bullet color
+    trail: []  // To store glue trail effect
   };
   bullets.push(bullet);
-
-  // Play the shoot sound
   shootSound.play();
 }
 
-// Function to create invaders
-function createInvaders() {
-  invaders = [];
-  for (let c = 0; c < invaderColumnCount; c++) {
-    invaders[c] = [];
-    for (let r = 0; r < invaderRowCount; r++) {
-      invaders[c][r] = {
-        x: c * (invaderWidth + invaderPadding) + invaderOffsetLeft,
-        y: r * (invaderHeight + invaderPadding) + invaderOffsetTop,
-        status: 1,
-        image: new Image(),
-      };
-      invaders[c][r].image.src = 'invader.png'; // Path to invader image
-    }
+// Function to adjust bullet color and speed based on level
+function updateBulletProperties() {
+  if (level >= 26) {
+    bulletColor = 'purple';
+    bulletSpeed = 6;  // Faster bullets
+  } else if (level >= 17) {
+    bulletColor = 'yellow';
+    bulletSpeed = 5;  // Slightly faster bullets
+  } else if (level >= 7) {
+    bulletColor = 'cyan';
+    bulletSpeed = 5;  // Faster bullets
   }
 }
 
@@ -133,7 +122,7 @@ function drawPlayer() {
   ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
 }
 
-// Function to draw bullets
+// Function to draw bullets with glue effect
 function drawBullets() {
   for (let i = 0; i < bullets.length; i++) {
     if (bullets[i].y < 0) {
@@ -141,13 +130,21 @@ function drawBullets() {
       continue;
     }
 
-    ctx.fillStyle = (bullets[i].isGlue && Date.now() - bullets[i].glueTimer < bulletGlueTime) ? 'cyan' : '#FF0000';
+    ctx.fillStyle = bullets[i].color;
     ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
-    bullets[i].y += bullets[i].dy;
 
-    // If the glue timer has expired, remove the bullet's glue effect
-    if (bullets[i].isGlue && Date.now() - bullets[i].glueTimer > bulletGlueTime) {
-      bullets[i].isGlue = false;
+    // Draw the glue trail
+    ctx.fillStyle = bullets[i].color;
+    for (let j = 0; j < bullets[i].trail.length; j++) {
+      ctx.fillRect(bullets[i].trail[j].x, bullets[i].trail[j].y, bullets[i].width, bullets[i].height);
+    }
+    
+    bullets[i].y += bullets[i].dy;
+    
+    // Add to the trail
+    bullets[i].trail.push({x: bullets[i].x, y: bullets[i].y});
+    if (bullets[i].trail.length > 10) {
+      bullets[i].trail.shift(); // Keep the trail length limited
     }
   }
 }
@@ -177,21 +174,12 @@ function detectCollisions() {
             bullets[i].y < invader.y + invaderHeight
           ) {
             invader.status = 0; // Destroy the invader
-            if (bullets[i].isGlue) {
-              bullets[i].y = invader.y; // Stick the bullet to the invader
-              bullets[i].dy = 0;  // Stop the bullet's movement
-            } else {
-              bullets.splice(i, 1); // Remove the bullet
-            }
-            score += 10; // Increase score
+            bullets.splice(i, 1); // Remove the bullet
+            score += 10; 
             if (checkWin()) {
               level++;
-              invaderSpeed = Math.min(invaderSpeed + 0.2, 2); // Increase speed as levels go up, up to a max speed
-              if (level <= 5) {
-                invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
-                invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
-              }
-              createInvaders();  // Regenerate the invaders with updated count and speed
+              updateBulletProperties();  // Update bullet properties based on level
+              createInvaders();  // Regenerate the invaders
             }
             break;
           }
@@ -232,15 +220,13 @@ function moveInvaders() {
       if (invader.status === 1) {
         invader.x += invaderSpeed * invaderDirection;
 
-        // Check if invader reaches the edge of the screen
         if (invader.x + invaderWidth > canvas.width || invader.x < 0) {
           invaderDirection = -invaderDirection;
           shouldMoveDown = true;
         }
 
-        // Check if invader reaches the bottom (player)
-        if (invader.y + invaderHeight >= player.y && invader.status === 1) {
-          gameOverCondition(); // End the game
+        if (invader.y + invaderHeight >= player.y) {
+          gameOverCondition();
           return;
         }
       }
@@ -251,7 +237,7 @@ function moveInvaders() {
     for (let c = 0; c < invaderColumnCount; c++) {
       for (let r = 0; r < invaderRowCount; r++) {
         if (invaders[c][r].status === 1) {
-          invaders[c][r].y += invaderHeight; // Move all invaders down a row
+          invaders[c][r].y += invaderHeight;
         }
       }
     }
@@ -274,9 +260,8 @@ function drawLevel() {
 
 // Function to draw the game over screen with summary
 function drawGameOver() {
-  // Ensure that the game over sound is played only once
   if (!gameOverSound.played) {
-    gameOverSound.play(); // Play the game over sound
+    gameOverSound.play();
   }
 
   ctx.fillStyle = 'white';
@@ -287,23 +272,33 @@ function drawGameOver() {
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
   ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
 
-  // Show leaderboard prompt
-  showLeaderboard();
+  // Leaderboard prompt after game over
+  setTimeout(function() {
+    let playerName = prompt('Enter your name to submit your score:');
+    if (playerName) {
+      let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+      leaderboard.push({ name: playerName, score: score });
+      leaderboard.sort((a, b) => b.score - a.score);
+      leaderboard = leaderboard.slice(0, 3); // Top 3 players
+      localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+
+      // Show top 3 players
+      alert('Top 3 Players:\n' + leaderboard.map((entry, index) => `${index + 1}. ${entry.name}: ${entry.score}`).join('\n'));
+    }
+  }, 500);
 }
 
 // Function to end the game
 function gameOverCondition() {
   gameOver = true;
   drawGameOver();
-  clearInterval(gameInterval); // Stop the game
-  // Play the game over sound when the game ends
+  clearInterval(gameInterval);
   gameOverSound.play();
 }
 
 // Restart the game when clicked
 function restartGame() {
   if (gameOver) {
-    // Reset everything for a fresh start
     score = 0;
     level = 1;
     invaderSpeed = 0.3;
@@ -312,27 +307,8 @@ function restartGame() {
     invaderColumnCount = 5;
     gameOver = false;
     createInvaders();
-    backgroundMusic.play(); // Restart background music
-    gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
-  }
-}
-
-// Show leaderboard and prompt for player's name
-function showLeaderboard() {
-  let playerName = prompt("Enter your name to save your score:");
-  if (playerName) {
-    let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-    leaderboard.push({ name: playerName, score: score });
-    leaderboard.sort((a, b) => b.score - a.score); // Sort by score in descending order
-    leaderboard = leaderboard.slice(0, 3); // Keep top 3 scores
-    localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-
-    // Display the leaderboard
-    let leaderboardText = "Top 3 Players:\n";
-    leaderboard.forEach((entry, index) => {
-      leaderboardText += ${index + 1}. ${entry.name}: ${entry.score}\n;
-    });
-    alert(leaderboardText);
+    backgroundMusic.play();
+    gameInterval = setInterval(draw, 1000 / 60);
   }
 }
 
@@ -342,7 +318,7 @@ function draw() {
     return;
   }
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height); 
   drawPlayer();
   drawBullets();
   drawInvaders();
@@ -355,4 +331,4 @@ function draw() {
 
 // Initialize the game
 createInvaders();
-gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
+gameInterval = setInterval(draw, 1000 / 60); 
