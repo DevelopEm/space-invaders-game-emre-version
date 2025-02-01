@@ -137,8 +137,22 @@ function drawBullets() {
       bullets.splice(i, 1);
       continue;
     }
-    ctx.fillStyle = '#FF0000';
+
+    // Apply color changes based on level
+    if (level >= 26) {
+      ctx.fillStyle = 'purple';
+    } else if (level >= 16) {
+      ctx.fillStyle = 'yellow';
+    } else if (level >= 6) {
+      ctx.fillStyle = 'cyan';
+    } else {
+      ctx.fillStyle = '#FF0000'; // Red for early levels
+    }
+
+    ctx.globalAlpha = 0.7; // Apply glowing effect
     ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
+    ctx.globalAlpha = 1.0; // Reset alpha
+
     bullets[i].y += bullets[i].dy;
   }
 }
@@ -246,41 +260,33 @@ function moveInvaders() {
 
 // Function to draw the score
 function drawScore() {
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px Arial';
+  ctx.fillStyle = '#FFFF00'; // Bright yellow
+  ctx.font = '16px "Press Start 2P"';
   ctx.fillText('Score: ' + score, 8, 20);
 }
 
 // Function to draw the level
 function drawLevel() {
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px Arial';
+  ctx.fillStyle = '#FFFF00'; // Bright yellow
+  ctx.font = '16px "Press Start 2P"';
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
 // Function to draw the game over screen with summary
 function drawGameOver() {
-  // Add background effects or space theme
-  ctx.fillStyle = 'black';  // Set a space-like background color
-  ctx.fillRect(0, 0, canvas.width, canvas.height); // Dark background
+  // Hide the canvas and show the game over screen
+  canvas.style.display = "none";
+  
+  // Show game over screen with final score and level
+  const gameOverScreen = document.getElementById("gameOverScreen");
+  const finalScoreElement = document.getElementById("finalScore");
+  const finalLevelElement = document.getElementById("finalLevel");
 
-  // Draw text and buttons
-  ctx.fillStyle = '#FFFF00';  // Retro yellow color for text
-  ctx.font = '50px "Press Start 2P", cursive';
-  ctx.textAlign = 'center';
-  ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 40);
+  finalScoreElement.textContent = score;
+  finalLevelElement.textContent = level;
 
-  // Display Score and Level
-  ctx.font = '30px "Press Start 2P", cursive';
-  ctx.fillText('Score: ' + score, canvas.width / 2, canvas.height / 2 + 30);
-  ctx.fillText('Level: ' + level, canvas.width / 2, canvas.height / 2 + 70);
-
-  // Create smooth restart button
-  ctx.fillStyle = '#FF4500';  // Red button
-  ctx.fillRect(canvas.width / 2 - 100, canvas.height / 2 + 100, 200, 50);
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '20px "Press Start 2P", cursive';
-  ctx.fillText('Click to Restart', canvas.width / 2, canvas.height / 2 + 130);
+  gameOverScreen.style.display = "block";
+  gameOverSound.play();
 }
 
 // Function to end the game
@@ -288,13 +294,11 @@ function gameOverCondition() {
   gameOver = true;
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
-  gameOverSound.play(); // Play the game over sound
 }
 
 // Restart the game when clicked
 function restartGame() {
   if (gameOver) {
-    // Reset everything for a fresh start
     score = 0;
     level = 1;
     invaderSpeed = 0.3;
@@ -302,6 +306,7 @@ function restartGame() {
     invaderRowCount = 3;
     invaderColumnCount = 5;
     gameOver = false;
+    canvas.style.display = "block";
     createInvaders();
     backgroundMusic.play(); // Restart background music
     gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
