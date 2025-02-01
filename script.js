@@ -14,6 +14,7 @@ let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
 let restartTextHeight = 60; // Distance of restart text from center of canvas
+let playerName = ""; // Variable for player name input
 
 // Player object (spaceship)
 player = {
@@ -50,6 +51,9 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 // Background music settings
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
+
+// Font for "space-like" text
+ctx.font = '20px "Press Start 2P", cursive'; // Use the space-like font
 
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
@@ -247,25 +251,25 @@ function moveInvaders() {
 // Function to draw the score
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px Arial';
+  ctx.font = '16px "Press Start 2P", cursive';
   ctx.fillText('Score: ' + score, 8, 20);
 }
 
 // Function to draw the level
 function drawLevel() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px Arial';
+  ctx.font = '16px "Press Start 2P", cursive';
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
 // Function to draw the leaderboard (Top 3 scores)
 function drawLeaderboard() {
   ctx.fillStyle = 'white';
-  ctx.font = '20px Arial';
-  ctx.fillText('Leaderboard:', canvas.width / 2 - 80, canvas.height / 2 + 100);
+  ctx.font = '20px "Press Start 2P", cursive';
+  ctx.fillText('Leaderboard:', canvas.width / 2 - 80, 30);
   let topScores = getTopScores();
   for (let i = 0; i < topScores.length; i++) {
-    ctx.fillText(`${topScores[i].name}: ${topScores[i].score}`, canvas.width / 2 - 80, canvas.height / 2 + 130 + i * 30);
+    ctx.fillText(`${topScores[i].name}: ${topScores[i].score}`, canvas.width / 2 - 80, 60 + i * 30);
   }
 }
 
@@ -305,9 +309,9 @@ function handleRestartButtonClick(e) {
 // Function to draw the game over screen with summary
 function drawGameOver() {
   ctx.fillStyle = 'white';
-  ctx.font = '30px Arial';
+  ctx.font = '30px "Press Start 2P", cursive';
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px Arial';
+  ctx.font = '20px "Press Start 2P", cursive';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
 
@@ -315,20 +319,40 @@ function drawGameOver() {
   ctx.fillStyle = 'blue';
   ctx.fillRect(canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight, 160, 40);
   ctx.fillStyle = 'white';
-  ctx.font = '20px Arial';
+  ctx.font = '20px "Press Start 2P", cursive';
   ctx.fillText('Restart', canvas.width / 2 - 40, canvas.height / 2 + restartTextHeight + 25);
   
   // Display leaderboard
   drawLeaderboard();
+
+  // Prompt for name input after game over
+  promptForName();
 }
 
-// Function to end the game
-function gameOverCondition() {
-  gameOver = true;
-  drawGameOver();
-  clearInterval(gameInterval); // Stop the game
-  // Play the game over sound when the game ends
-  gameOverSound.play();
+// Prompt the player to input their name
+function promptForName() {
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.placeholder = 'Enter your name';
+  nameInput.style.position = 'absolute';
+  nameInput.style.left = canvas.width / 2 - 100 + 'px';
+  nameInput.style.top = canvas.height / 2 + 100 + 'px';
+  nameInput.style.fontFamily = '"Press Start 2P", cursive';
+  nameInput.style.fontSize = '20px';
+  nameInput.style.padding = '5px';
+
+  document.body.appendChild(nameInput);
+
+  nameInput.addEventListener('blur', function() {
+    playerName = nameInput.value.trim();
+    if (playerName === "") playerName = "Anonymous";  // Default name if empty
+
+    saveScore(playerName, score);
+    document.body.removeChild(nameInput);
+    restartGame();  // Restart the game
+  });
+
+  nameInput.focus();
 }
 
 // Restart the game
