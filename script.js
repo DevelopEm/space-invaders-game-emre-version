@@ -75,9 +75,10 @@ canvas.addEventListener('touchstart', function(e) {
 
   touchStartX = e.touches[0].clientX;  // Track the starting X position of touch
   touchStartY = e.touches[0].clientY;  // Track the starting Y position of touch
-
   // Shoot a bullet when the screen is touched
-  shootBullet();
+  if (!gameOver) {
+    shootBullet();
+  }
 });
 
 // Touchmove event to track player movement
