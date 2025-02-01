@@ -7,6 +7,7 @@ canvas.height = window.innerHeight;
 
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
+
 let level = 1;
 let invaderSpeed = 0.3;
 let invaderDirection = 1;
@@ -73,7 +74,7 @@ canvas.addEventListener('touchstart', function(e) {
     touchStartY > restartButton.y && touchStartY < restartButton.y + restartButton.height) {
     restartGame();
   } else if (!gameOver) {
-    shootBullet();
+    shootBullet(); // Only shoot if game is not over
   }
 });
 
@@ -256,6 +257,10 @@ function drawGameOver() {
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
 
+  // Display the high score from localStorage
+  let highScore = localStorage.getItem('highScore') || 0;
+  ctx.fillText('High Score: ' + highScore, canvas.width / 2 - 60, canvas.height / 2 + 60);
+
   // Restart button
   ctx.fillStyle = '#FF0000';
   ctx.fillRect(restartButton.x, restartButton.y, restartButton.width, restartButton.height);
@@ -270,6 +275,12 @@ function gameOverCondition() {
   drawGameOver();
   clearInterval(gameInterval);
   gameOverSound.play();
+  
+  // Save the high score
+  let highScore = localStorage.getItem('highScore') || 0;
+  if (score > highScore) {
+    localStorage.setItem('highScore', score);
+  }
 }
 
 // Restart the game when clicked
