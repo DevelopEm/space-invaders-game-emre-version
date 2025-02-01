@@ -141,7 +141,15 @@ function drawBullets() {
       continue;
     }
 
-    ctx.fillStyle = (bullets[i].isGlue && Date.now() - bullets[i].glueTimer < bulletGlueTime) ? 'cyan' : '#FF0000';
+    // Choose bullet color based on level and glue effect
+    if (level >= 15) {
+      ctx.fillStyle = (bullets[i].isGlue && Date.now() - bullets[i].glueTimer < bulletGlueTime) ? 'yellow' : 'yellow'; // Yellow bullets for level 15+
+    } else if (level >= 5) {
+      ctx.fillStyle = (bullets[i].isGlue && Date.now() - bullets[i].glueTimer < bulletGlueTime) ? 'cyan' : '#FF0000'; // Cyan after level 5, red before
+    } else {
+      ctx.fillStyle = (bullets[i].isGlue && Date.now() - bullets[i].glueTimer < bulletGlueTime) ? 'red' : '#FF0000'; // Red before level 5
+    }
+
     ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
     bullets[i].y += bullets[i].dy;
 
@@ -272,7 +280,7 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to draw the game over screen with summary
+// Function to draw the game over screen with a retro, space-themed look
 function drawGameOver() {
   // Ensure that the game over sound is played only once
   if (!gameOverSound.played) {
@@ -280,24 +288,39 @@ function drawGameOver() {
   }
 
   ctx.fillStyle = 'white';
-  ctx.font = '30px Arial';
-  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px Arial';
-  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
-  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
+  ctx.font = '50px "Press Start 2P", monospace';  // Retro pixel font
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // Create a glowing text effect
+  ctx.shadowColor = 'rgba(0, 255, 255, 0.8)';  // Cyan glow
+  ctx.shadowBlur = 10;
+
+  ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 40);
+
+  // Reset shadow effect for the next text
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+
+  // Draw "Level" and "Score" with a more retro feel
+  ctx.fillStyle = 'cyan';  // Retro neon cyan
+  ctx.font = '30px "Press Start 2P", monospace';
+  ctx.fillText('Level: ' + level, canvas.width / 2, canvas.height / 2 + 10);
+  ctx.fillText('Score: ' + score, canvas.width / 2, canvas.height / 2 + 40);
+
+  // Add some extra glow effect for "Click to Restart"
+  ctx.fillStyle = 'yellow';  // A warm, inviting retro color for restart text
+  ctx.font = '24px "Press Start 2P", monospace';
+  ctx.fillText('Click to Restart', canvas.width / 2, canvas.height / 2 + 80);
+
+  // Glowing effect on the restart text for extra flair
+  ctx.shadowColor = 'rgba(255, 255, 0, 0.8)';  // Yellow glow
+  ctx.shadowBlur = 15;
+  ctx.fillText('Click to Restart', canvas.width / 2, canvas.height / 2 + 80);
+  ctx.shadowColor = 'transparent';  // Reset the glow effect
 
   // Show leaderboard prompt
   showLeaderboard();
-}
-
-// Function to end the game
-function gameOverCondition() {
-  gameOver = true;
-  drawGameOver();
-  clearInterval(gameInterval); // Stop the game
-  // Play the game over sound when the game ends
-  gameOverSound.play();
 }
 
 // Restart the game when clicked
