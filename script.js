@@ -14,7 +14,6 @@ let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
 let restartTextHeight = 60; // Distance of restart text from center of canvas
-let playerName = "";
 
 // Player object (spaceship)
 player = {
@@ -171,6 +170,15 @@ function detectCollisions() {
             invader.status = 0; // Destroy the invader
             bullets.splice(i, 1); // Remove the bullet
             score += 10; // Increase score
+            if (checkWin()) {
+              level++;
+              invaderSpeed = Math.min(invaderSpeed + 0.2, 2); // Increase speed as levels go up, up to a max speed
+              if (level <= 5) {
+                invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
+                invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
+              }
+              createInvaders();  // Regenerate the invaders with updated count and speed
+            }
             break;
           }
         }
@@ -179,7 +187,7 @@ function detectCollisions() {
   }
 }
 
-// Function to check if all invaders are destroyed
+// Check if all invaders are destroyed
 function checkWin() {
   for (let c = 0; c < invaderColumnCount; c++) {
     for (let r = 0; r < invaderRowCount; r++) {
@@ -266,45 +274,19 @@ function drawGameOver() {
   ctx.font = '20px Arial';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-
-  // Red pill button to restart
-  const buttonWidth = 200;
-  const buttonHeight = 50;
-  const buttonX = canvas.width / 2 - buttonWidth / 2;
-  const buttonY = canvas.height / 2 + restartTextHeight;
-
-  ctx.fillStyle = '#FF0000'; // Red pill color
-  ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
-
-  ctx.fillStyle = 'white';
-  ctx.font = '18px Pixel, monospace';
-  ctx.fillText('Touch to Restart', buttonX + 10, buttonY + buttonHeight / 2 + 5);
-
-  // Handle restart button click and prompt for player name
-  canvas.addEventListener('touchstart', function(e) {
-    const touchX = e.touches[0].clientX;
-    const touchY = e.touches[0].clientY;
-
-    if (
-      touchX > buttonX &&
-      touchX < buttonX + buttonWidth &&
-      touchY > buttonY &&
-      touchY < buttonY + buttonHeight
-    ) {
-      // Prompt for player name after touching the red pill button
-      playerName = prompt("Enter your name:", "Player");
-
-      // Ensure a name is entered
-      if (playerName && playerName.trim() !== '') {
-        restartGame();
-      } else {
-        alert("Name is required to restart the game.");
-      }
-    }
-  });
+  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
 }
 
-// Function to restart the game
+// Function to end the game
+function gameOverCondition() {
+  gameOver = true;
+  drawGameOver();
+  clearInterval(gameInterval); // Stop the game
+  // Play the game over sound when the game ends
+  gameOverSound.play();
+}
+
+// Restart the game when clicked
 function restartGame() {
   if (gameOver) {
     // Reset everything for a fresh start
@@ -317,13 +299,16 @@ function restartGame() {
     gameOver = false;
     createInvaders();
     backgroundMusic.play(); // Restart background music
-
     gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
   }
 }
 
 // Main game loop
 function draw() {
+  if (gameOver) {
+    return;
+  }
+
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
   drawPlayer();
   drawBullets();
@@ -333,10 +318,6 @@ function draw() {
   detectCollisions();
   movePlayer();
   moveInvaders();
-
-  if (gameOver) {
-    drawGameOver();
-  }
 }
 
 // Initialize the game
