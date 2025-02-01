@@ -21,6 +21,9 @@ let invaderColumnCount = 5;
 let gameInterval;
 let restartTextHeight = 100; // Distance of restart text from center of canvas
 
+// Leaderboard to store top 3 players
+let leaderboard = [];  // Stores top 3 players: [{ name: 'Player1', score: 300 }, ...]
+
 // Player object (spaceship)
 player = {
   x: canvas.width / 2 - 20,
@@ -295,7 +298,7 @@ function drawScoreAndLevel() {
   ctx.fillText(levelText, canvas.width - levelWidth - paddingX, paddingY);
 }
 
-// Function to draw the game over screen with summary
+// Function to draw the game over screen with summary and leaderboard
 function drawGameOver() {
   // Ensure that the game over sound is played only once
   if (!gameOverSound.played) {
@@ -309,6 +312,14 @@ function drawGameOver() {
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
   
+  // Display leaderboard
+  ctx.font = '18px Retro';
+  ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 70);
+  for (let i = 0; i < leaderboard.length; i++) {
+    const player = leaderboard[i];
+    ctx.fillText(`${i + 1}. ${player.name} - ${player.score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + (i * 30));
+  }
+
   // Draw the red pill button for restart
   ctx.fillStyle = '#FF0000'; // Red pill color
   ctx.beginPath();
@@ -324,10 +335,23 @@ function drawGameOver() {
 // Function to end the game
 function gameOverCondition() {
   gameOver = true;
+  getPlayerName();  // Prompt for player name and update leaderboard
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
   // Play the game over sound when the game ends
   gameOverSound.play();
+}
+
+// Function to ask for player name after the game ends
+function getPlayerName() {
+  const playerName = prompt("Enter your name:", "Player");
+  if (playerName && playerName.trim() !== "") {
+    leaderboard.push({ name: playerName.trim(), score: score });
+    leaderboard.sort((a, b) => b.score - a.score);  // Sort leaderboard by score in descending order
+    if (leaderboard.length > 3) {
+      leaderboard.pop();  // Keep only top 3 players
+    }
+  }
 }
 
 // Restart the game when clicked
