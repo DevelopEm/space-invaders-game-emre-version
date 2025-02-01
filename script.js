@@ -169,6 +169,9 @@ function detectCollisions() {
             if (checkWin()) {
               level++;
               invaderSpeed = Math.min(invaderSpeed + 0.2, 2); // Increase speed as levels go up
+              // Increase invader row and column count to make the game harder
+              invaderRowCount += 1;
+              invaderColumnCount += 1;
               createInvaders();
             }
             break;
@@ -244,6 +247,8 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
+
+
 // Function to draw the game over screen with summary
 function drawGameOver() {
   if (!gameOverSound.played) {
@@ -269,6 +274,18 @@ function drawGameOver() {
   ctx.fillText('Restart', restartButton.x + 70, restartButton.y + 30);
 }
 
+  // Display the high score from localStorage
+  let highScore = localStorage.getItem('highScore') || 0;
+  ctx.fillText('High Score: ' + highScore, canvas.width / 2 - 60, canvas.height / 2 + 60);
+
+  // Restart button
+  ctx.fillStyle = '#FF0000';
+  ctx.fillRect(restartButton.x, restartButton.y, restartButton.width, restartButton.height);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '20px Arial';
+  ctx.fillText('Restart', restartButton.x + 70, restartButton.y + 30);
+}
+
 // Function to end the game
 function gameOverCondition() {
   gameOver = true;
@@ -276,6 +293,13 @@ function gameOverCondition() {
   clearInterval(gameInterval);
   gameOverSound.play();
   
+  // Save the high score
+  let highScore = localStorage.getItem('highScore') || 0;
+  if (score > highScore) {
+    localStorage.setItem('highScore', score);
+  }
+}
+
   // Save the high score
   let highScore = localStorage.getItem('highScore') || 0;
   if (score > highScore) {
