@@ -3,13 +3,13 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 // Ensure that the canvas takes up the full window and has no padding/margin
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;  // Make canvas width dynamic
+canvas.height = window.innerHeight; // Make canvas height dynamic
 
 // Remove margin/padding on the body or html if needed
 document.body.style.margin = 0;
 document.body.style.padding = 0;
-canvas.style.display = 'block';
+canvas.style.display = 'block';  // Ensure the canvas takes up the entire screen
 
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
@@ -19,11 +19,7 @@ let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
-let restartButton;
-let playerName = '';
-
-// Score variables for leaderboard
-let leaderboard = [];
+let restartTextHeight = 60; // Distance of restart text from center of canvas
 
 // Player object (spaceship)
 player = {
@@ -61,14 +57,14 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
-// Trigger to start background music after first interaction
-let musicStarted = false;
-
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
 let touchStartY = 0;  // for touch movement tracking
 
 // Trigger to start background music after first interaction
+let musicStarted = false;
+
+// Touchstart event to trigger background music and track player movement
 canvas.addEventListener('touchstart', function(e) {
   e.preventDefault();  // Prevent default touch behavior (like scrolling)
 
@@ -79,6 +75,9 @@ canvas.addEventListener('touchstart', function(e) {
 
   touchStartX = e.touches[0].clientX;  // Track the starting X position of touch
   touchStartY = e.touches[0].clientY;  // Track the starting Y position of touch
+
+  // Shoot a bullet when the screen is touched
+  shootBullet();
 });
 
 // Touchmove event to track player movement
@@ -131,7 +130,7 @@ function drawPlayer() {
   ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
 }
 
-// Function to draw bullets
+// Function to draw bullets with a fancy retro effect after level 4
 function drawBullets() {
   for (let i = 0; i < bullets.length; i++) {
     if (bullets[i].y < 0) {
@@ -139,8 +138,21 @@ function drawBullets() {
       continue;
     }
 
-    ctx.fillStyle = '#FF0000'; // Red bullet color before level 4
-    ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
+    // Fancy cyan color and glowing effect after level 4
+    if (level > 4) {
+      ctx.shadowColor = '#00FFFF'; // Cyan glow effect
+      ctx.shadowBlur = 15; // The glow intensity
+
+      ctx.fillStyle = '#00FFFF'; // Cyan bullet color
+      ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
+
+      // Remove the glow effect after drawing the bullet
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+    } else {
+      ctx.fillStyle = '#FF0000'; // Red bullet color before level 4
+      ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
+    }
 
     bullets[i].y += bullets[i].dy;
   }
@@ -268,31 +280,13 @@ function drawGameOver() {
     gameOverSound.play(); // Play the game over sound
   }
 
-  // Draw Game Over
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
   ctx.font = '20px Arial';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-
-  // Create a prompt for entering name
-  ctx.fillText('Enter Your Name (max 10 chars):', canvas.width / 2 - 120, canvas.height / 2 + 60);
-
-  // Draw the Restart Button
-  restartButton = {
-    x: canvas.width / 2 - 100,
-    y: canvas.height / 2 + 100,
-    width: 200,
-    height: 50
-  };
-
-  ctx.fillStyle = '#FF0000';  // Red color for the button
-  ctx.fillRect(restartButton.x, restartButton.y, restartButton.width, restartButton.height);
-
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '20px Arial';
-  ctx.fillText('Touch here to Restart', canvas.width / 2 - 100, canvas.height / 2 + 130);
+  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
 }
 
 // Function to end the game
@@ -300,28 +294,11 @@ function gameOverCondition() {
   gameOver = true;
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
-
-  // Ask for player name after game over
-  playerName = prompt("Enter your name (max 10 characters):");
-  if (playerName && playerName.length > 0) {
-    leaderboard.push({ name: playerName, score: score });
-    leaderboard.sort((a, b) => b.score - a.score); // Sort by highest score
-    leaderboard = leaderboard.slice(0, 3); // Keep top 3 only
-  }
+  // Play the game over sound when the game ends
+  gameOverSound.play();
 }
 
-// Restart the game when restart button is clicked
-canvas.addEventListener('touchstart', function(e) {
-  if (gameOver) {
-    // Check if restart button is clicked
-    if (e.touches[0].clientX > restartButton.x && e.touches[0].clientX < restartButton.x + restartButton.width &&
-        e.touches[0].clientY > restartButton.y && e.touches[0].clientY < restartButton.y + restartButton.height) {
-      restartGame(); // Restart game
-    }
-  }
-});
-
-// Restart game
+// Restart the game when clicked
 function restartGame() {
   if (gameOver) {
     // Reset everything for a fresh start
