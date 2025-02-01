@@ -2,14 +2,8 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// Ensure that the canvas takes up the full window and has no padding/margin
 canvas.width = window.innerWidth;  // Make canvas width dynamic
 canvas.height = window.innerHeight; // Make canvas height dynamic
-
-// Remove margin/padding on the body or html if needed
-document.body.style.margin = 0;
-document.body.style.padding = 0;
-canvas.style.display = 'block';  // Ensure the canvas takes up the entire screen
 
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
