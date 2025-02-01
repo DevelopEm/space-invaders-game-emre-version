@@ -258,65 +258,11 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to draw the game over screen with summary
-function drawGameOver() {
-  // Ensure that the game over sound is played only once
-  if (!gameOverSound.played) {
-    gameOverSound.play(); // Play the game over sound
-  }
-
+// Function to display leaderboard
+function drawLeaderboard() {
+  const topScores = getTopScores();
   ctx.fillStyle = 'white';
-  ctx.font = '30px Arial';
-  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
   ctx.font = '20px Arial';
-  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
-  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
-}
-
-// Function to end the game
-function gameOverCondition() {
-  gameOver = true;
-  drawGameOver();
-  clearInterval(gameInterval); // Stop the game
-  // Play the game over sound when the game ends
-  gameOverSound.play();
-}
-
-// Restart the game when clicked
-function restartGame() {
-  if (gameOver) {
-    // Reset everything for a fresh start
-    score = 0;
-    level = 1;
-    invaderSpeed = 0.3;
-    invaderDirection = 1;
-    invaderRowCount = 3;
-    invaderColumnCount = 5;
-    gameOver = false;
-    createInvaders();
-    backgroundMusic.play(); // Restart background music
-    gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
-  }
-}
-
-// Main game loop
-function draw() {
-  if (gameOver) {
-    return;
-  }
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-  drawPlayer();
-  drawBullets();
-  drawInvaders();
-  drawScore();
-  drawLevel();
-  detectCollisions();
-  movePlayer();
-  moveInvaders();
-}
-
-// Initialize the game
-createInvaders();
-gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
+  ctx.fillText('Top Scores:', 20, canvas.height - 100);
+  for (let i = 0; i < topScores.length; i++) {
+    ctx.fillText(`${i + 1}. ${topScores[i].name}: ${top
