@@ -19,7 +19,7 @@ let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
-let restartTextHeight = 60; // Distance of restart text from center of canvas
+let restartTextHeight = 100; // Distance of restart text from center of canvas
 
 // Player object (spaceship)
 player = {
@@ -296,22 +296,22 @@ function drawGameOver() {
   }
 
   ctx.fillStyle = 'white';
-  ctx.font = '30px Arial';
+  ctx.font = '30px Retro';
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px Arial';
+  ctx.font = '20px Retro';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
   
   // Draw the red pill button for restart
   ctx.fillStyle = '#FF0000'; // Red pill color
   ctx.beginPath();
-  ctx.arc(canvas.width / 2, canvas.height / 2 + 70, 60, 0, Math.PI * 2);
+  ctx.arc(canvas.width / 2, canvas.height / 2 + restartTextHeight, 60, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.fillStyle = '#FFFFFF';
   ctx.font = '18px Retro';
   ctx.textAlign = 'center';
-  ctx.fillText('Touch to Restart', canvas.width / 2, canvas.height / 2 + 90);
+  ctx.fillText('Touch to Restart', canvas.width / 2, canvas.height / 2 + restartTextHeight + 10);
 }
 
 // Function to end the game
