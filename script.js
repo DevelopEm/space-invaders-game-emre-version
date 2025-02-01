@@ -52,16 +52,16 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
+// Background music start trigger
+let musicStarted = false;
+
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
 let touchStartY = 0;  // for touch movement tracking
 
 // Trigger to start background music after first interaction
-let musicStarted = false;
-
-// Touchstart event to trigger background music and track player movement
 canvas.addEventListener('touchstart', function(e) {
-  e.preventDefault();  // Prevent default touch behavior (like scrolling)
+  e.preventDefault();
   
   if (!musicStarted) {
     backgroundMusic.play(); // Play background music after first touch
@@ -96,6 +96,7 @@ canvas.addEventListener('touchstart', function(e) {
 // Function to shoot a bullet
 function shootBullet() {
   if (gameOver) return;
+  
   let bullet = {
     x: player.x + player.width / 2 - 2,
     y: player.y,
@@ -103,12 +104,41 @@ function shootBullet() {
     height: 10,
     dy: -bulletSpeed,
     isGlue: level >= 5,  // Enable glue effect after level 5
-    glueTimer: level >= 5 ? Date.now() : null  // Track the glue duration
+    glueTimer: level >= 5 ? Date.now() : null,  // Track the glue duration
+    color: getBulletColor(level),  // Get bullet color based on level
+    glow: getBulletGlow(level),  // Get glow effect based on level
   };
+  
   bullets.push(bullet);
 
-  // Play the shoot sound
+  // Play the shoot sound with a fancy effect
   shootSound.play();
+}
+
+// Function to get the bullet color based on the current level
+function getBulletColor(level) {
+  if (level <= 4) {
+    return 'red';  // Red for levels 1-4
+  } else if (level <= 10) {
+    return 'cyan';  // Cyan for levels 5-10
+  } else if (level <= 15) {
+    return 'yellow';  // Yellow for levels 10-15
+  } else {
+    return 'purple';  // Purple for levels 16 and beyond
+  }
+}
+
+// Function to get the bullet glow effect based on the current level
+function getBulletGlow(level) {
+  if (level <= 4) {
+    return 'rgba(255, 0, 0, 0.6)';  // Red glow for levels 1-4
+  } else if (level <= 10) {
+    return 'rgba(0, 255, 255, 0.6)';  // Cyan glow for levels 5-10
+  } else if (level <= 15) {
+    return 'rgba(255, 255, 0, 0.6)';  // Yellow glow for levels 10-15
+  } else {
+    return 'rgba(128, 0, 128, 0.6)';  // Purple glow for levels 16 and beyond
+  }
 }
 
 // Function to create invaders
@@ -133,7 +163,7 @@ function drawPlayer() {
   ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
 }
 
-// Function to draw bullets
+// Function to draw bullets with dynamic effects based on level
 function drawBullets() {
   for (let i = 0; i < bullets.length; i++) {
     if (bullets[i].y < 0) {
@@ -141,14 +171,10 @@ function drawBullets() {
       continue;
     }
 
-    // Choose bullet color based on level and glue effect
-    if (level >= 15) {
-      ctx.fillStyle = (bullets[i].isGlue && Date.now() - bullets[i].glueTimer < bulletGlueTime) ? 'yellow' : 'yellow'; // Yellow bullets for level 15+
-    } else if (level >= 5) {
-      ctx.fillStyle = (bullets[i].isGlue && Date.now() - bullets[i].glueTimer < bulletGlueTime) ? 'cyan' : '#FF0000'; // Cyan after level 5, red before
-    } else {
-      ctx.fillStyle = (bullets[i].isGlue && Date.now() - bullets[i].glueTimer < bulletGlueTime) ? 'red' : '#FF0000'; // Red before level 5
-    }
+    // Apply the color and glow effect based on the current bullet
+    ctx.fillStyle = bullets[i].color;
+    ctx.shadowColor = bullets[i].glow;
+    ctx.shadowBlur = 10;
 
     ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
     bullets[i].y += bullets[i].dy;
@@ -157,6 +183,10 @@ function drawBullets() {
     if (bullets[i].isGlue && Date.now() - bullets[i].glueTimer > bulletGlueTime) {
       bullets[i].isGlue = false;
     }
+
+    // Reset shadow effect for the next bullet
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
   }
 }
 
@@ -375,7 +405,3 @@ function draw() {
   movePlayer();
   moveInvaders();
 }
-
-// Initialize the game
-createInvaders();
-gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
