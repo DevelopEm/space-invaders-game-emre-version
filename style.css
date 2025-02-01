@@ -11,10 +11,17 @@ body {
   #gameArea {
     position: relative;
   }
-  
-  canvas {
-    border: 1px solid white;
-    background-color: #131212;
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevents scrollbars from appearing */
+}
+
+canvas {
+  display: block; /* Removes margins */
+  border: 1px solid white;
+  background-color: #131212;
   }
 
   
