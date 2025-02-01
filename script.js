@@ -55,10 +55,6 @@ backgroundMusic.volume = 0.3; // Adjust volume if needed
 // Background music start trigger
 let musicStarted = false;
 
-// Touch event listeners for mobile control
-let touchStartX = 0;  // for touch movement tracking
-let touchStartY = 0;  // for touch movement tracking
-
 // Trigger to start background music after first interaction
 canvas.addEventListener('touchstart', function(e) {
   e.preventDefault();
@@ -296,6 +292,13 @@ function moveInvaders() {
   }
 }
 
+// Function to trigger the game over
+function gameOverCondition() {
+  gameOver = true;
+  clearInterval(gameInterval); // Stop the game loop
+  gameOverSound.play(); // Play game over sound
+}
+
 // Function to draw the score
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
@@ -312,11 +315,6 @@ function drawLevel() {
 
 // Function to draw the game over screen with a retro, space-themed look
 function drawGameOver() {
-  // Ensure that the game over sound is played only once
-  if (!gameOverSound.played) {
-    gameOverSound.play(); // Play the game over sound
-  }
-
   ctx.fillStyle = 'white';
   ctx.font = '50px "Press Start 2P", monospace';  // Retro pixel font
   ctx.textAlign = 'center';
@@ -348,9 +346,6 @@ function drawGameOver() {
   ctx.shadowBlur = 15;
   ctx.fillText('Click to Restart', canvas.width / 2, canvas.height / 2 + 80);
   ctx.shadowColor = 'transparent';  // Reset the glow effect
-
-  // Show leaderboard prompt
-  showLeaderboard();
 }
 
 // Restart the game when clicked
@@ -370,28 +365,10 @@ function restartGame() {
   }
 }
 
-// Show leaderboard and prompt for player's name
-function showLeaderboard() {
-  let playerName = prompt("Enter your name to save your score:");
-  if (playerName) {
-    let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-    leaderboard.push({ name: playerName, score: score });
-    leaderboard.sort((a, b) => b.score - a.score); // Sort by score in descending order
-    leaderboard = leaderboard.slice(0, 3); // Keep top 3 scores
-    localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-
-    // Display the leaderboard
-    let leaderboardText = "Top 3 Players:\n";
-    leaderboard.forEach((entry, index) => {
-      leaderboardText += `${index + 1}. ${entry.name}: ${entry.score}\n`;
-    });
-    alert(leaderboardText);
-  }
-}
-
 // Main game loop
 function draw() {
   if (gameOver) {
+    drawGameOver(); // Show the game over screen if the game is over
     return;
   }
 
