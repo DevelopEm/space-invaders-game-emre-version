@@ -268,8 +268,8 @@ function drawScore() {
 // Function to draw the level
 function drawLevel() {
   ctx.fillStyle = '#FFFF00'; // Bright yellow
-  ctx.font = '16px "Press Start 2P"';
-  ctx.fillText('Level: ' + level, canvas.width - 100, 20); // Adjusted padding for level display
+  ctx.font = '14px "Press Start 2P"'; // Smaller font size
+  ctx.fillText('Level: ' + level, canvas.width - 90, 20); // Adjusted padding for level display
 }
 
 // Function to draw the game over screen with summary
