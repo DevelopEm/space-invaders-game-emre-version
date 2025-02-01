@@ -6,7 +6,7 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;  // Make canvas width dynamic
 canvas.height = window.innerHeight; // Make canvas height dynamic
 
-// Remove margin/padding on the body or html if needed
+// Ensure that no margin/padding on the body or html
 document.body.style.margin = 0;
 document.body.style.padding = 0;
 canvas.style.display = 'block';  // Ensure the canvas takes up the entire screen
@@ -20,6 +20,8 @@ let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
 let restartTextHeight = 100; // Distance of restart text from center of canvas
+let leaderboard = [];
+let playerName = "";
 
 // Player object (spaceship)
 player = {
@@ -57,12 +59,12 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
+// Trigger to start background music after first interaction
+let musicStarted = false;
+
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
 let touchStartY = 0;  // for touch movement tracking
-
-// Trigger to start background music after first interaction
-let musicStarted = false;
 
 // Touchstart event to trigger background music and track player movement
 canvas.addEventListener('touchstart', function(e) {
@@ -274,27 +276,29 @@ function moveInvaders() {
   }
 }
 
-// Function to draw the score
-function drawScore() {
+// Function to draw the score and level dynamically
+function drawScoreAndLevel() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px Arial';
-  ctx.fillText('Score: ' + score, 8, 20);
-}
+  ctx.font = '16px Retro';
+  
+  // Dynamically calculate padding
+  const scoreText = 'Score: ' + score;
+  const levelText = 'Level: ' + level;
+  const scoreWidth = ctx.measureText(scoreText).width;
+  const levelWidth = ctx.measureText(levelText).width;
 
-// Function to draw the level
-function drawLevel() {
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px Arial';
-  ctx.fillText('Level: ' + level, canvas.width - 80, 20);
+  const paddingX = 20;
+  const paddingY = 20;
+
+  // Draw Score
+  ctx.fillText(scoreText, paddingX, paddingY);
+
+  // Draw Level (right-aligned based on width of text)
+  ctx.fillText(levelText, canvas.width - levelWidth - paddingX, paddingY);
 }
 
 // Function to draw the game over screen with summary
 function drawGameOver() {
-  // Ensure that the game over sound is played only once
-  if (!gameOverSound.played) {
-    gameOverSound.play(); // Play the game over sound
-  }
-
   ctx.fillStyle = 'white';
   ctx.font = '30px Retro';
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
@@ -312,6 +316,70 @@ function drawGameOver() {
   ctx.font = '18px Retro';
   ctx.textAlign = 'center';
   ctx.fillText('Touch to Restart', canvas.width / 2, canvas.height / 2 + restartTextHeight + 10);
+  
+  // Ask for player name after the game ends
+  askForPlayerName();
+}
+
+// Prompt for player name input
+function askForPlayerName() {
+  const promptContainer = document.createElement('div');
+  promptContainer.style.position = 'absolute';
+  promptContainer.style.top = '50%';
+  promptContainer.style.left = '50%';
+  promptContainer.style.transform = 'translate(-50%, -50%)';
+  promptContainer.style.background = 'rgba(0, 0, 0, 0.7)';
+  promptContainer.style.padding = '20px';
+  promptContainer.style.borderRadius = '10px';
+  promptContainer.style.color = 'yellow';
+  promptContainer.style.fontSize = '20px';
+  promptContainer.style.fontFamily = 'Retro';
+  promptContainer.style.textAlign = 'center';
+
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.placeholder = 'Enter your name';
+  nameInput.style.fontSize = '18px';
+  nameInput.style.padding = '10px';
+  nameInput.style.margin = '10px';
+  nameInput.style.borderRadius = '5px';
+  nameInput.style.width = '200px';
+
+  const submitButton = document.createElement('button');
+  submitButton.textContent = 'Submit';
+  submitButton.style.padding = '10px 20px';
+  submitButton.style.fontSize = '16px';
+  submitButton.style.cursor = 'pointer';
+
+  submitButton.addEventListener('click', function() {
+    playerName = nameInput.value;
+    leaderboard.push({ name: playerName, score: score });
+    leaderboard.sort((a, b) => b.score - a.score);  // Sort by score descending
+    leaderboard = leaderboard.slice(0, 3);  // Keep top 3 scores
+
+    // Remove prompt
+    promptContainer.remove();
+
+    // Display leaderboard after submitting
+    showLeaderboard();
+  });
+
+  promptContainer.appendChild(nameInput);
+  promptContainer.appendChild(submitButton);
+  document.body.appendChild(promptContainer);
+}
+
+// Show leaderboard after game over
+function showLeaderboard() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear the screen
+  ctx.fillStyle = 'yellow';
+  ctx.font = '30px Retro';
+  ctx.fillText('Leaderboard', canvas.width / 2 - 90, 50);
+
+  ctx.font = '20px Retro';
+  for (let i = 0; i < leaderboard.length; i++) {
+    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 100, 100 + i * 30);
+  }
 }
 
 // Function to end the game
@@ -350,8 +418,7 @@ function draw() {
   drawPlayer();
   drawBullets();
   drawInvaders();
-  drawScore();
-  drawLevel();
+  drawScoreAndLevel(); // Updated function to draw score and level
   detectCollisions();
   movePlayer();
   moveInvaders();
