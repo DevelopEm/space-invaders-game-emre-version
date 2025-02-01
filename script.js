@@ -51,6 +51,23 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
+// Leaderboard
+let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+const restartButton = document.createElement('button');
+restartButton.innerText = 'Touch to Restart';
+restartButton.style.position = 'absolute';
+restartButton.style.bottom = '50px';
+restartButton.style.left = '50%';
+restartButton.style.transform = 'translateX(-50%)';
+restartButton.style.padding = '10px';
+restartButton.style.fontSize = '16px';
+restartButton.style.backgroundColor = 'red';
+restartButton.style.border = 'none';
+restartButton.style.borderRadius = '50%';
+restartButton.style.color = 'white';
+restartButton.style.display = 'none'; // Initially hidden
+document.body.appendChild(restartButton);
+
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
 let touchStartY = 0;  // for touch movement tracking
@@ -258,7 +275,18 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to draw the game over screen with summary
+// Function to update leaderboard
+function updateLeaderboard() {
+  const playerName = prompt('Enter your name:');
+  if (playerName) {
+    leaderboard.push({ name: playerName, score: score });
+    leaderboard.sort((a, b) => b.score - a.score); // Sort by score descending
+    leaderboard = leaderboard.slice(0, 3); // Keep only the top 3 scores
+    localStorage.setItem('leaderboard', JSON.stringify(leaderboard)); // Save to localStorage
+  }
+}
+
+// Function to draw the game over screen with leaderboard and restart button
 function drawGameOver() {
   // Ensure that the game over sound is played only once
   if (!gameOverSound.played) {
@@ -272,18 +300,34 @@ function drawGameOver() {
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
   ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
+
+  // Show the leaderboard
+  ctx.fillText('Top 3 Scores:', canvas.width / 2 - 60, canvas.height / 2 + 80);
+  leaderboard.slice(0, 3).forEach((entry, index) => {
+    ctx.fillText(`${index + 1}. ${entry.name}: ${entry.score}`, canvas.width / 2 - 60, canvas.height / 2 + 110 + index * 30);
+  });
+
+  // Display the restart button
+  restartButton.style.display = 'block';
 }
 
 // Function to end the game
 function gameOverCondition() {
   gameOver = true;
+  updateLeaderboard(); // Update leaderboard
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
-  // Play the game over sound when the game ends
-  gameOverSound.play();
+  gameOverSound.play(); // Play the game over sound
 }
 
 // Restart the game when clicked
+restartButton.addEventListener('touchstart', function(e) {
+  if (gameOver) {
+    restartGame();  // Restart the game when the button is touched
+  }
+});
+
+// Restart the game
 function restartGame() {
   if (gameOver) {
     // Reset everything for a fresh start
@@ -297,6 +341,7 @@ function restartGame() {
     createInvaders();
     backgroundMusic.play(); // Restart background music
     gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
+    restartButton.style.display = 'none'; // Hide the restart button
   }
 }
 
