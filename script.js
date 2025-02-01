@@ -13,10 +13,11 @@ let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
-let restartTextHeight = 60; // Distance of restart text from center of canvas
 let bulletSpeed = 4;
 let shootDelay = 500; // Delay between shots in milliseconds (for faster shooting after level 6)
 let lastShotTime = 0; // Time of the last shot (to control shooting speed)
+let leaderboard = []; // Leaderboard to store players' names and scores
+let playerName = ""; // Player name from prompt
 
 // Player object (spaceship)
 player = {
@@ -265,20 +266,44 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to draw the game over screen with summary
+// Function to update leaderboard
+function updateLeaderboard(name, score) {
+  leaderboard.push({ name, score });
+  leaderboard.sort((a, b) => b.score - a.score); // Sort by score descending
+  if (leaderboard.length > 3) {
+    leaderboard = leaderboard.slice(0, 3); // Keep only the top 3 players
+  }
+}
+
+// Function to draw the game over screen with summary and leaderboard
 function drawGameOver() {
-  // Ensure that the game over sound is played only once
-  if (!gameOverSound.played) {
-    gameOverSound.play(); // Play the game over sound
+  // Ask for player name
+  if (playerName === "") {
+    playerName = prompt("Enter your name:");
   }
 
+  // Update leaderboard with player's score
+  updateLeaderboard(playerName, score);
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+  
+  // Game over text
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
   ctx.font = '20px Arial';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
+
+  // Display leaderboard
+  ctx.font = '16px Arial';
+  ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 70);
+  for (let i = 0; i < leaderboard.length; i++) {
+    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + i * 30);
+  }
+
+  // Restart instructions
+  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + 180);
 }
 
 // Function to end the game
@@ -286,8 +311,7 @@ function gameOverCondition() {
   gameOver = true;
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
-  // Play the game over sound when the game ends
-  gameOverSound.play();
+  gameOverSound.play(); // Play game over sound
 }
 
 // Restart the game when clicked
@@ -301,6 +325,7 @@ function restartGame() {
     invaderRowCount = 3;
     invaderColumnCount = 5;
     gameOver = false;
+    playerName = ""; // Reset player name
     createInvaders();
     backgroundMusic.play(); // Restart background music
     gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
