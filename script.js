@@ -35,6 +35,7 @@ player.image.src = 'spaceship.png'; // Path to spaceship image
 // Bullet object
 bullets = [];
 const bulletSpeed = 4;
+let bulletRate = 300; // milliseconds between shots
 
 // Invader object
 invaders = [];
@@ -265,10 +266,10 @@ function drawLevel() {
 // Function to display leaderboard
 function displayLeaderboard() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = 'white';
-  ctx.font = '30px Arial';
+  ctx.fillStyle = '#FFD700'; // Yellowish color
+  ctx.font = '30px "Press Start 2P", sans-serif'; // Spacey font similar to Galaga
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px Arial';
+  ctx.font = '20px "Press Start 2P", sans-serif'; // Spacey font
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
   ctx.fillText('Top 3 Scores:', canvas.width / 2 - 70, canvas.height / 2 + 80);
@@ -280,19 +281,36 @@ function displayLeaderboard() {
   drawRestartButton(); // Draw restart button after displaying leaderboard
 }
 
-// Function to draw the red pill restart button
+// Function to draw the red pill restart button with padding and fancy style
 function drawRestartButton() {
-  const buttonWidth = 200;
+  const buttonWidth = 220; // Increased width for padding
   const buttonHeight = 50;
   const buttonX = canvas.width / 2 - buttonWidth / 2;
   const buttonY = canvas.height / 2 + 180;
 
   ctx.fillStyle = '#FF0000'; // Red color
-  ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+  ctx.strokeStyle = '#FF8C00'; // Orange glow effect
+  ctx.lineWidth = 6;
+
+  // Draw a rounded rectangle for the button
+  ctx.beginPath();
+  ctx.moveTo(buttonX + 20, buttonY);
+  ctx.lineTo(buttonX + buttonWidth - 20, buttonY);
+  ctx.quadraticCurveTo(buttonX + buttonWidth, buttonY, buttonX + buttonWidth, buttonY + 20);
+  ctx.lineTo(buttonX + buttonWidth, buttonY + buttonHeight - 20);
+  ctx.quadraticCurveTo(buttonX + buttonWidth, buttonY + buttonHeight, buttonX + buttonWidth - 20, buttonY + buttonHeight);
+  ctx.lineTo(buttonX + 20, buttonY + buttonHeight);
+  ctx.quadraticCurveTo(buttonX, buttonY + buttonHeight, buttonX, buttonY + buttonHeight - 20);
+  ctx.lineTo(buttonX, buttonY + 20);
+  ctx.quadraticCurveTo(buttonX, buttonY, buttonX + 20, buttonY);
+  ctx.closePath();
+
+  ctx.fill();
+  ctx.stroke();
 
   ctx.fillStyle = 'white';
-  ctx.font = '20px Arial';
-  ctx.fillText("Touch to Restart", buttonX + 40, buttonY + 30);
+  ctx.font = '20px "Press Start 2P", sans-serif'; // Spacey font
+  ctx.fillText("Touch to Restart", buttonX + 50, buttonY + 30);
 }
 
 // Event listener for the red pill button to restart the game
@@ -300,7 +318,7 @@ canvas.addEventListener('touchstart', function(e) {
   const touchX = e.touches[0].clientX;
   const touchY = e.touches[0].clientY;
   
-  const buttonWidth = 200;
+  const buttonWidth = 220;
   const buttonHeight = 50;
   const buttonX = canvas.width / 2 - buttonWidth / 2;
   const buttonY = canvas.height / 2 + 180;
@@ -343,6 +361,7 @@ function restartGame() {
   invaderDirection = 1;
   invaderRowCount = 3;
   invaderColumnCount = 5;
+  bulletRate = 300; // Reset bullet rate back to the default
   gameOver = false;
   createInvaders();
   backgroundMusic.play(); // Restart background music
@@ -353,6 +372,11 @@ function restartGame() {
 function draw() {
   if (gameOver) {
     return; // Don't draw anything during game over
+  }
+
+  // Adjust bullet firing rate after level 4
+  if (level > 4) {
+    bulletRate = 200; // Faster bullet firing rate
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
