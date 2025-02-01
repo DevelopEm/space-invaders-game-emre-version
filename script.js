@@ -30,9 +30,9 @@ player.image.src = 'spaceship.png'; // Path to spaceship image
 
 // Bullet object
 bullets = [];
-const bulletSpeed = 4;
-const laserImage = new Image();  // Create a new image for the laser
-laserImage.src = 'laser.png';  // Path to the laser image
+let bulletSpeed = 4; // Base speed of bullet
+let fireRate = 10; // Delay between bullets
+let lastFireTime = 0; // Store last bullet fire time
 
 // Invader object
 invaders = [];
@@ -112,36 +112,21 @@ canvas.addEventListener('touchstart', function(e) {
   }
 });
 
-// Function to shoot a bullet (now using laser.png)
+// Function to shoot a bullet
 function shootBullet() {
-  if (gameOver) return;
+  if (gameOver || Date.now() - lastFireTime < fireRate) return; // Ensure bullets fire with delay
   let bullet = {
-    x: player.x + player.width / 2 - 5, // Center the bullet horizontally
+    x: player.x + player.width / 2 - 2,
     y: player.y,
-    width: 10,  // Set width and height based on laser image size
-    height: 30,
-    dy: -bulletSpeed,  // Bullet moves upwards
+    width: 6,  // Slightly wider bullet
+    height: 15, // Taller bullet
+    dy: -bulletSpeed,
+    glowAlpha: 1.0,  // Alpha value for the glow effect
   };
   bullets.push(bullet);
 
-  // Play the shoot sound
+  lastFireTime = Date.now(); // Update last fire time
   shootSound.play();
-}
-
-// Function to draw bullets (using laser.png)
-function drawBullets() {
-  for (let i = 0; i < bullets.length; i++) {
-    if (bullets[i].y < 0) {
-      bullets.splice(i, 1);
-      continue;
-    }
-
-    // Draw the laser image
-    ctx.drawImage(laserImage, bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
-
-    // Move the bullet upwards
-    bullets[i].y += bullets[i].dy;
-  }
 }
 
 // Function to create invaders
@@ -164,6 +149,31 @@ function createInvaders() {
 // Function to draw the player (spaceship)
 function drawPlayer() {
   ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
+}
+
+// Function to draw bullets (with glowing effect for level 5+)
+function drawBullets() {
+  for (let i = 0; i < bullets.length; i++) {
+    if (bullets[i].y < 0) {
+      bullets.splice(i, 1);
+      continue;
+    }
+
+    // Glowing effect for bullets in level 5+
+    if (level >= 5) {
+      let gradient = ctx.createRadialGradient(bullets[i].x + bullets[i].width / 2, bullets[i].y + bullets[i].height / 2, 0, bullets[i].x + bullets[i].width / 2, bullets[i].y + bullets[i].height / 2, 15);
+      gradient.addColorStop(0, 'rgba(0, 255, 255, 1)');  // Bright cyan center
+      gradient.addColorStop(1, 'rgba(0, 255, 255, 0)');  // Fading outer glow
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
+    } else {
+      ctx.fillStyle = '#FF0000';
+      ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
+    }
+
+    bullets[i].y += bullets[i].dy;
+  }
 }
 
 // Function to draw invaders
@@ -196,6 +206,7 @@ function detectCollisions() {
             if (checkWin()) {
               level++;
               invaderSpeed = Math.min(invaderSpeed + 0.2, 2); // Increase speed as levels go up, up to a max speed
+              fireRate = Math.max(5, fireRate - 1); // Decrease the fire rate to fire faster at higher levels
               if (level <= 5) {
                 invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
                 invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
