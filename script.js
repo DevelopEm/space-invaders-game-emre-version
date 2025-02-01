@@ -31,7 +31,6 @@ player.image.src = 'spaceship.png'; // Path to spaceship image
 // Bullet object
 bullets = [];
 const bulletSpeed = 4;
-const bulletGlueTime = 500; // Time in milliseconds for glue to last
 
 // Invader object
 invaders = [];
@@ -102,8 +101,6 @@ function shootBullet() {
     width: 4,
     height: 10,
     dy: -bulletSpeed,
-    isGlue: level >= 5,  // Enable glue effect after level 5
-    glueTimer: level >= 5 ? Date.now() : null  // Track the glue duration
   };
   bullets.push(bullet);
 
@@ -140,15 +137,9 @@ function drawBullets() {
       bullets.splice(i, 1);
       continue;
     }
-
-    ctx.fillStyle = (bullets[i].isGlue && Date.now() - bullets[i].glueTimer < bulletGlueTime) ? 'cyan' : '#FF0000';
+    ctx.fillStyle = '#FF0000';
     ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
     bullets[i].y += bullets[i].dy;
-
-    // If the glue timer has expired, remove the bullet's glue effect
-    if (bullets[i].isGlue && Date.now() - bullets[i].glueTimer > bulletGlueTime) {
-      bullets[i].isGlue = false;
-    }
   }
 }
 
@@ -177,12 +168,7 @@ function detectCollisions() {
             bullets[i].y < invader.y + invaderHeight
           ) {
             invader.status = 0; // Destroy the invader
-            if (bullets[i].isGlue) {
-              bullets[i].y = invader.y; // Stick the bullet to the invader
-              bullets[i].dy = 0;  // Stop the bullet's movement
-            } else {
-              bullets.splice(i, 1); // Remove the bullet
-            }
+            bullets.splice(i, 1); // Remove the bullet
             score += 10; // Increase score
             if (checkWin()) {
               level++;
@@ -286,9 +272,6 @@ function drawGameOver() {
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
   ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
-
-  // Show leaderboard prompt
-  showLeaderboard();
 }
 
 // Function to end the game
@@ -314,25 +297,6 @@ function restartGame() {
     createInvaders();
     backgroundMusic.play(); // Restart background music
     gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
-  }
-}
-
-// Show leaderboard and prompt for player's name
-function showLeaderboard() {
-  let playerName = prompt("Enter your name to save your score:");
-  if (playerName) {
-    let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-    leaderboard.push({ name: playerName, score: score });
-    leaderboard.sort((a, b) => b.score - a.score); // Sort by score in descending order
-    leaderboard = leaderboard.slice(0, 3); // Keep top 3 scores
-    localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-
-    // Display the leaderboard
-    let leaderboardText = "Top 3 Players:\n";
-    leaderboard.forEach((entry, index) => {
-      leaderboardText += `${index + 1}. ${entry.name}: ${entry.score}\n`;
-    });
-    alert(leaderboardText);
   }
 }
 
