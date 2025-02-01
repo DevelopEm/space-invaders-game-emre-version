@@ -51,24 +51,6 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
-// Leaderboard functionality
-let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-
-// Restart button for touch control
-let restartButton = document.createElement('button');
-restartButton.innerText = 'Touch to Restart';
-restartButton.style.position = 'absolute';
-restartButton.style.top = '50%'; // Initial position of restart button
-restartButton.style.left = '50%';
-restartButton.style.transform = 'translate(-50%, -50%)';
-restartButton.style.fontSize = '20px';
-restartButton.style.backgroundColor = 'red';
-restartButton.style.color = 'white';
-restartButton.style.border = 'none';
-restartButton.style.padding = '10px 20px';
-restartButton.style.display = 'none'; // Initially hidden
-document.body.appendChild(restartButton);
-
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
 let touchStartY = 0;  // for touch movement tracking
@@ -339,6 +321,4 @@ function restartGame() {
     createInvaders();
     backgroundMusic.play(); // Restart background music
     gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
-    restartButton.style.display = 'none'; // Hide the restart button
-  }
-}
+    restartButton.style.display = 'none'; // Hide the restart button 
