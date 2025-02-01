@@ -20,9 +20,6 @@ let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
 let restartTextHeight = 60; // Distance of restart text from center of canvas
-let leaderboard = []; // Array to store leaderboard scores
-let playerName = ''; // Player's name
-let leaderboardPromptVisible = false; // Whether leaderboard prompt is visible
 
 // Player object (spaceship)
 player = {
@@ -90,6 +87,15 @@ canvas.addEventListener('touchmove', function(e) {
     player.x += player.speed;  // Move right
   }
   touchStartX = touchEndX;  // Update the touch start X to current position for continuous movement
+});
+
+// Touch event to fire bullets
+canvas.addEventListener('touchstart', function(e) {
+  if (!gameOver) {
+    shootBullet();  // Fire a bullet when the screen is touched
+  } else {
+    restartGame();  // Restart the game if game over screen is active
+  }
 });
 
 // Function to shoot a bullet
@@ -273,26 +279,6 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to draw the leaderboard
-function drawLeaderboard() {
-  ctx.fillStyle = 'white';
-  ctx.font = '20px Arial';
-  ctx.fillText('LEADERBOARD', canvas.width / 2 - 100, 100);
-
-  // Sort leaderboard by score (highest first)
-  leaderboard.sort((a, b) => b.score - a.score);
-
-  // Display top 3 scores
-  for (let i = 0; i < Math.min(3, leaderboard.length); i++) {
-    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 100, 150 + (i * 30));
-  }
-
-  // Prompt for name if the leaderboard is not visible
-  if (leaderboardPromptVisible) {
-    ctx.fillText('Enter your name:', canvas.width / 2 - 100, 300);
-  }
-}
-
 // Function to draw the game over screen with summary
 function drawGameOver() {
   // Ensure that the game over sound is played only once
@@ -306,51 +292,19 @@ function drawGameOver() {
   ctx.font = '20px Arial';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-
-  // Show the red restart button
-  drawRestartButton();
-
-  // Leaderboard screen after game over
-  drawLeaderboard();
-}
-
-// Function to show the red restart button
-function drawRestartButton() {
-  const buttonWidth = 200;
-  const buttonHeight = 60;
-  const buttonX = canvas.width / 2 - buttonWidth / 2;
-  const buttonY = canvas.height / 2 + restartTextHeight;
-
-  ctx.fillStyle = 'red';
-  ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
-  ctx.fillStyle = 'white';
-  ctx.font = '20px Arial';
-  ctx.fillText('Restart Game', canvas.width / 2 - 60, canvas.height / 2 + restartTextHeight + 30);
-
-  // Add event listener to restart the game when the button is clicked
-  canvas.addEventListener('touchstart', function(e) {
-    const touchX = e.touches[0].clientX;
-    const touchY = e.touches[0].clientY;
-
-    // Check if the touch is within the button's area
-    if (touchX >= buttonX && touchX <= buttonX + buttonWidth &&
-        touchY >= buttonY && touchY <= buttonY + buttonHeight) {
-      restartGame(); // Restart the game
-    }
-  });
+  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
 }
 
 // Function to end the game
 function gameOverCondition() {
   gameOver = true;
-  playerName = prompt('Enter your name:');
-  leaderboard.push({ name: playerName, score: score });
-  leaderboardPromptVisible = true;
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
+  // Play the game over sound when the game ends
+  gameOverSound.play();
 }
 
-// Restart the game when the button is clicked
+// Restart the game when clicked
 function restartGame() {
   if (gameOver) {
     // Reset everything for a fresh start
