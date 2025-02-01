@@ -161,8 +161,12 @@ function drawBullets() {
       // Make the bullets travel faster after level 4
       bullets[i].dy = -bulletSpeed - 2; // Increase speed (you can adjust this value)
     } else {
-      ctx.fillStyle = '#FF0000'; // Red bullet color before level 4
+      ctx.shadowColor = '#FF0000'; // Red shadow effect for red bullets
+      ctx.shadowBlur = 15; // Glow intensity for red bullets
+      ctx.fillStyle = '#FF0000'; // Red bullet color
       ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
+      ctx.shadowColor = 'transparent'; // Remove the glow effect after drawing the bullet
+      ctx.shadowBlur = 0;
     }
 
     bullets[i].y += bullets[i].dy;
@@ -298,11 +302,16 @@ function drawGameOver() {
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
   
-  // Draw the leaderboard button
-  ctx.fillStyle = '#FF0000'; // Red for the restart button
-  ctx.fillRect(canvas.width / 2 - 100, canvas.height / 2 + 70, 200, 40);
+  // Draw the red pill button for restart
+  ctx.fillStyle = '#FF0000'; // Red pill color
+  ctx.beginPath();
+  ctx.arc(canvas.width / 2, canvas.height / 2 + 70, 60, 0, Math.PI * 2);
+  ctx.fill();
+
   ctx.fillStyle = '#FFFFFF';
-  ctx.fillText('Touch to Restart', canvas.width / 2, canvas.height / 2 + 90);  // Button text
+  ctx.font = '18px Retro';
+  ctx.textAlign = 'center';
+  ctx.fillText('Touch to Restart', canvas.width / 2, canvas.height / 2 + 90);
 }
 
 // Function to end the game
