@@ -8,13 +8,13 @@ canvas.height = window.innerHeight; // Make canvas height dynamic
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
-let invaderSpeed = 0.3;
+let invaderSpeed = 0.1;
 let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
 let bulletSpeed = 5; // Initial bullet speed
-let shootDelay = 150; // Delay between shots in milliseconds (for faster shooting after level 6)
+let shootDelay = 100; // Delay between shots in milliseconds (for faster shooting after level 6)
 let lastShotTime = 0; // Time of the last shot (to control shooting speed)
 let leaderboard = []; // Leaderboard to store players' names and scores
 let playerName = ""; // Player name from prompt
@@ -200,7 +200,7 @@ function detectCollisions() {
             score += 10; // Increase score
             if (checkWin()) {
               level++;
-              invaderSpeed = Math.min(invaderSpeed + 0.2, 2); // Increase speed as levels go up, up to a max speed
+              invaderSpeed = Math.min(invaderSpeed + 0.1, 1); // Increase speed as levels go up, up to a max speed
               if (level <= 5) {
                 invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
                 invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
