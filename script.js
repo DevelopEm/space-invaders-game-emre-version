@@ -13,7 +13,7 @@ let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
-let bulletSpeed = 8; // Initial bullet speed
+let bulletSpeed = 5; // Initial bullet speed
 let shootDelay = 150; // Delay between shots in milliseconds (for faster shooting after level 6)
 let lastShotTime = 0; // Time of the last shot (to control shooting speed)
 let leaderboard = []; // Leaderboard to store players' names and scores
@@ -22,7 +22,7 @@ let playerName = ""; // Player name from prompt
 // Player object (spaceship)
 player = {
   x: canvas.width / 2 - 20,
-  y: canvas.height - 100, // 100px from the bottom
+  y: canvas.height - 50, // 100px from the bottom
   width: 40,
   height: 40,
   speed: 5,
@@ -98,13 +98,13 @@ canvas.addEventListener('touchstart', function(e) {
 // Function to get bullet color based on level
 function getBulletColor() {
   if (level >= 26) {
-    bulletSpeed = 15; // Faster bullets after level 26
+    bulletSpeed = 11; // Faster bullets after level 26
     return 'purple'; // Purple bullets
   } else if (level >= 16) {
-    bulletSpeed = 14; // Faster bullets after level 16
+    bulletSpeed = 10; // Faster bullets after level 16
     return 'yellow'; // Yellow bullets
   } else if (level >= 6) {
-    bulletSpeed = 13; // Faster bullets after level 6
+    bulletSpeed = 9; // Faster bullets after level 6
     return 'cyan'; // Cyan bullets
   } else {
     bulletSpeed = 8; // Default bullet speed
@@ -272,46 +272,30 @@ function moveInvaders() {
   }
 }
 
-// Function to draw the score with dynamic font size
+// Function to draw the score
 function drawScore() {
-  const fontSize = Math.max(16, canvas.width / 50);  // Dynamic font size based on canvas width
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = `${fontSize}px Arial`;
+  ctx.font = '16px Arial';
   ctx.fillText('Score: ' + score, 8, 20);
 }
 
-// Function to draw the level with dynamic font size
+// Function to draw the level
 function drawLevel() {
-  const fontSize = Math.max(16, canvas.width / 50);  // Dynamic font size based on canvas width
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = `${fontSize}px Arial`;
+  ctx.font = '16px Arial';
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to draw the space background with stars
-function drawBackground() {
-  const starCount = 100;  // Number of stars
-  
-  // Create a gradient for the background
-  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, '#000000');
-  gradient.addColorStop(1, '#080808');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill background with gradient
-  
-  // Draw random stars
-  for (let i = 0; i < starCount; i++) {
-    ctx.fillStyle = 'white';
-    let starX = Math.random() * canvas.width;
-    let starY = Math.random() * canvas.height;
-    let starSize = Math.random() * 2; // Varying star sizes
-    ctx.beginPath();
-    ctx.arc(starX, starY, starSize, 0, 2 * Math.PI);
-    ctx.fill();
+// Function to update leaderboard
+function updateLeaderboard(name, score) {
+  leaderboard.push({ name, score });
+  leaderboard.sort((a, b) => b.score - a.score); // Sort by score descending
+  if (leaderboard.length > 3) {
+    leaderboard = leaderboard.slice(0, 3); // Keep only the top 3 players
   }
 }
 
-// Function to draw the game over screen with space-themed design and glowing restart button
+// Function to draw the game over screen with summary and leaderboard
 function drawGameOver() {
   // Ask for player name
   if (playerName === "") {
@@ -323,36 +307,23 @@ function drawGameOver() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
   
-  drawBackground();  // Draw space background
-  
-  // Set a spacey background effect
-  const fontSize = Math.max(30, canvas.width / 20);  // Smaller font size for game over screen
-  ctx.fillStyle = '#00FFFF'; // Cyan color for spacey effect
-  ctx.font = `${fontSize}px "Press Start 2P"`; // Space-themed font
-  ctx.shadowColor = 'cyan'; // Set shadow for a glowing effect
-  ctx.shadowBlur = 25; // More blur for the glow
+  // Game over text
+  ctx.fillStyle = 'white';
+  ctx.font = '30px Arial';
+  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
+  ctx.font = '20px Arial';
+  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
+  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
 
-  // Display "GAME OVER" text
-  ctx.fillText('GAME OVER', canvas.width / 2 - 150, canvas.height / 2 - 40);
-
-  // Set fonts for score and level
-  ctx.font = `${fontSize / 2}px "Press Start 2P"`;
-  ctx.fillText('Level: ' + level, canvas.width / 2 - 60, canvas.height / 2 + 10);
-  ctx.fillText('Score: ' + score, canvas.width / 2 - 60, canvas.height / 2 + 50);
-
-  // Display the leaderboard
-  ctx.font = `${fontSize / 2}px "Press Start 2P"`;
-  ctx.fillText('Leaderboard:', canvas.width / 2 - 90, canvas.height / 2 + 100);
+  // Display leaderboard
+  ctx.font = '16px Arial';
+  ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 70);
   for (let i = 0; i < leaderboard.length; i++) {
-    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 90, canvas.height / 2 + 140 + i * 40);
+    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + i * 30);
   }
 
-  // Display instructions with glowing effect
-  ctx.font = `${fontSize / 3}px "Press Start 2P"`;
-  ctx.shadowBlur = 30;
-  ctx.fillText('Touch to Restart', canvas.width / 2 - 90, canvas.height / 2 + 250);
-
-  ctx.shadowBlur = 0; // Reset shadow after use
+  // Restart instructions
+  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + 180);
 }
 
 // Function to end the game
