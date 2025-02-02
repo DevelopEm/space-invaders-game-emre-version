@@ -22,7 +22,7 @@ let playerName = ""; // Player name from prompt
 // Player object (spaceship)
 player = {
   x: canvas.width / 2 - 20,
-  y: canvas.height - 90, // 100px from the bottom
+  y: canvas.height - 100, // 100px from the bottom
   width: 40,
   height: 40,
   speed: 5,
