@@ -227,6 +227,8 @@ function checkWin() {
   return true;
 }
 
+let descendSpeed = 1;  // Starting speed for invaders' downward movement
+
 // Function to move the player
 function movePlayer() {
   if (rightPressed && player.x < canvas.width - player.width) {
@@ -261,13 +263,19 @@ function moveInvaders() {
     }
   }
 
+  // Gradually increase the downward movement speed
   if (shouldMoveDown) {
     for (let c = 0; c < invaderColumnCount; c++) {
       for (let r = 0; r < invaderRowCount; r++) {
         if (invaders[c][r].status === 1) {
-          invaders[c][r].y += invaderHeight; // Move all invaders down a row
+          invaders[c][r].y += invaderHeight * descendSpeed; // Move invaders down gradually
         }
       }
+    }
+
+    // Increase the descend speed slowly after each level, but keep it controlled
+    if (level > 5 && descendSpeed < 2) {
+      descendSpeed += 0.1;  // Gradually increase the speed
     }
   }
 }
@@ -288,11 +296,28 @@ function drawLevel() {
 
 // Function to update leaderboard
 function updateLeaderboard(name, score) {
-  leaderboard.push({ name, score });
-  leaderboard.sort((a, b) => b.score - a.score); // Sort by score descending
-  if (leaderboard.length > 3) {
-    leaderboard = leaderboard.slice(0, 3); // Keep only the top 3 players
-  }
+  fetch('/api/leaderboard', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name, score }),
+  })
+  .then(response => response.json())
+  .then(data => {
+    leaderboard = data.leaderboard; // Update leaderboard from the server
+  })
+  .catch(error => console.error('Error updating leaderboard:', error));
+}
+
+// Function to get leaderboard from the server
+function getLeaderboard() {
+  fetch('/api/leaderboard')
+    .then(response => response.json())
+    .then(data => {
+      leaderboard = data.leaderboard;
+    })
+    .catch(error => console.error('Error fetching leaderboard:', error));
 }
 
 // Function to draw the game over screen with summary and leaderboard
@@ -326,12 +351,17 @@ function drawGameOver() {
   ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + 180);
 }
 
-// Function to end the game
+// Function to end the game and trigger the game over sound
 function gameOverCondition() {
   gameOver = true;
-  drawGameOver();
-  clearInterval(gameInterval); // Stop the game
-  gameOverSound.play(); // Play game over sound
+  
+  // Check if the sound is already playing, to prevent it from being triggered again
+  if (gameOverSound.paused) {
+    gameOverSound.play(); // Play game over sound
+  }
+
+  drawGameOver();  // Show game over screen
+  clearInterval(gameInterval); // Stop the game loop
 }
 
 // Restart the game when clicked
@@ -344,31 +374,29 @@ function restartGame() {
     invaderDirection = 1;
     invaderRowCount = 3;
     invaderColumnCount = 5;
-    gameOver = false;
-    playerName = ""; // Reset player name
+    bullets = [];
     createInvaders();
-    backgroundMusic.play(); // Restart background music
-    gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
+    gameOver = false;
+    gameInterval = setInterval(gameLoop, 1000 / 60); // Restart the game loop
   }
 }
 
-// Main game loop
-function draw() {
-  if (gameOver) {
-    return;
-  }
+// Game loop function
+function gameLoop() {
+  if (gameOver) return; // Stop game loop if game is over
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas each frame
   drawPlayer();
-  drawBullets();
-  drawInvaders();
-  drawScore();
-  drawLevel();
-  detectCollisions();
   movePlayer();
   moveInvaders();
+  drawInvaders();
+  drawBullets();
+  detectCollisions();
+  drawScore();
+  drawLevel();
 }
 
-// Initialize the game
+// Initialize game
 createInvaders();
-gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
+gameInterval = setInterval(gameLoop, 1000 / 60); // 60 FPS
+
