@@ -54,14 +54,14 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
+// Trigger to start background music after first interaction
+let musicStarted = false;
+
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
 let touchStartY = 0;  // for touch movement tracking
 
 // Trigger to start background music after first interaction
-let musicStarted = false;
-
-// Touchstart event to trigger background music and track player movement
 canvas.addEventListener('touchstart', function(e) {
   e.preventDefault();  // Prevent default touch behavior (like scrolling)
   
@@ -272,30 +272,46 @@ function moveInvaders() {
   }
 }
 
-// Function to draw the score
+// Function to draw the score with dynamic font size
 function drawScore() {
+  const fontSize = Math.max(16, canvas.width / 50);  // Dynamic font size based on canvas width
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px Arial';
+  ctx.font = `${fontSize}px Arial`;
   ctx.fillText('Score: ' + score, 8, 20);
 }
 
-// Function to draw the level
+// Function to draw the level with dynamic font size
 function drawLevel() {
+  const fontSize = Math.max(16, canvas.width / 50);  // Dynamic font size based on canvas width
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px Arial';
+  ctx.font = `${fontSize}px Arial`;
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to update leaderboard
-function updateLeaderboard(name, score) {
-  leaderboard.push({ name, score });
-  leaderboard.sort((a, b) => b.score - a.score); // Sort by score descending
-  if (leaderboard.length > 3) {
-    leaderboard = leaderboard.slice(0, 3); // Keep only the top 3 players
+// Function to draw the space background with stars
+function drawBackground() {
+  const starCount = 100;  // Number of stars
+  
+  // Create a gradient for the background
+  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, '#000000');
+  gradient.addColorStop(1, '#080808');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill background with gradient
+  
+  // Draw random stars
+  for (let i = 0; i < starCount; i++) {
+    ctx.fillStyle = 'white';
+    let starX = Math.random() * canvas.width;
+    let starY = Math.random() * canvas.height;
+    let starSize = Math.random() * 2; // Varying star sizes
+    ctx.beginPath();
+    ctx.arc(starX, starY, starSize, 0, 2 * Math.PI);
+    ctx.fill();
   }
 }
 
-// Function to draw the game over screen with space-themed design
+// Function to draw the game over screen with space-themed design and glowing restart button
 function drawGameOver() {
   // Ask for player name
   if (playerName === "") {
@@ -307,9 +323,12 @@ function drawGameOver() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
   
+  drawBackground();  // Draw space background
+  
   // Set a spacey background effect
+  const fontSize = Math.max(30, canvas.width / 20);  // Smaller font size for game over screen
   ctx.fillStyle = '#00FFFF'; // Cyan color for spacey effect
-  ctx.font = '70px "Press Start 2P"'; // Space-themed font
+  ctx.font = `${fontSize}px "Press Start 2P"`; // Space-themed font
   ctx.shadowColor = 'cyan'; // Set shadow for a glowing effect
   ctx.shadowBlur = 25; // More blur for the glow
 
@@ -317,21 +336,22 @@ function drawGameOver() {
   ctx.fillText('GAME OVER', canvas.width / 2 - 150, canvas.height / 2 - 40);
 
   // Set fonts for score and level
-  ctx.font = '40px "Press Start 2P"';
+  ctx.font = `${fontSize / 2}px "Press Start 2P"`;
   ctx.fillText('Level: ' + level, canvas.width / 2 - 60, canvas.height / 2 + 10);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 60, canvas.height / 2 + 50);
 
   // Display the leaderboard
-  ctx.font = '30px "Press Start 2P"';
+  ctx.font = `${fontSize / 2}px "Press Start 2P"`;
   ctx.fillText('Leaderboard:', canvas.width / 2 - 90, canvas.height / 2 + 100);
   for (let i = 0; i < leaderboard.length; i++) {
     ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 90, canvas.height / 2 + 140 + i * 40);
   }
 
   // Display instructions with glowing effect
-  ctx.font = '25px "Press Start 2P"';
+  ctx.font = `${fontSize / 3}px "Press Start 2P"`;
+  ctx.shadowBlur = 30;
   ctx.fillText('Touch to Restart', canvas.width / 2 - 90, canvas.height / 2 + 250);
-  
+
   ctx.shadowBlur = 0; // Reset shadow after use
 }
 
