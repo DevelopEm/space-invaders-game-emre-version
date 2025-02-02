@@ -2,9 +2,17 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-canvas.width = window.innerWidth;  // Make canvas width dynamic
-canvas.height = window.innerHeight; // Make canvas height dynamic
+// Adjust the canvas size dynamically
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
+// Resize canvas on window resize
+window.addEventListener('resize', function () {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+// Game variables and setup
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
@@ -61,7 +69,7 @@ let musicStarted = false;
 let touchStartX = 0;  // for touch movement tracking
 let touchStartY = 0;  // for touch movement tracking
 
-// Trigger to start background music after first interaction
+// Trigger to start background music after first touch
 canvas.addEventListener('touchstart', function(e) {
   e.preventDefault();  // Prevent default touch behavior (like scrolling)
   
@@ -275,7 +283,7 @@ function moveInvaders() {
 // Function to draw the score with dynamic font size
 function drawScore() {
   const fontSize = Math.max(16, canvas.width / 50);  // Dynamic font size based on canvas width
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = '#00FFFF'; // Light cyan color for better visibility
   ctx.font = `${fontSize}px Arial`;
   ctx.fillText('Score: ' + score, 8, 20);
 }
@@ -283,7 +291,7 @@ function drawScore() {
 // Function to draw the level with dynamic font size
 function drawLevel() {
   const fontSize = Math.max(16, canvas.width / 50);  // Dynamic font size based on canvas width
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = '#00FFFF'; // Light cyan color for better visibility
   ctx.font = `${fontSize}px Arial`;
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
@@ -294,7 +302,7 @@ function drawBackground() {
   
   // Create a gradient for the background
   let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, '#000000');
+  gradient.addColorStop(0, '#000040'); // Slightly lighter background
   gradient.addColorStop(1, '#080808');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill background with gradient
