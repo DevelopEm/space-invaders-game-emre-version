@@ -98,16 +98,16 @@ canvas.addEventListener('touchstart', function(e) {
 // Function to get bullet color based on level
 function getBulletColor() {
   if (level >= 26) {
-    bulletSpeed = 8; // Faster bullets after level 26
+    bulletSpeed = 10; // Faster bullets after level 26
     return 'purple'; // Purple bullets
   } else if (level >= 16) {
-    bulletSpeed = 7; // Faster bullets after level 16
+    bulletSpeed = 9; // Faster bullets after level 16
     return 'yellow'; // Yellow bullets
   } else if (level >= 6) {
-    bulletSpeed = 6; // Faster bullets after level 6
+    bulletSpeed = 8; // Faster bullets after level 6
     return 'cyan'; // Cyan bullets
   } else {
-    bulletSpeed = 5; // Default bullet speed
+    bulletSpeed = 7; // Default bullet speed
     return 'red'; // Red bullets for lower levels
   }
 }
