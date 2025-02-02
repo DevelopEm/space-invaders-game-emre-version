@@ -8,7 +8,7 @@ canvas.height = window.innerHeight; // Make canvas height dynamic
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
-let invaderSpeed = 0.1;
+let invaderSpeed = 0.3;
 let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
@@ -47,12 +47,12 @@ gameOver = false;
 
 // Sounds
 const shootSound = new Audio('shoot.wav'); // Path to shoot sound
-const gameOverSound = new Audio('gameOver.mp3'); // Path to game over sound
+const gameOverSound = new Audio('GameOver.mp3'); // Path to game over sound
 const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background music
 
 // Background music settings
 backgroundMusic.loop = true; // Loop background music
-backgroundMusic.volume = 0.1; // Adjust volume if needed
+backgroundMusic.volume = 0.3; // Adjust volume if needed
 
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
@@ -98,16 +98,16 @@ canvas.addEventListener('touchstart', function(e) {
 // Function to get bullet color based on level
 function getBulletColor() {
   if (level >= 26) {
-    bulletSpeed = 20; // Faster bullets after level 26
+    bulletSpeed = 16; // Faster bullets after level 26
     return 'purple'; // Purple bullets
   } else if (level >= 16) {
-    bulletSpeed = 18; // Faster bullets after level 16
+    bulletSpeed = 14; // Faster bullets after level 16
     return 'yellow'; // Yellow bullets
   } else if (level >= 6) {
-    bulletSpeed = 16; // Faster bullets after level 6
+    bulletSpeed = 12; // Faster bullets after level 6
     return 'cyan'; // Cyan bullets
   } else {
-    bulletSpeed = 14; // Default bullet speed
+    bulletSpeed = 10; // Default bullet speed
     return 'red'; // Red bullets for lower levels
   }
 }
@@ -200,7 +200,7 @@ function detectCollisions() {
             score += 10; // Increase score
             if (checkWin()) {
               level++;
-              invaderSpeed = Math.min(invaderSpeed + 0.1, 1); // Increase speed as levels go up, up to a max speed
+              invaderSpeed = Math.min(invaderSpeed + 0.2, 2); // Increase speed as levels go up, up to a max speed
               if (level <= 5) {
                 invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
                 invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
