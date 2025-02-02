@@ -14,7 +14,7 @@ let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
 let bulletSpeed = 5; // Initial bullet speed
-let shootDelay = 100; // Delay between shots in milliseconds (for faster shooting after level 6)
+let shootDelay = 50; // Delay between shots in milliseconds (for faster shooting after level 6)
 let lastShotTime = 0; // Time of the last shot (to control shooting speed)
 let leaderboard = []; // Leaderboard to store players' names and scores
 let playerName = ""; // Player name from prompt
