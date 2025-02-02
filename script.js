@@ -47,7 +47,7 @@ gameOver = false;
 
 // Sounds
 const shootSound = new Audio('shoot.wav'); // Path to shoot sound
-const gameOverSound = new Audio('GameOver.mp3'); // Path to game over sound
+const gameOverSound = new Audio('gameOver.mp3'); // Path to game over sound
 const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background music
 
 // Background music settings
