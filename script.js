@@ -13,8 +13,8 @@ let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
-let bulletSpeed = 4;
-let shootDelay = 500; // Delay between shots in milliseconds (for faster shooting after level 6)
+let bulletSpeed = 6; // Faster bullets
+let shootDelay = 500; // Initial delay between shots (in milliseconds)
 let lastShotTime = 0; // Time of the last shot (to control shooting speed)
 let leaderboard = []; // Leaderboard to store players' names and scores
 let playerName = ""; // Player name from prompt
@@ -127,6 +127,19 @@ function createInvaders() {
       };
       invaders[c][r].image.src = 'invader.png'; // Path to invader image
     }
+  }
+}
+
+// Function to adjust shooting delay based on the level
+function adjustShootDelay() {
+  if (level >= 16) {
+    shootDelay = 100;  // Almost instant shooting at max level
+  } else if (level >= 11) {
+    shootDelay = 150;  // Reduce delay even further for higher levels
+  } else if (level >= 6) {
+    shootDelay = 250;  // Reduce delay for levels 6 and up
+  } else {
+    shootDelay = 500;  // Default delay
   }
 }
 
@@ -347,6 +360,8 @@ function getBulletColor() {
 
 // Main game loop
 function draw() {
+  adjustShootDelay();  // Update shoot delay based on current level
+
   if (gameOver) {
     return;
   }
