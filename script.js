@@ -13,8 +13,8 @@ let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
-let bulletSpeed = 6; // Faster bullets
-let shootDelay = 500; // Initial delay between shots (in milliseconds)
+let bulletSpeed = 5; // Initial bullet speed
+let shootDelay = 500; // Delay between shots in milliseconds (for faster shooting after level 6)
 let lastShotTime = 0; // Time of the last shot (to control shooting speed)
 let leaderboard = []; // Leaderboard to store players' names and scores
 let playerName = ""; // Player name from prompt
@@ -95,6 +95,23 @@ canvas.addEventListener('touchstart', function(e) {
   }
 });
 
+// Function to get bullet color based on level
+function getBulletColor() {
+  if (level >= 26) {
+    bulletSpeed = 8; // Faster bullets after level 26
+    return 'purple'; // Purple bullets
+  } else if (level >= 16) {
+    bulletSpeed = 7; // Faster bullets after level 16
+    return 'yellow'; // Yellow bullets
+  } else if (level >= 6) {
+    bulletSpeed = 6; // Faster bullets after level 6
+    return 'cyan'; // Cyan bullets
+  } else {
+    bulletSpeed = 5; // Default bullet speed
+    return 'red'; // Red bullets for lower levels
+  }
+}
+
 // Function to shoot a bullet
 function shootBullet() {
   if (gameOver) return;
@@ -103,14 +120,33 @@ function shootBullet() {
     y: player.y,
     width: 4,
     height: 10,
-    dy: -bulletSpeed,
-    color: getBulletColor(),
+    dy: -bulletSpeed, // Bullet speed based on level
+    color: getBulletColor(), // Get bullet color based on level
   };
   bullets.push(bullet);
 
   // Play the shoot sound
   shootSound.play();
   lastShotTime = Date.now(); // Update the last shot time to prevent fast shooting
+}
+
+// Function to draw bullets with a glow effect
+function drawBullets() {
+  for (let i = 0; i < bullets.length; i++) {
+    if (bullets[i].y < 0) {
+      bullets.splice(i, 1); // Remove bullets that go off-screen
+      continue;
+    }
+    
+    // Set glowing effect
+    ctx.shadowColor = bullets[i].color;
+    ctx.shadowBlur = 20; // Increase shadow blur for better glow effect
+    ctx.fillStyle = bullets[i].color;
+    ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
+    
+    bullets[i].y += bullets[i].dy; // Move the bullet
+  }
+  ctx.shadowBlur = 0; // Reset shadow blur after drawing bullets
 }
 
 // Function to create invaders
@@ -130,38 +166,9 @@ function createInvaders() {
   }
 }
 
-// Function to adjust shooting delay based on the level
-function adjustShootDelay() {
-  if (level >= 16) {
-    shootDelay = 100;  // Almost instant shooting at max level
-  } else if (level >= 11) {
-    shootDelay = 150;  // Reduce delay even further for higher levels
-  } else if (level >= 6) {
-    shootDelay = 250;  // Reduce delay for levels 6 and up
-  } else {
-    shootDelay = 500;  // Default delay
-  }
-}
-
 // Function to draw the player (spaceship)
 function drawPlayer() {
   ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
-}
-
-// Function to draw bullets
-function drawBullets() {
-  for (let i = 0; i < bullets.length; i++) {
-    if (bullets[i].y < 0) {
-      bullets.splice(i, 1);
-      continue;
-    }
-    ctx.fillStyle = bullets[i].color;
-    ctx.shadowColor = bullets[i].color; // Apply glowing effect
-    ctx.shadowBlur = 20; // Set the glow effect size
-    ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
-    bullets[i].y += bullets[i].dy;
-  }
-  ctx.shadowBlur = 0; // Reset shadow blur after drawing bullets
 }
 
 // Function to draw invaders
@@ -345,23 +352,8 @@ function restartGame() {
   }
 }
 
-// Function to get bullet color based on level
-function getBulletColor() {
-  if (level >= 26) {
-    return 'purple';
-  } else if (level >= 16) {
-    return 'yellow';
-  } else if (level >= 6) {
-    return 'cyan';
-  } else {
-    return 'red'; // Default color
-  }
-}
-
 // Main game loop
 function draw() {
-  adjustShootDelay();  // Update shoot delay based on current level
-
   if (gameOver) {
     return;
   }
