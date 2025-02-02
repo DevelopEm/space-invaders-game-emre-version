@@ -1,19 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Space Invaders</title>
-  <link rel="stylesheet" href="style.css">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Invaders Game</title>
 
+    <!-- Add Google Fonts for Press Start 2P -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <!-- Style for the canvas and the page -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrolling */
+            background-color: black; /* Space background */
+        }
+
+        canvas {
+            display: block;
+            background-color: #000; /* Black background for space theme */
+            margin: 0 auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
 </head>
 <body>
-</div>
-  <div id="gameArea">
     <canvas id="gameCanvas"></canvas>
-  </div>
-  <script src="script.js"></script>
+
+    <!-- Game script -->
+    <script src="script.js"></script>
 </body>
 </html>
-
