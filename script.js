@@ -13,7 +13,7 @@ let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
-let bulletSpeed = 5; // Initial bullet speed
+let bulletSpeed = 8; // Initial bullet speed
 let shootDelay = 150; // Delay between shots in milliseconds (for faster shooting after level 6)
 let lastShotTime = 0; // Time of the last shot (to control shooting speed)
 let leaderboard = []; // Leaderboard to store players' names and scores
@@ -98,13 +98,13 @@ canvas.addEventListener('touchstart', function(e) {
 // Function to get bullet color based on level
 function getBulletColor() {
   if (level >= 26) {
-    bulletSpeed = 14; // Faster bullets after level 26
+    bulletSpeed = 15; // Faster bullets after level 26
     return 'purple'; // Purple bullets
   } else if (level >= 16) {
-    bulletSpeed = 13; // Faster bullets after level 16
+    bulletSpeed = 14; // Faster bullets after level 16
     return 'yellow'; // Yellow bullets
   } else if (level >= 6) {
-    bulletSpeed = 12; // Faster bullets after level 6
+    bulletSpeed = 13; // Faster bullets after level 6
     return 'cyan'; // Cyan bullets
   } else {
     bulletSpeed = 8; // Default bullet speed
@@ -275,15 +275,15 @@ function moveInvaders() {
 // Function to draw the score
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '30px Orbitron, sans-serif'; // Spacey font
-  ctx.fillText('Score: ' + score, 20, 40); // Adjust padding for better alignment
+  ctx.font = '16px Arial';
+  ctx.fillText('Score: ' + score, 8, 20);
 }
 
 // Function to draw the level
 function drawLevel() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '30px Orbitron, sans-serif'; // Spacey font
-  ctx.fillText('Level: ' + level, canvas.width - 150, 40); // Adjust padding for better alignment
+  ctx.font = '16px Arial';
+  ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
 // Function to update leaderboard
@@ -295,7 +295,7 @@ function updateLeaderboard(name, score) {
   }
 }
 
-// Function to draw the game over screen with summary and leaderboard
+// Function to draw the game over screen with space-themed design
 function drawGameOver() {
   // Ask for player name
   if (playerName === "") {
@@ -307,28 +307,32 @@ function drawGameOver() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
   
-  // Spacey GAME OVER text with glow
-  ctx.fillStyle = 'white';
-  ctx.font = '50px Orbitron, sans-serif'; // Large spacey font
-  ctx.shadowColor = 'blue';
-  ctx.shadowBlur = 30;
-  ctx.fillText('GAME OVER', canvas.width / 2 - 140, canvas.height / 2 - 40);
-  
-  // Spacey score and level text
-  ctx.font = '30px Orbitron, sans-serif'; // Spacey font
-  ctx.fillText('Level: ' + level, canvas.width / 2 - 50, canvas.height / 2 + 30);
-  ctx.fillText('Score: ' + score, canvas.width / 2 - 50, canvas.height / 2 + 70);
+  // Set a spacey background effect
+  ctx.fillStyle = '#00FFFF'; // Cyan color for spacey effect
+  ctx.font = '70px "Press Start 2P"'; // Space-themed font
+  ctx.shadowColor = 'cyan'; // Set shadow for a glowing effect
+  ctx.shadowBlur = 25; // More blur for the glow
 
-  // Display leaderboard with spacey font
-  ctx.font = '20px Orbitron, sans-serif'; // Spacey font
-  ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 120);
+  // Display "GAME OVER" text
+  ctx.fillText('GAME OVER', canvas.width / 2 - 150, canvas.height / 2 - 40);
+
+  // Set fonts for score and level
+  ctx.font = '40px "Press Start 2P"';
+  ctx.fillText('Level: ' + level, canvas.width / 2 - 60, canvas.height / 2 + 10);
+  ctx.fillText('Score: ' + score, canvas.width / 2 - 60, canvas.height / 2 + 50);
+
+  // Display the leaderboard
+  ctx.font = '30px "Press Start 2P"';
+  ctx.fillText('Leaderboard:', canvas.width / 2 - 90, canvas.height / 2 + 100);
   for (let i = 0; i < leaderboard.length; i++) {
-    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 150 + i * 40);
+    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 90, canvas.height / 2 + 140 + i * 40);
   }
 
-  // Restart instructions with spacey font
-  ctx.font = '20px Orbitron, sans-serif'; // Spacey font
-  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + 230);
+  // Display instructions with glowing effect
+  ctx.font = '25px "Press Start 2P"';
+  ctx.fillText('Touch to Restart', canvas.width / 2 - 90, canvas.height / 2 + 250);
+  
+  ctx.shadowBlur = 0; // Reset shadow after use
 }
 
 // Function to end the game
