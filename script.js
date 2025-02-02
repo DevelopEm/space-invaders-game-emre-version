@@ -275,15 +275,15 @@ function moveInvaders() {
 // Function to draw the score
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px Arial';
-  ctx.fillText('Score: ' + score, 8, 20);
+  ctx.font = '30px Orbitron, sans-serif'; // Spacey font
+  ctx.fillText('Score: ' + score, 20, 40); // Adjust padding for better alignment
 }
 
 // Function to draw the level
 function drawLevel() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px Arial';
-  ctx.fillText('Level: ' + level, canvas.width - 80, 20);
+  ctx.font = '30px Orbitron, sans-serif'; // Spacey font
+  ctx.fillText('Level: ' + level, canvas.width - 150, 40); // Adjust padding for better alignment
 }
 
 // Function to update leaderboard
@@ -307,23 +307,28 @@ function drawGameOver() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
   
-  // Game over text
+  // Spacey GAME OVER text with glow
   ctx.fillStyle = 'white';
-  ctx.font = '30px Arial';
-  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px Arial';
-  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
-  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
+  ctx.font = '50px Orbitron, sans-serif'; // Large spacey font
+  ctx.shadowColor = 'blue';
+  ctx.shadowBlur = 30;
+  ctx.fillText('GAME OVER', canvas.width / 2 - 140, canvas.height / 2 - 40);
+  
+  // Spacey score and level text
+  ctx.font = '30px Orbitron, sans-serif'; // Spacey font
+  ctx.fillText('Level: ' + level, canvas.width / 2 - 50, canvas.height / 2 + 30);
+  ctx.fillText('Score: ' + score, canvas.width / 2 - 50, canvas.height / 2 + 70);
 
-  // Display leaderboard
-  ctx.font = '16px Arial';
-  ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 70);
+  // Display leaderboard with spacey font
+  ctx.font = '20px Orbitron, sans-serif'; // Spacey font
+  ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 120);
   for (let i = 0; i < leaderboard.length; i++) {
-    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + i * 30);
+    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 150 + i * 40);
   }
 
-  // Restart instructions
-  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + 180);
+  // Restart instructions with spacey font
+  ctx.font = '20px Orbitron, sans-serif'; // Spacey font
+  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + 230);
 }
 
 // Function to end the game
