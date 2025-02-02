@@ -275,15 +275,45 @@ function moveInvaders() {
 // Function to draw the score
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px Arial';
+  ctx.font = '16px retro';  // Retro font for score
   ctx.fillText('Score: ' + score, 8, 20);
 }
 
 // Function to draw the level
 function drawLevel() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px Arial';
+  ctx.font = '16px retro';  // Retro font for level
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
+}
+
+// Function to draw the background stars with glowing effect
+function drawStarryBackground() {
+  const starCount = 100; // Number of stars
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas for the gradient background
+
+  // Create gradient background
+  let gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  gradient.addColorStop(0, 'black');
+  gradient.addColorStop(1, '#1a1a1a'); // Spacey dark gradient
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the background with the gradient
+
+  // Draw stars
+  for (let i = 0; i < starCount; i++) {
+    let x = Math.random() * canvas.width;
+    let y = Math.random() * canvas.height;
+    let size = Math.random() * 2 + 1;
+    let glowColor = `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.5})`;
+
+    // Add glowing effect to stars
+    ctx.shadowColor = glowColor;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, 2 * Math.PI);
+    ctx.fillStyle = glowColor;
+    ctx.fill();
+    ctx.shadowBlur = 0; // Reset shadow after drawing each star
+  }
 }
 
 // Function to update leaderboard
@@ -309,14 +339,17 @@ function drawGameOver() {
   
   // Game over text
   ctx.fillStyle = 'white';
-  ctx.font = '30px Arial';
+  ctx.font = '30px retro';
+  ctx.shadowColor = 'cyan';
+  ctx.shadowBlur = 20;
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px Arial';
+  ctx.font = '20px retro';
+  ctx.shadowColor = 'purple';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
 
   // Display leaderboard
-  ctx.font = '16px Arial';
+  ctx.font = '16px retro';
   ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 70);
   for (let i = 0; i < leaderboard.length; i++) {
     ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + i * 30);
@@ -358,7 +391,7 @@ function draw() {
     return;
   }
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+  drawStarryBackground();  // Draw the space background with stars
   drawPlayer();
   drawBullets();
   drawInvaders();
