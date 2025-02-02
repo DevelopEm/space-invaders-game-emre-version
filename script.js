@@ -2,17 +2,9 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// Adjust the canvas size dynamically
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;  // Make canvas width dynamic
+canvas.height = window.innerHeight; // Make canvas height dynamic
 
-// Resize canvas on window resize
-window.addEventListener('resize', function () {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-});
-
-// Game variables and setup
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
@@ -62,14 +54,14 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
-// Trigger to start background music after first interaction
-let musicStarted = false;
-
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
 let touchStartY = 0;  // for touch movement tracking
 
-// Trigger to start background music after first touch
+// Trigger to start background music after first interaction
+let musicStarted = false;
+
+// Touchstart event to trigger background music and track player movement
 canvas.addEventListener('touchstart', function(e) {
   e.preventDefault();  // Prevent default touch behavior (like scrolling)
   
@@ -283,7 +275,7 @@ function moveInvaders() {
 // Function to draw the score with dynamic font size
 function drawScore() {
   const fontSize = Math.max(16, canvas.width / 50);  // Dynamic font size based on canvas width
-  ctx.fillStyle = '#00FFFF'; // Light cyan color for better visibility
+  ctx.fillStyle = '#FFFFFF';
   ctx.font = `${fontSize}px Arial`;
   ctx.fillText('Score: ' + score, 8, 20);
 }
@@ -291,7 +283,7 @@ function drawScore() {
 // Function to draw the level with dynamic font size
 function drawLevel() {
   const fontSize = Math.max(16, canvas.width / 50);  // Dynamic font size based on canvas width
-  ctx.fillStyle = '#00FFFF'; // Light cyan color for better visibility
+  ctx.fillStyle = '#FFFFFF';
   ctx.font = `${fontSize}px Arial`;
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
@@ -302,7 +294,7 @@ function drawBackground() {
   
   // Create a gradient for the background
   let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, '#000040'); // Slightly lighter background
+  gradient.addColorStop(0, '#000000');
   gradient.addColorStop(1, '#080808');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill background with gradient
