@@ -13,8 +13,8 @@ let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
-let bulletSpeed = 12; // Initial bullet speed, faster from the start
-let shootDelay = 300; // Reduced delay to make firing faster
+let bulletSpeed = 10; // Initial bullet speed
+let shootDelay = 250; // Delay between shots in milliseconds (for faster shooting after level 6)
 let lastShotTime = 0; // Time of the last shot (to control shooting speed)
 let leaderboard = []; // Leaderboard to store players' names and scores
 let playerName = ""; // Player name from prompt
@@ -95,6 +95,23 @@ canvas.addEventListener('touchstart', function(e) {
   }
 });
 
+// Function to get bullet color based on level
+function getBulletColor() {
+  if (level >= 26) {
+    bulletSpeed = 12; // Faster bullets after level 26
+    return 'purple'; // Purple bullets
+  } else if (level >= 16) {
+    bulletSpeed = 12; // Faster bullets after level 16
+    return 'yellow'; // Yellow bullets
+  } else if (level >= 6) {
+    bulletSpeed = 11; // Faster bullets after level 6
+    return 'cyan'; // Cyan bullets
+  } else {
+    bulletSpeed = 11; // Default bullet speed
+    return 'red'; // Red bullets for lower levels
+  }
+}
+
 // Function to shoot a bullet
 function shootBullet() {
   if (gameOver) return;
@@ -103,14 +120,33 @@ function shootBullet() {
     y: player.y,
     width: 4,
     height: 10,
-    dy: -bulletSpeed,
-    color: getBulletColor(), // Get color based on level
+    dy: -bulletSpeed, // Bullet speed based on level
+    color: getBulletColor(), // Get bullet color based on level
   };
   bullets.push(bullet);
 
   // Play the shoot sound
   shootSound.play();
   lastShotTime = Date.now(); // Update the last shot time to prevent fast shooting
+}
+
+// Function to draw bullets with a glow effect
+function drawBullets() {
+  for (let i = 0; i < bullets.length; i++) {
+    if (bullets[i].y < 0) {
+      bullets.splice(i, 1); // Remove bullets that go off-screen
+      continue;
+    }
+    
+    // Set glowing effect
+    ctx.shadowColor = bullets[i].color;
+    ctx.shadowBlur = 20; // Increase shadow blur for better glow effect
+    ctx.fillStyle = bullets[i].color;
+    ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
+    
+    bullets[i].y += bullets[i].dy; // Move the bullet
+  }
+  ctx.shadowBlur = 0; // Reset shadow blur after drawing bullets
 }
 
 // Function to create invaders
@@ -133,22 +169,6 @@ function createInvaders() {
 // Function to draw the player (spaceship)
 function drawPlayer() {
   ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
-}
-
-// Function to draw bullets
-function drawBullets() {
-  for (let i = 0; i < bullets.length; i++) {
-    if (bullets[i].y < 0) {
-      bullets.splice(i, 1);
-      continue;
-    }
-    ctx.fillStyle = bullets[i].color;
-    ctx.shadowColor = bullets[i].color; // Apply glowing effect
-    ctx.shadowBlur = 20; // Set the glow effect size
-    ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
-    bullets[i].y += bullets[i].dy;
-  }
-  ctx.shadowBlur = 0; // Reset shadow blur after drawing bullets
 }
 
 // Function to draw invaders
@@ -207,20 +227,48 @@ function checkWin() {
   return true;
 }
 
-// Function to get bullet color and speed based on level
-function getBulletColor() {
-  if (level >= 26) {
-    bulletSpeed = 14; // Increase speed for purple bullets at level 26
-    return 'purple';
-  } else if (level >= 16) {
-    bulletSpeed = 14; // Increase speed for yellow bullets at level 16
-    return 'yellow';
-  } else if (level >= 6) {
-    bulletSpeed = 13; // Increase speed for cyan bullets at level 6
-    return 'cyan';
-  } else {
-    bulletSpeed = 13; // Default bullet speed for red bullets at lower levels
-    return 'red';
+// Function to move the player
+function movePlayer() {
+  if (rightPressed && player.x < canvas.width - player.width) {
+    player.x += player.speed;
+  } else if (leftPressed && player.x > 0) {
+    player.x -= player.speed;
+  }
+}
+
+// Function to move the invaders
+function moveInvaders() {
+  let shouldMoveDown = false;
+
+  for (let c = 0; c < invaderColumnCount; c++) {
+    for (let r = 0; r < invaderRowCount; r++) {
+      let invader = invaders[c][r];
+      if (invader.status === 1) {
+        invader.x += invaderSpeed * invaderDirection;
+
+        // Check if invader reaches the edge of the screen
+        if (invader.x + invaderWidth > canvas.width || invader.x < 0) {
+          invaderDirection = -invaderDirection;
+          shouldMoveDown = true;
+        }
+
+        // Check if invader reaches the bottom (player)
+        if (invader.y + invaderHeight >= player.y && invader.status === 1) {
+          gameOverCondition(); // End the game
+          return;
+        }
+      }
+    }
+  }
+
+  if (shouldMoveDown) {
+    for (let c = 0; c < invaderColumnCount; c++) {
+      for (let r = 0; r < invaderRowCount; r++) {
+        if (invaders[c][r].status === 1) {
+          invaders[c][r].y += invaderHeight; // Move all invaders down a row
+        }
+      }
+    }
   }
 }
 
