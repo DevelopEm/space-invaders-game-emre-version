@@ -385,7 +385,19 @@ function drawGameOver() {
   ctx.font = '20px Arial';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
+  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
+}
+
+// Prompt for player's name and update leaderboard
+  let playerName = prompt('Enter your name:');
+  if (playerName) {
+    updateLeaderboard(playerName, score);
+  }
+  // Show leaderboard
+  ctx.fillText('Top Scores:', canvas.width / 2 - 60, canvas.height / 2 + 70);
+  for (let i = 0; i < leaderboard.length; i++) {
+    ctx.fillText(`${i + 1}. ${leaderboard[i].name} - ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + (i * 30));
+  }
 }
 
 // Function to end the game
@@ -401,7 +413,7 @@ function restartGame() {
   if (gameOver) {
     score = 0;
     level = 1;
-    invaderSpeed = 0.3;
+    invaderSpeed = 0.1;
     invaderDirection = 1;
     invaderRowCount = 3;
     invaderColumnCount = 5;
