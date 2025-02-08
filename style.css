@@ -1,29 +1,20 @@
-* {
-  margin: 0;  /* Remove any default margin */
-  padding: 0; /* Remove any default padding */
-  box-sizing: border-box; /* Ensures padding and borders are included in width/height calculations */
-}
-
-html, body {
-  height: 100%; /* Ensure the body takes full height */
-  width: 100%; /* Ensure the body takes full width */
-  overflow: hidden; /* Prevents scrolling */
-}
-
 body {
-  background-color: black; /* Set the background to black */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
+    background-color: #000;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  #gameArea {
+    position: relative;
+  }
+  
+  canvas {
+    border: 1px solid white;
+    background-color: #131212;
+  }
 
-canvas {
-  display: block; /* Removes any extra space below the canvas */
-  background-color: black; /* Ensure canvas background is black */
-}
-
-#gameArea {
-  position: relative;
-}
-
+  
