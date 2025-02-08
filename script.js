@@ -275,15 +275,28 @@ function moveInvaders() {
 // Function to draw the score
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px Arial';
+  ctx.font = '20px Arial';
   ctx.fillText('Score: ' + score, 8, 20);
 }
 
 // Function to draw the level
 function drawLevel() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px Arial';
-  ctx.fillText('Level: ' + level, canvas.width - 80, 20);
+  ctx.font = '20px Arial';
+  ctx.fillText('Level: ' + level, canvas.width - 100, 20);
+}
+
+// Function to draw the starfield background
+function drawStars() {
+  for (let i = 0; i < 200; i++) {
+    let x = Math.random() * canvas.width;
+    let y = Math.random() * canvas.height;
+    let alpha = Math.random();
+    let size = Math.random() * 2;
+    
+    ctx.fillStyle = 'rgba(255, 255, 255, ' + alpha + ')'; // Random brightness for twinkling effect
+    ctx.fillRect(x, y, size, size);
+  }
 }
 
 // Function to update leaderboard
@@ -307,16 +320,22 @@ function drawGameOver() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
   
-  // Game over text
-  ctx.fillStyle = 'white';
+  // Fancy background color fade
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Fancy Game Over text with glow
+  ctx.shadowColor = 'white';
+  ctx.shadowBlur = 30;
+  ctx.fillStyle = 'red';
+  ctx.font = '60px Arial';
+  ctx.fillText('GAME OVER', canvas.width / 2 - 150, canvas.height / 2 - 40);
   ctx.font = '30px Arial';
-  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px Arial';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
 
   // Display leaderboard
-  ctx.font = '16px Arial';
+  ctx.font = '20px Arial';
   ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 70);
   for (let i = 0; i < leaderboard.length; i++) {
     ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + i * 30);
@@ -359,6 +378,7 @@ function draw() {
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+  drawStars(); // Draw stars in the background
   drawPlayer();
   drawBullets();
   drawInvaders();
