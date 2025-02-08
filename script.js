@@ -2,8 +2,15 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-canvas.width = window.innerWidth;  // Make canvas width dynamic
-canvas.height = window.innerHeight; // Make canvas height dynamic
+// Dynamically set canvas size to full screen
+function resizeCanvas() {
+  canvas.width = window.innerWidth;  // Make canvas width dynamic
+  canvas.height = window.innerHeight; // Make canvas height dynamic
+}
+resizeCanvas(); // Initial resize when the game starts
+
+// Event listener to update canvas size when the window is resized
+window.addEventListener('resize', resizeCanvas);
 
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
@@ -54,14 +61,14 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
+// Trigger to start background music after first interaction
+let musicStarted = false;
+
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
 let touchStartY = 0;  // for touch movement tracking
 
 // Trigger to start background music after first interaction
-let musicStarted = false;
-
-// Touchstart event to trigger background music and track player movement
 canvas.addEventListener('touchstart', function(e) {
   e.preventDefault();  // Prevent default touch behavior (like scrolling)
   
@@ -340,35 +347,44 @@ function restartGame() {
     // Reset everything for a fresh start
     score = 0;
     level = 1;
-    invaderSpeed = 0.3;
+    invaderSpeed = 0.05;
     invaderDirection = 1;
     invaderRowCount = 3;
     invaderColumnCount = 5;
-    gameOver = false;
-    playerName = ""; // Reset player name
+    bullets = [];
     createInvaders();
-    backgroundMusic.play(); // Restart background music
-    gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
+    gameOver = false;
+    gameInterval = setInterval(gameLoop, 1000 / 60);
   }
 }
 
-// Main game loop
-function draw() {
+// Game loop function
+function gameLoop() {
   if (gameOver) {
     return;
   }
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+  // Draw the background first
+  drawBackground();
+
+  // Then draw the game elements on top of the background
   drawPlayer();
   drawBullets();
   drawInvaders();
   drawScore();
   drawLevel();
+
+  // Check for collisions and update positions
   detectCollisions();
   movePlayer();
   moveInvaders();
 }
 
 // Initialize the game
-createInvaders();
-gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
+function init() {
+  createInvaders();
+  gameInterval = setInterval(gameLoop, 1000 / 60);
+}
+
+// Start the game when the page loads
+init();
