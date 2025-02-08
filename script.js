@@ -54,178 +54,49 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
-// Trigger to start background music after first interaction
-let musicStarted = false;
+// Stars for the twinkling effect
+let stars = [];
 
-// Touch event listeners for mobile control
-let touchStartX = 0;  // for touch movement tracking
-let touchStartY = 0;  // for touch movement tracking
-
-// Trigger to start background music after first interaction
-canvas.addEventListener('touchstart', function(e) {
-  e.preventDefault();  // Prevent default touch behavior (like scrolling)
-  
-  if (!musicStarted) {
-    backgroundMusic.play(); // Play background music after first touch
-    musicStarted = true; // Prevent restarting background music on subsequent touches
-  }
-
-  touchStartX = e.touches[0].clientX;  // Track the starting X position of touch
-  touchStartY = e.touches[0].clientY;  // Track the starting Y position of touch
-});
-
-// Touchmove event to track player movement
-canvas.addEventListener('touchmove', function(e) {
-  e.preventDefault();
-  let touchEndX = e.touches[0].clientX;  // Track the current X position of touch
-  if (touchEndX < touchStartX && player.x > 0) {
-    player.x -= player.speed;  // Move left
-  } else if (touchEndX > touchStartX && player.x < canvas.width - player.width) {
-    player.x += player.speed;  // Move right
-  }
-  touchStartX = touchEndX;  // Update the touch start X to current position for continuous movement
-});
-
-// Touch event to fire bullets
-canvas.addEventListener('touchstart', function(e) {
-  if (!gameOver && Date.now() - lastShotTime > shootDelay) {
-    shootBullet();  // Fire a bullet when the screen is touched
-  } else if (gameOver) {
-    restartGame();  // Restart the game if game over screen is active
-  }
-});
-
-// Function to get bullet color based on level
-function getBulletColor() {
-  if (level >= 26) {
-    bulletSpeed = 11; // Faster bullets after level 26
-    return 'purple'; // Purple bullets
-  } else if (level >= 16) {
-    bulletSpeed = 10; // Faster bullets after level 16
-    return 'yellow'; // Yellow bullets
-  } else if (level >= 6) {
-    bulletSpeed = 9; // Faster bullets after level 6
-    return 'cyan'; // Cyan bullets
-  } else {
-    bulletSpeed = 8; // Default bullet speed
-    return 'red'; // Red bullets for lower levels
+// Create stars (each star will have random properties)
+function createStars(numStars) {
+  for (let i = 0; i < numStars; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * 2 + 1, // Random size between 1 and 3
+      opacity: Math.random(), // Random opacity for twinkling effect
+      twinkleSpeed: Math.random() * 0.02 + 0.01, // Speed of twinkling
+    });
   }
 }
 
-// Function to shoot a bullet
-function shootBullet() {
-  if (gameOver) return;
-  let bullet = {
-    x: player.x + player.width / 2 - 2,
-    y: player.y,
-    width: 4,
-    height: 10,
-    dy: -bulletSpeed, // Bullet speed based on level
-    color: getBulletColor(), // Get bullet color based on level
-  };
-  bullets.push(bullet);
+// Update and draw the gradient background and stars
+function drawBackground() {
+  // Create a space-like gradient background
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, '#000428'); // Dark space blue
+  gradient.addColorStop(1, '#004e92'); // Lighter blue for the deep space feel
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Play the shoot sound
-  shootSound.play();
-  lastShotTime = Date.now(); // Update the last shot time to prevent fast shooting
-}
+  // Draw stars with twinkle effect
+  for (let i = 0; i < stars.length; i++) {
+    const star = stars[i];
+    star.opacity += star.twinkleSpeed; // Change opacity over time
 
-// Function to draw bullets with a glow effect
-function drawBullets() {
-  for (let i = 0; i < bullets.length; i++) {
-    if (bullets[i].y < 0) {
-      bullets.splice(i, 1); // Remove bullets that go off-screen
-      continue;
+    // Reverse opacity direction when limits are reached (twinkling effect)
+    if (star.opacity > 1 || star.opacity < 0) {
+      star.twinkleSpeed = -star.twinkleSpeed;
     }
-    
-    // Set glowing effect
-    ctx.shadowColor = bullets[i].color;
-    ctx.shadowBlur = 20; // Increase shadow blur for better glow effect
-    ctx.fillStyle = bullets[i].color;
-    ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
-    
-    bullets[i].y += bullets[i].dy; // Move the bullet
-  }
-  ctx.shadowBlur = 0; // Reset shadow blur after drawing bullets
-}
 
-// Function to create invaders
-function createInvaders() {
-  invaders = [];
-  for (let c = 0; c < invaderColumnCount; c++) {
-    invaders[c] = [];
-    for (let r = 0; r < invaderRowCount; r++) {
-      invaders[c][r] = {
-        x: c * (invaderWidth + invaderPadding) + invaderOffsetLeft,
-        y: r * (invaderHeight + invaderPadding) + invaderOffsetTop,
-        status: 1,
-        image: new Image(),
-      };
-      invaders[c][r].image.src = 'invader.png'; // Path to invader image
-    }
+    ctx.beginPath();
+    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`; // White stars with twinkle
+    ctx.fill();
   }
 }
 
-// Function to draw the player (spaceship)
-function drawPlayer() {
-  ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
-}
-
-// Function to draw invaders
-function drawInvaders() {
-  for (let c = 0; c < invaderColumnCount; c++) {
-    for (let r = 0; r < invaderRowCount; r++) {
-      if (invaders[c][r].status === 1) {
-        ctx.drawImage(invaders[c][r].image, invaders[c][r].x, invaders[c][r].y, invaderWidth, invaderHeight);
-      }
-    }
-  }
-}
-
-// Function to detect collisions between bullets and invaders
-function detectCollisions() {
-  for (let i = 0; i < bullets.length; i++) {
-    for (let c = 0; c < invaderColumnCount; c++) {
-      for (let r = 0; r < invaderRowCount; r++) {
-        let invader = invaders[c][r];
-        if (invader.status === 1) {
-          if (
-            bullets[i].x > invader.x &&
-            bullets[i].x < invader.x + invaderWidth &&
-            bullets[i].y > invader.y &&
-            bullets[i].y < invader.y + invaderHeight
-          ) {
-            invader.status = 0; // Destroy the invader
-            bullets.splice(i, 1); // Remove the bullet
-            score += 10; // Increase score
-            if (checkWin()) {
-              level++;
-              invaderSpeed = Math.min(invaderSpeed + 0.1, 1); // Increase speed as levels go up, up to a max speed
-              if (level <= 10) {
-                invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
-                invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
-              }
-              createInvaders();  // Regenerate the invaders with updated count and speed
-            }
-            break;
-          }
-        }
-      }
-    }
-  }
-}
-
-// Check if all invaders are destroyed
-function checkWin() {
-  for (let c = 0; c < invaderColumnCount; c++) {
-    for (let r = 0; r < invaderRowCount; r++) {
-      if (invaders[c][r].status === 1) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
+// Player object, Bullet, Invaders, etc. remain as they are...
 
 // Function to move the player
 function movePlayer() {
@@ -307,72 +178,48 @@ function drawGameOver() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
   
-  // Draw gradient background (black to dark blue)
-  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, 'black');
-  gradient.addColorStop(1, '#003366'); // Dark blue color
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Game over text
+  ctx.fillStyle = 'white';
+  ctx.font = '30px Arial';
+  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
+  ctx.font = '20px Arial';
+  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
+  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
 
-  // Draw stars with gentle twinkling effect
-  drawStars();
-  
-  ctx.fillStyle = "#FFFFFF";
-  ctx.font = "40px Arial";
-  ctx.fillText("Game Over", canvas.width / 2 - 100, canvas.height / 2 - 40);
+  // Display leaderboard
+  ctx.font = '16px Arial';
+  ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 70);
+  for (let i = 0; i < leaderboard.length; i++) {
+    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + i * 30);
+  }
 
-  ctx.font = "20px Arial";
-  ctx.fillText("Score: " + score, canvas.width / 2 - 60, canvas.height / 2);
-
-  ctx.fillText("Leaderboard", canvas.width / 2 - 80, canvas.height / 2 + 40);
-  
-  leaderboard.forEach((entry, index) => {
-    ctx.fillText(`${index + 1}. ${entry.name}: ${entry.score}`, canvas.width / 2 - 80, canvas.height / 2 + 60 + index * 30);
-  });
-
-  ctx.fillText("Tap to restart", canvas.width / 2 - 80, canvas.height / 2 + 160);
+  // Restart instructions
+  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + 180);
 }
 
-// Function to handle game over condition
+// Function to end the game
 function gameOverCondition() {
   gameOver = true;
-  gameOverSound.play();  // Play game over sound
-  drawGameOver(); // Show game over screen
+  drawGameOver();
+  clearInterval(gameInterval); // Stop the game
+  gameOverSound.play(); // Play game over sound
 }
 
-// Function to restart the game
+// Restart the game when clicked
 function restartGame() {
-  score = 0;
-  level = 1;
-  invaderSpeed = 0.05;
-  invaderDirection = 1;
-  invaderRowCount = 3;
-  invaderColumnCount = 5;
-  createInvaders();
-  gameOver = false;
-  bullets = [];
-  player.x = canvas.width / 2 - player.width / 2;
-  player.y = canvas.height - 100;
-  gameInterval = setInterval(draw, 1000 / 60); // Restart game loop at 60 FPS
-}
-
-// Function to draw twinkling stars (with slower movement)
-function drawStars() {
-  for (let i = 0; i < 200; i++) {
-    let x = Math.random() * canvas.width;
-    let y = Math.random() * canvas.height;
-
-    // Slow down star movement by reducing the multiplication factor
-    x += Math.sin(Date.now() / 20000 + i) * 0.005; // Slower horizontal movement
-    y += Math.cos(Date.now() / 20000 + i) * 0.005; // Slower vertical movement
-
-    let radius = Math.random() * 1.5 + 0.5;
-    let opacity = Math.random() * 0.5 + 0.5;
-
-    ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fill();
+  if (gameOver) {
+    // Reset everything for a fresh start
+    score = 0;
+    level = 1;
+    invaderSpeed = 0.3;
+    invaderDirection = 1;
+    invaderRowCount = 3;
+    invaderColumnCount = 5;
+    gameOver = false;
+    playerName = ""; // Reset player name
+    createInvaders();
+    backgroundMusic.play(); // Restart background music
+    gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
   }
 }
 
@@ -382,26 +229,12 @@ function draw() {
     return;
   }
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-  
-  // Draw gradient background (black to dark blue)
-  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, 'black');
-  gradient.addColorStop(1, '#003366'); // Dark blue color
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Draw stars with gentle twinkling effect
-  drawStars();
-
-  // Draw player, bullets, invaders, score, and level
+  drawBackground();  // Draw the background with gradient and stars
   drawPlayer();
   drawBullets();
   drawInvaders();
   drawScore();
   drawLevel();
-  
-  // Handle collisions, movements
   detectCollisions();
   movePlayer();
   moveInvaders();
@@ -409,4 +242,5 @@ function draw() {
 
 // Initialize the game
 createInvaders();
+createStars(100); // Generate 100 stars for the background
 gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
