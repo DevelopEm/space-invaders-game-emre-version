@@ -63,13 +63,16 @@ const stars = [];
 const starCount = 200; // Number of stars
 const starSpeed = 0.5; // Speed of stars
 
-// Star object constructor
+// Star object constructor with twinkle effect
 function createStar() {
   return {
     x: Math.random() * canvas.width,
     y: Math.random() * canvas.height,
-    size: Math.random() * 2 + 1,
+    size: Math.random() * 2 + 1,  // Random size between 1 and 3
     speed: Math.random() * starSpeed + 0.1, // Random speed for each star
+    baseBrightness: Math.random() * 0.5 + 0.5, // Random brightness
+    brightness: Math.random() * 0.5 + 0.5, // Start with a random brightness
+    twinkleSpeed: Math.random() * 0.02 + 0.005, // Speed of twinkling effect
   };
 }
 
@@ -78,14 +81,21 @@ for (let i = 0; i < starCount; i++) {
   stars.push(createStar());
 }
 
-// Function to draw the starry background
+// Function to draw the starry background with twinkling effect
 function drawStarryBackground() {
   // Draw stars on top of the gradient
   for (let i = 0; i < stars.length; i++) {
     const star = stars[i];
+
+    // Update the brightness to create a twinkling effect
+    star.brightness += star.twinkleSpeed;
+    if (star.brightness > star.baseBrightness + 0.5 || star.brightness < star.baseBrightness - 0.5) {
+      star.twinkleSpeed = -star.twinkleSpeed; // Reverse the twinkling direction
+    }
+
     ctx.beginPath();
     ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-    ctx.fillStyle = 'white';
+    ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`; // Adjust brightness based on the twinkling effect
     ctx.fill();
   }
 
@@ -338,13 +348,7 @@ function drawScore() {
 function drawLevel() {
   ctx.fillStyle = '#FFFFFF';
   ctx.font = '16px Arial';
-  ctx.fillText('Level: ' + level, canvas.width - 80, 20);
-}
-
-// Function to handle game over condition
-function gameOverCondition() {
-  gameOver = true;
-  gameOverSound.play(); // Play game over sound
+  ctx.fillText('Level: ' + level, canvas.width - 100, 20);
 }
 
 // Function to restart the game
@@ -352,35 +356,93 @@ function restartGame() {
   score = 0;
   level = 1;
   invaderSpeed = 0.05;
+  invaderDirection = 1;
   invaderRowCount = 3;
   invaderColumnCount = 5;
-  invaderDirection = 1;
   createInvaders();
   gameOver = false;
-  bullets = [];
-  backgroundMusic.play();
-  update();
 }
 
-// Game loop to update and render the game
-function update() {
-  drawGradientBackground(); // Draw the gradient background first (black to dark blue)
-  drawStarryBackground();   // Draw stars on top of the gradient
+// Game over condition
+function gameOverCondition() {
+  gameOver = true;
+  gameOverSound.play();  // Play the game over sound
+}
 
+// Game loop
+function gameLoop() {
+  // Clear the canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw the background gradient and stars
+  drawGradientBackground();
+  drawStarryBackground();
+
+  // Move the player and invaders
+  movePlayer();
+  moveInvaders();
+
+  // Draw player, invaders, bullets, score, and level
   drawPlayer();
   drawInvaders();
   drawBullets();
-  movePlayer();
-  moveInvaders();
-  detectCollisions();
   drawScore();
   drawLevel();
 
-  if (gameOver) return;
+  // Detect collisions between bullets and invaders
+  detectCollisions();
 
-  requestAnimationFrame(update); // Call the next frame
+  // Game over condition
+  if (gameOver) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '30px Arial';
+    ctx.fillText('GAME OVER', canvas.width / 2 - 80, canvas.height / 2);
+    ctx.font = '20px Arial';
+    ctx.fillText('Tap to Restart', canvas.width / 2 - 70, canvas.height / 2 + 40);
+  }
+
+  // Request next frame
+  if (!gameOver) {
+    requestAnimationFrame(gameLoop);
+  }
 }
 
-// Start the game when everything is ready
-createInvaders(); // Create initial invaders
-update(); // Start the game loop
+// Keyboard events for desktop control
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Right' || e.key === 'ArrowRight') {
+    rightPressed = true;
+  } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
+    leftPressed = true;
+  } else if (e.key === ' ' || e.key === 'Spacebar') {
+    spacePressed = true;
+    shootBullet();
+  }
+});
+
+document.addEventListener('keyup', function(e) {
+  if (e.key === 'Right' || e.key === 'ArrowRight') {
+    rightPressed = false;
+  } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
+    leftPressed = false;
+  } else if (e.key === ' ' || e.key === 'Spacebar') {
+    spacePressed = false;
+  }
+});
+
+// Start the game once the player interacts
+canvas.addEventListener('click', function() {
+  if (!musicStarted) {
+    backgroundMusic.play(); // Play background music after first click
+    musicStarted = true;
+  }
+
+  if (gameOver) {
+    restartGame(); // Restart game when clicked after game over
+  }
+});
+
+// Initialize invaders and start the game loop
+createInvaders();
+gameLoop();
