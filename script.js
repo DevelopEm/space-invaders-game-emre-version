@@ -2,8 +2,9 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-canvas.width = window.innerWidth;  // Make canvas width dynamic
-canvas.height = window.innerHeight; // Make canvas height dynamic
+// Dynamically update canvas size to fill the full screen
+canvas.width = window.innerWidth;  // Full width of the screen
+canvas.height = window.innerHeight; // Full height of the screen
 
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
