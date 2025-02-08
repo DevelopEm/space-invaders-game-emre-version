@@ -27,6 +27,17 @@ canvas {
   height: 100vh; /* Make the canvas fill the entire viewport height */
 }
 
+/* Style for score and level text */
+.score-level {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 5vw; /* Scales the font size based on viewport width */
+  z-index: 10; /* Ensures score and level are above other elements */
+}
+
 #gameArea {
   position: relative;
   width: 100%;
