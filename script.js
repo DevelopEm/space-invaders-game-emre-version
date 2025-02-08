@@ -2,15 +2,8 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// Dynamically set canvas size to full screen
-function resizeCanvas() {
-  canvas.width = window.innerWidth;  // Make canvas width dynamic
-  canvas.height = window.innerHeight; // Make canvas height dynamic
-}
-resizeCanvas(); // Initial resize when the game starts
-
-// Event listener to update canvas size when the window is resized
-window.addEventListener('resize', resizeCanvas);
+canvas.width = window.innerWidth;  // Make canvas width dynamic
+canvas.height = window.innerHeight; // Make canvas height dynamic
 
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
