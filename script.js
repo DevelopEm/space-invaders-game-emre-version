@@ -17,7 +17,7 @@ let restartTextHeight = 60; // Distance of restart text from center of canvas
 
 // Star object
 let stars = [];
-const starCount = 200; // Number of stars
+const starCount = 300; // Number of stars
 
 // Create stars for the background
 function createStars() {
@@ -26,8 +26,8 @@ function createStars() {
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       size: Math.random() * 3 + 1, // Random size between 1 and 4
-      speed: Math.random() * 0.5 + 0.1, // Random speed for twinkling effect
-      opacity: Math.random() * 0.5 + 0.5, // Random opacity
+      speed: Math.random() * 0.8 + 0.1, // Random speed for twinkling effect
+      opacity: Math.random() * 0.6 + 0.6, // Random opacity
     });
   }
 }
