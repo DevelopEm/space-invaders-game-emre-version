@@ -54,31 +54,6 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
-// Keyboard event listeners for movement and shooting
-let rightPressed = false;
-let leftPressed = false;
-let spacePressed = false;
-
-document.addEventListener('keydown', function (e) {
-  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-    rightPressed = true;
-  } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-    leftPressed = true;
-  } else if (e.key === ' ' && !gameOver && Date.now() - lastShotTime > shootDelay) {
-    spacePressed = true;
-  }
-});
-
-document.addEventListener('keyup', function (e) {
-  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-    rightPressed = false;
-  } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-    leftPressed = false;
-  } else if (e.key === ' ') {
-    spacePressed = false;
-  }
-});
-
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
 let touchStartY = 0;  // for touch movement tracking
@@ -352,83 +327,69 @@ function drawGameOver() {
 
   // Display leaderboard
   ctx.font = '16px Arial';
-  ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 70);
+  ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 80);
   for (let i = 0; i < leaderboard.length; i++) {
-    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 90 + i * 20);
+    ctx.fillText(leaderboard[i].name + ': ' + leaderboard[i].score, canvas.width / 2 - 60, canvas.height / 2 + 110 + i * 30);
   }
-
-  // Option to restart the game
-  ctx.fillText('Touch to Restart', canvas.width / 2 - 60, canvas.height / 2 + 140);
-}
-
-// Function to handle the game over condition
-function gameOverCondition() {
-  backgroundMusic.pause();
-  backgroundMusic.currentTime = 0; // Reset background music
-  gameOver = true;
-  gameOverSound.play();
-  drawGameOver();  // Display game over screen
 }
 
 // Function to restart the game
 function restartGame() {
   score = 0;
   level = 1;
-  invaderSpeed = 0.05;
-  invaderDirection = 1;
   invaderRowCount = 3;
   invaderColumnCount = 5;
-  gameOver = false;
-  playerName = "";
+  invaderSpeed = 0.05;
   bullets = [];
+  invaders = [];
   createInvaders();
-  backgroundMusic.play(); // Restart background music
-  gameInterval = setInterval(update, 1000 / 60); // Restart the game loop
+  player.x = canvas.width / 2 - 20;
+  player.y = canvas.height - 100;
+  gameOver = false;
+  gameInterval = setInterval(update, 1000 / 60); // Start the game again
 }
 
-// Function to update the game every frame
+// Function to update the game state
 function update() {
-  if (!gameOver) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas for each frame
-
-    // Draw background (black to dark blue gradient)
-    let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, 'black');
-    gradient.addColorStop(1, '#003366');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw stars
-    drawStars();
-
-    // Update game elements
-    movePlayer();
-    moveInvaders();
-    detectCollisions();
-    drawBullets();
-    drawPlayer();
-    drawInvaders();
-    drawScore();
-    drawLevel();
-
-    // Check if game is over
-    if (gameOver) {
-      drawGameOver(); // Draw the game over screen
-    }
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+  
+  if (gameOver) {
+    drawGameOver(); // Display game over screen
+    return;
   }
+
+  movePlayer();
+  moveInvaders();
+  detectCollisions();
+
+  drawPlayer();
+  drawInvaders();
+  drawBullets();
+  drawScore();
+  drawLevel();
 }
 
-// Function to draw stars with twinkling effect
-function drawStars() {
-  ctx.fillStyle = 'white';
-  for (let i = 0; i < 200; i++) {
-    let x = Math.random() * canvas.width;
-    let y = Math.random() * canvas.height;
-    let size = Math.random() * 2;
-    ctx.fillRect(x, y, size, size);
+// Function to handle keyboard events for player movement and shooting
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight') {
+    rightPressed = true;
+  } else if (e.key === 'ArrowLeft') {
+    leftPressed = true;
+  } else if (e.key === ' ' || e.key === 'ArrowUp') {
+    spacePressed = true;
   }
-}
+});
+
+document.addEventListener('keyup', function(e) {
+  if (e.key === 'ArrowRight') {
+    rightPressed = false;
+  } else if (e.key === 'ArrowLeft') {
+    leftPressed = false;
+  } else if (e.key === ' ' || e.key === 'ArrowUp') {
+    spacePressed = false;
+  }
+});
 
 // Initialize the game
 createInvaders();
-gameInterval = setInterval(update, 1000 / 60);
+gameInterval = setInterval(update, 1000 / 60); // Update the game every 60 FPS
