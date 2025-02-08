@@ -393,4 +393,3 @@ function gameLoop() {
 // Start the game
 createInvaders();
 gameInterval = setInterval(gameLoop, 16);
-
