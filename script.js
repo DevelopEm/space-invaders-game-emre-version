@@ -351,9 +351,41 @@ function restartGame() {
   }
 }
 
+// Function to draw the starry space background
+function drawStars() {
+  let starCount = 200; // Number of stars
+  for (let i = 0; i < starCount; i++) {
+    let x = Math.random() * canvas.width;
+    let y = Math.random() * canvas.height;
+    let radius = Math.random() * 2;
+    let alpha = Math.random() * 0.5 + 0.5; // Random opacity for twinkling effect
+
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+    ctx.fill();
+  }
+}
+
+// Function to draw the background gradient
+function drawBackground() {
+  // Create a gradient that goes from dark blue to black
+  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, '#0b0b2f'); // Dark blue
+  gradient.addColorStop(1, '#000000'); // Black
+
+  // Fill the entire canvas with the gradient
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Draw the stars
+  drawStars();
+}
+
 // Game update loop
 function update() {
   if (!gameOver) {
+    drawBackground(); // Draw the space background
     movePlayer();
     moveInvaders();
     draw();
