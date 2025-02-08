@@ -5,11 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Space Invaders</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+    }
+    canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  </style>
 </head>
 <body>
-  <div id="gameArea">
-    <canvas id="gameCanvas"></canvas>
-  </div>
+  <canvas id="gameCanvas"></canvas>
+  <script>
+    // Game code here
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Set initial canvas size
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      createStars(); // Recreate stars after resizing
+      createInvaders(); // Recreate invaders after resizing
+    });
   <script src="script.js"></script>
 </body>
 </html>
