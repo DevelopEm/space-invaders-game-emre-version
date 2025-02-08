@@ -8,7 +8,7 @@ canvas.height = window.innerHeight; // Make canvas height dynamic
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
-let invaderSpeed = 0.4;
+let invaderSpeed = 0.5;
 let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
@@ -17,7 +17,7 @@ let restartTextHeight = 60; // Distance of restart text from center of canvas
 
 // Star object
 let stars = [];
-const starCount = 100; // Number of stars
+const starCount = 300; // Number of stars
 
 // Create stars for the background
 function createStars() {
@@ -25,8 +25,8 @@ function createStars() {
     stars.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      size: Math.random() * 3 + 1, // Random size between 1 and 4
-      speed: Math.random() * 0.9 + 0.3, // Random speed for twinkling effect
+      size: Math.random() * 4 + 1, // Random size between 1 and 4
+      speed: Math.random() * 1 + 0.6, // Random speed for twinkling effect
       opacity: Math.random() * 0.5 + 0.5, // Random opacity
     });
   }
