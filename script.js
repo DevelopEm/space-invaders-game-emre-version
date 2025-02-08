@@ -54,6 +54,60 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
+// Twinkling star variables
+let stars = [];
+const numStars = 200; // Number of stars
+const maxStarSize = 2; // Maximum size of stars
+const minStarSize = 0.5; // Minimum size of stars
+
+// Function to create stars
+function createStars() {
+  stars = [];
+  for (let i = 0; i < numStars; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * (maxStarSize - minStarSize) + minStarSize,
+      brightness: Math.random() * 0.5 + 0.5, // Random brightness between 0.5 and 1
+      speed: Math.random() * 0.2 + 0.05, // Slow random movement speed
+    });
+  }
+}
+
+// Function to draw the space background with gradient
+function drawSpaceBackground() {
+  // Create gradient for the background (black to dark blue)
+  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, 'black');
+  gradient.addColorStop(1, '#1b2a49');
+
+  // Fill background with gradient
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Draw twinkling stars
+  for (let i = 0; i < stars.length; i++) {
+    let star = stars[i];
+    ctx.beginPath();
+    ctx.arc(star.x, star.y, star.size, 0, 2 * Math.PI);
+    ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`; // Adjust brightness
+    ctx.fill();
+  }
+
+  // Animate stars with gentle movement
+  for (let i = 0; i < stars.length; i++) {
+    let star = stars[i];
+    star.x += star.speed; // Move stars horizontally
+    if (star.x > canvas.width) {
+      star.x = 0; // Wrap around when reaching the right edge
+    }
+    star.y += star.speed; // Move stars vertically
+    if (star.y > canvas.height) {
+      star.y = 0; // Wrap around when reaching the bottom
+    }
+  }
+}
+
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
 let touchStartY = 0;  // for touch movement tracking
@@ -200,10 +254,10 @@ function detectCollisions() {
             score += 10; // Increase score
             if (checkWin()) {
               level++;
-              invaderSpeed = Math.min(invaderSpeed + 0.1, 1); // Increase speed as levels go up, up to a max speed
+              invaderSpeed = Math.min(invaderSpeed + 0.3, 3); // Increase speed as levels go up, up to a max speed
               if (level <= 10) {
                 invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
-                invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
+                invaderColumnCount = Math.min(invaderColumnCount + 2, 7); // Increase columns slowly
               }
               createInvaders();  // Regenerate the invaders with updated count and speed
             }
@@ -358,7 +412,7 @@ function draw() {
     return;
   }
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+  drawSpaceBackground(); // Draw space background with stars
   drawPlayer();
   drawBullets();
   drawInvaders();
@@ -370,5 +424,6 @@ function draw() {
 }
 
 // Initialize the game
+createStars(); // Create stars at the beginning
 createInvaders();
 gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
