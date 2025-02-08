@@ -200,7 +200,7 @@ function detectCollisions() {
             score += 10; // Increase score
             if (checkWin()) {
               level++;
-              invaderSpeed = Math.min(invaderSpeed + 0.1, 1); // Increase speed as levels go up, up to a max speed
+              invaderSpeed = Math.min(invaderSpeed + 0.2, 1); // Increase speed as levels go up, up to a max speed
               if (level <= 10) {
                 invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
                 invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
@@ -275,24 +275,24 @@ function moveInvaders() {
 // Function to draw the score
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '20px Arial';
+  ctx.font = '10px Arial';
   ctx.fillText('Score: ' + score, 8, 20);
 }
 
 // Function to draw the level
 function drawLevel() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '20px Arial';
+  ctx.font = '10px Arial';
   ctx.fillText('Level: ' + level, canvas.width - 100, 20);
 }
 
 // Function to draw the starfield background
 function drawStars() {
-  for (let i = 0; i < 200; i++) {
+  for (let i = 0; i < 100; i++) {
     let x = Math.random() * canvas.width;
     let y = Math.random() * canvas.height;
     let alpha = Math.random();
-    let size = Math.random() * 2;
+    let size = Math.random() * 1;
     
     ctx.fillStyle = 'rgba(255, 255, 255, ' + alpha + ')'; // Random brightness for twinkling effect
     ctx.fillRect(x, y, size, size);
@@ -327,8 +327,8 @@ function drawGameOver() {
   // Fancy Game Over text with glow
   ctx.shadowColor = 'white';
   ctx.shadowBlur = 30;
-  ctx.fillStyle = 'red';
-  ctx.font = '60px Arial';
+  ctx.fillStyle = 'cyan';
+  ctx.font = '30px Arial';
   ctx.fillText('GAME OVER', canvas.width / 2 - 150, canvas.height / 2 - 40);
   ctx.font = '30px Arial';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
