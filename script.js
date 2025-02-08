@@ -90,7 +90,7 @@ function drawSpaceBackground() {
     let star = stars[i];
     ctx.beginPath();
     ctx.arc(star.x, star.y, star.size, 0, 2 * Math.PI);
-    ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`; // Adjust brightness
+    ctx.fillStyle = rgba(255, 255, 255, ${star.brightness}); // Adjust brightness
     ctx.fill();
   }
 
@@ -257,10 +257,11 @@ function detectCollisions() {
               invaderSpeed = Math.min(invaderSpeed + 0.1, 1); // Increase speed as levels go up, up to a max speed
               if (level <= 10) {
                 invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
-                invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slightly
+                invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
               }
-              createInvaders();
+              createInvaders();  // Regenerate the invaders with updated count and speed
             }
+            break;
           }
         }
       }
@@ -268,80 +269,161 @@ function detectCollisions() {
   }
 }
 
-// Function to check if all invaders are destroyed
+// Check if all invaders are destroyed
 function checkWin() {
   for (let c = 0; c < invaderColumnCount; c++) {
     for (let r = 0; r < invaderRowCount; r++) {
       if (invaders[c][r].status === 1) {
-        return false; // If at least one invader is still alive, return false
+        return false;
       }
     }
   }
-  return true; // All invaders are destroyed, return true
+  return true;
 }
 
-// Function to draw the game over screen
-function drawGameOver() {
-  ctx.fillStyle = 'white';
-  ctx.font = '48px Arial';
-  ctx.fillText('Game Over', canvas.width / 2 - 140, canvas.height / 2 - 30);
-  ctx.font = '24px Arial';
-  ctx.fillText('Score: ' + score, canvas.width / 2 - 60, canvas.height / 2 + 20);
-  
-  // Prompt for name input
-  if (!playerName) {
-    playerName = prompt("Enter your name to save your score:");
+// Function to move the player
+function movePlayer() {
+  if (rightPressed && player.x < canvas.width - player.width) {
+    player.x += player.speed;
+  } else if (leftPressed && player.x > 0) {
+    player.x -= player.speed;
+  }
+}
+
+// Function to move the invaders
+function moveInvaders() {
+  let shouldMoveDown = false;
+
+  for (let c = 0; c < invaderColumnCount; c++) {
+    for (let r = 0; r < invaderRowCount; r++) {
+      let invader = invaders[c][r];
+      if (invader.status === 1) {
+        invader.x += invaderSpeed * invaderDirection;
+
+        // Check if invader reaches the edge of the screen
+        if (invader.x + invaderWidth > canvas.width || invader.x < 0) {
+          invaderDirection = -invaderDirection;
+          shouldMoveDown = true;
+        }
+
+        // Check if invader reaches the bottom (player)
+        if (invader.y + invaderHeight >= player.y && invader.status === 1) {
+          gameOverCondition(); // End the game
+          return;
+        }
+      }
+    }
   }
 
-  // Save score in leaderboard
-  if (playerName && leaderboard.length < 5) {
-    leaderboard.push({ name: playerName, score: score });
-    leaderboard.sort((a, b) => b.score - a.score); // Sort leaderboard by score
+  if (shouldMoveDown) {
+    for (let c = 0; c < invaderColumnCount; c++) {
+      for (let r = 0; r < invaderRowCount; r++) {
+        if (invaders[c][r].status === 1) {
+          invaders[c][r].y += invaderHeight; // Move all invaders down a row
+        }
+      }
+    }
   }
+}
+
+// Function to draw the score
+function drawScore() {
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '16px Arial';
+  ctx.fillText('Score: ' + score, 8, 20);
+}
+
+// Function to draw the level
+function drawLevel() {
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '16px Arial';
+  ctx.fillText('Level: ' + level, canvas.width - 80, 20);
+}
+
+// Function to update leaderboard
+function updateLeaderboard(name, score) {
+  leaderboard.push({ name, score });
+  leaderboard.sort((a, b) => b.score - a.score); // Sort by score descending
+  if (leaderboard.length > 3) {
+    leaderboard = leaderboard.slice(0, 3); // Keep only the top 3 players
+  }
+}
+
+// Function to draw the game over screen with summary and leaderboard
+function drawGameOver() {
+  // Ask for player name
+  if (playerName === "") {
+    playerName = prompt("Enter your name:");
+  }
+
+  // Update leaderboard with player's score
+  updateLeaderboard(playerName, score);
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+  
+  // Game over text
+  ctx.fillStyle = 'white';
+  ctx.font = '30px Arial';
+  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
+  ctx.font = '20px Arial';
+  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
+  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
 
   // Display leaderboard
-  ctx.font = '18px Arial';
-  ctx.fillText('Leaderboard:', canvas.width / 2 - 70, canvas.height / 2 + 50);
+  ctx.font = '16px Arial';
+  ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 70);
   for (let i = 0; i < leaderboard.length; i++) {
-    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 70 + i * 20);
+    ctx.fillText(${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}, canvas.width / 2 - 60, canvas.height / 2 + 100 + i * 30);
   }
+
+  // Restart instructions
+  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + 180);
 }
 
-// Function to restart the game
+// Function to end the game
+function gameOverCondition() {
+  gameOver = true;
+  drawGameOver();
+  clearInterval(gameInterval); // Stop the game
+  gameOverSound.play(); // Play game over sound
+}
+
+// Restart the game when clicked
 function restartGame() {
-  player.x = canvas.width / 2 - player.width / 2;
-  player.y = canvas.height - 100;
-  score = 0;
-  level = 1;
-  invaderSpeed = 0.05;
-  invaderDirection = 1;
-  invaderRowCount = 3;
-  invaderColumnCount = 5;
-  createInvaders();
-  gameOver = false;
-  bullets = [];
-  createStars();
-  backgroundMusic.play(); // Restart background music after game over
+  if (gameOver) {
+    // Reset everything for a fresh start
+    score = 0;
+    level = 1;
+    invaderSpeed = 0.3;
+    invaderDirection = 1;
+    invaderRowCount = 3;
+    invaderColumnCount = 5;
+    gameOver = false;
+    playerName = ""; // Reset player name
+    createInvaders();
+    backgroundMusic.play(); // Restart background music
+    gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
+  }
 }
 
 // Main game loop
-function gameLoop() {
+function draw() {
   if (gameOver) {
-    drawSpaceBackground(); // Draw space background and leaderboard
-    drawGameOver(); // Draw the game over screen
     return;
   }
 
-  drawSpaceBackground(); // Draw space background
-  drawPlayer(); // Draw the player (spaceship)
-  drawBullets(); // Draw the bullets
-  drawInvaders(); // Draw the invaders
-  detectCollisions(); // Check for collisions between bullets and invaders
-
-  // Update the game (move invaders, etc.)
-  requestAnimationFrame(gameLoop); // Call the game loop recursively
+  drawSpaceBackground(); // Draw space background with stars
+  drawPlayer();
+  drawBullets();
+  drawInvaders();
+  drawScore();
+  drawLevel();
+  detectCollisions();
+  movePlayer();
+  moveInvaders();
 }
 
-createStars();
+// Initialize the game
+createStars(); // Create stars at the beginning
 createInvaders();
-gameLoop();
+gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
