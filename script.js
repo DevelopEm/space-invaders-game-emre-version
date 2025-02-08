@@ -19,6 +19,12 @@ let restartTextHeight = 60; // Distance of restart text from center of canvas
 let stars = [];
 const starCount = 100; // Number of stars
 
+// Leaderboard storage
+let leaderboard = [];
+
+// Ask for player name and store in a variable
+let playerName = prompt("Enter your name:");
+
 // Create stars for the background
 function createStars() {
   for (let i = 0; i < starCount; i++) {
@@ -36,8 +42,8 @@ function createStars() {
 function drawBackground() {
   // Create gradient (black to dark blue)
   let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, 'black');
-  gradient.addColorStop(1, '#00008B'); // Dark blue
+  gradient.addColorStop(0, '#000000'); // Black at the top
+  gradient.addColorStop(1, '#00008B'); // Dark blue at the bottom
 
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas with the gradient
@@ -306,6 +312,12 @@ function drawLevel() {
 
 // Function to draw the game over screen with summary
 function drawGameOver() {
+  // Save the score and level in the leaderboard
+  leaderboard.push({ name: playerName, score: score, level: level });
+  
+  // Sort leaderboard by score
+  leaderboard.sort((a, b) => b.score - a.score);
+
   // Ensure that the game over sound is played only once
   if (!gameOverSound.played) {
     gameOverSound.play(); // Play the game over sound
@@ -318,6 +330,12 @@ function drawGameOver() {
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
   ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
+
+  // Draw leaderboard when game over
+  ctx.fillText('Leaderboard', canvas.width / 2 - 70, canvas.height / 2 + 100);
+  for (let i = 0; i < leaderboard.length; i++) {
+    ctx.fillText(`${leaderboard[i].name} - Score: ${leaderboard[i].score} - Level: ${leaderboard[i].level}`, canvas.width / 2 - 150, canvas.height / 2 + 140 + (i * 30));
+  }
 }
 
 // Function to end the game
