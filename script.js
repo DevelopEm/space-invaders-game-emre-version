@@ -351,33 +351,53 @@ function restartGame() {
   }
 }
 
-// Game loop function
-function gameLoop() {
-  if (gameOver) {
-    return;
+// Function to draw the background (gradient space with stars)
+function drawBackground() {
+  // Create gradient for space background
+  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, '#000046'); // Dark blue at top
+  gradient.addColorStop(1, '#1a1a3c'); // Dark purple at bottom
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Draw glowing stars
+  drawStars();
+}
+
+// Function to draw glowing stars
+function drawStars() {
+  const numStars = 100;
+  ctx.shadowColor = 'white';
+  ctx.shadowBlur = 15;
+
+  for (let i = 0; i < numStars; i++) {
+    let x = Math.random() * canvas.width;
+    let y = Math.random() * canvas.height;
+    let size = Math.random() * 2 + 1;
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fillStyle = 'white';
+    ctx.fill();
   }
 
-  // Draw the background first
-  drawBackground();
+  ctx.shadowBlur = 0;
+}
 
-  // Then draw the game elements on top of the background
+// Game loop
+function gameLoop() {
+  if (gameOver) return;
+
+  drawBackground();  // Draw space background
   drawPlayer();
   drawBullets();
   drawInvaders();
   drawScore();
   drawLevel();
-
-  // Check for collisions and update positions
+  
   detectCollisions();
   movePlayer();
   moveInvaders();
 }
 
-// Initialize the game
-function init() {
-  createInvaders();
-  gameInterval = setInterval(gameLoop, 1000 / 60);
-}
-
-// Start the game when the page loads
-init();
+// Set up the game interval
+gameInterval = setInterval(gameLoop, 1000 / 60);
