@@ -226,6 +226,19 @@ function createInvaders() {
   }
 }
 
+// Function to increase bullet speed based on level
+function increaseBulletSpeed() {
+  if (level >= 20) {
+    bulletSpeed = 8;
+  } else if (level >= 15) {
+    bulletSpeed = 7;
+  } else if (level >= 10) {
+    bulletSpeed = 6;
+  } else if (level >= 5) {
+    bulletSpeed = 5;
+  }
+}
+
 // Function to draw the player (spaceship)
 function drawPlayer() {
   ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
