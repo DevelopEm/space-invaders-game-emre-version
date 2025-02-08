@@ -69,7 +69,7 @@ function createStars() {
       y: Math.random() * canvas.height,
       size: Math.random() * (maxStarSize - minStarSize) + minStarSize,
       brightness: Math.random() * 0.5 + 0.5, // Random brightness between 0.5 and 1
-      speed: Math.random() * 0.2 + 0.05, // Slow random movement speed
+      speed: Math.random() * 0.2 + 0.1, // Slow random movement speed
     });
   }
 }
