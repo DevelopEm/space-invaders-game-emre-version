@@ -8,7 +8,7 @@ canvas.height = window.innerHeight; // Make canvas height dynamic
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
-let invaderSpeed = 0.3;
+let invaderSpeed = 0.4;
 let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
@@ -17,7 +17,7 @@ let restartTextHeight = 60; // Distance of restart text from center of canvas
 
 // Star object
 let stars = [];
-const starCount = 300; // Number of stars
+const starCount = 100; // Number of stars
 
 // Create stars for the background
 function createStars() {
@@ -26,15 +26,14 @@ function createStars() {
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       size: Math.random() * 3 + 1, // Random size between 1 and 4
-      speed: Math.random() * 0.8 + 0.1, // Random speed for twinkling effect
-      opacity: Math.random() * 0.6 + 0.6, // Random opacity
+      speed: Math.random() * 0.9 + 0.3, // Random speed for twinkling effect
+      opacity: Math.random() * 0.5 + 0.5, // Random opacity
     });
   }
 }
 
 // Function to draw the gradient background
 function drawBackground() {
-  // Create gradient (black to dark blue)
   let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
   gradient.addColorStop(0, 'black');
   gradient.addColorStop(1, '#00008B'); // Dark blue
@@ -104,6 +103,11 @@ let touchStartY = 0;  // for touch movement tracking
 // Trigger to start background music after first interaction
 let musicStarted = false;
 
+// Keyboard input tracking
+rightPressed = false;
+leftPressed = false;
+spacePressed = false;
+
 // Touchstart event to trigger background music and track player movement
 canvas.addEventListener('touchstart', function(e) {
   e.preventDefault();  // Prevent default touch behavior (like scrolling)
@@ -138,6 +142,25 @@ canvas.addEventListener('touchstart', function(e) {
   }
 });
 
+// Keyboard event listeners for player movement
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'd') {
+    rightPressed = true;
+  } else if (e.key === 'ArrowLeft' || e.key === 'a') {
+    leftPressed = true;
+  } else if (e.key === ' ' && !gameOver) {
+    shootBullet();
+  }
+});
+
+document.addEventListener('keyup', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'd') {
+    rightPressed = false;
+  } else if (e.key === 'ArrowLeft' || e.key === 'a') {
+    leftPressed = false;
+  }
+});
+
 // Function to shoot a bullet
 function shootBullet() {
   if (gameOver) return;
@@ -157,6 +180,9 @@ function shootBullet() {
 // Function to create invaders
 function createInvaders() {
   invaders = [];
+  let maxRows = Math.floor(canvas.height / (invaderHeight + invaderPadding)); // Adjust row count to screen height
+  invaderRowCount = Math.min(maxRows, 5); // Limit max rows to 5 for better performance and playability
+  
   for (let c = 0; c < invaderColumnCount; c++) {
     invaders[c] = [];
     for (let r = 0; r < invaderRowCount; r++) {
@@ -325,14 +351,12 @@ function gameOverCondition() {
   gameOver = true;
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
-  // Play the game over sound when the game ends
   gameOverSound.play();
 }
 
 // Restart the game when clicked
 function restartGame() {
   if (gameOver) {
-    // Reset everything for a fresh start
     score = 0;
     level = 1;
     invaderSpeed = 0.3;
