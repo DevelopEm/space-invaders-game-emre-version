@@ -2,9 +2,8 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// Dynamically update canvas size to fill the full screen
-canvas.width = window.innerWidth;  // Full width of the screen
-canvas.height = window.innerHeight; // Full height of the screen
+canvas.width = window.innerWidth;  // Make canvas width dynamic
+canvas.height = window.innerHeight; // Make canvas height dynamic
 
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
@@ -362,12 +361,12 @@ function gameLoop() {
 let stars = [];
 function createStars() {
   stars = [];
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 200; i++) {
     stars.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       size: Math.random() * 2,
-      speed: Math.random() * 0.2 + 0.1, // Random speed for each star
+      speed: Math.random() * 0.5 + 0.1, // Random speed for each star
       opacity: Math.random() * 0.5 + 0.5, // Random opacity for twinkling effect
     });
   }
