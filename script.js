@@ -8,7 +8,7 @@ canvas.height = window.innerHeight; // Make canvas height dynamic
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
-let invaderSpeed = 0.08;
+let invaderSpeed = 0.05;
 let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
@@ -275,20 +275,20 @@ function moveInvaders() {
 // Function to draw the score
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '10px Arial';
+  ctx.font = '30px Arial';
   ctx.fillText('Score: ' + score, 8, 20);
 }
 
 // Function to draw the level
 function drawLevel() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '10px Arial';
+  ctx.font = '30px Arial';
   ctx.fillText('Level: ' + level, canvas.width - 100, 20);
 }
 
 // Function to draw the starfield background
 function drawStars() {
-  for (let i = 0; i < 200; i++) {
+  for (let i = 0; i < 100; i++) {
     let x = Math.random() * canvas.width;
     let y = Math.random() * canvas.height;
     let alpha = Math.random();
