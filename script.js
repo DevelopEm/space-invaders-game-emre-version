@@ -72,10 +72,6 @@ player = {
 };
 
 player.image.src = 'spaceship.png'; // Path to spaceship image
-player.image.onload = function() {
-  // Ensure the game starts only after the image is loaded
-  gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
-};
 
 // Bullet object
 bullets = [];
@@ -100,17 +96,17 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
-// Keyboard input tracking
-rightPressed = false;
-leftPressed = false;
-spacePressed = false;
-
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
 let touchStartY = 0;  // for touch movement tracking
 
 // Trigger to start background music after first interaction
 let musicStarted = false;
+
+// Keyboard input tracking
+rightPressed = false;
+leftPressed = false;
+spacePressed = false;
 
 // Touchstart event to trigger background music and track player movement
 canvas.addEventListener('touchstart', function(e) {
@@ -181,9 +177,25 @@ function shootBullet() {
   shootSound.play();
 }
 
+// Function to increase bullet speed based on level
+function increaseBulletSpeed() {
+  if (level >= 20) {
+    bulletSpeed = 8;
+  } else if (level >= 15) {
+    bulletSpeed = 7;
+  } else if (level >= 10) {
+    bulletSpeed = 6;
+  } else if (level >= 5) {
+    bulletSpeed = 5;
+  }
+}
+
 // Function to create invaders
 function createInvaders() {
   invaders = [];
+  let maxRows = Math.floor(canvas.height / (invaderHeight + invaderPadding)); // Adjust row count to screen height
+  invaderRowCount = Math.min(maxRows, 5); // Limit max rows to 5 for better performance and playability
+  
   for (let c = 0; c < invaderColumnCount; c++) {
     invaders[c] = [];
     for (let r = 0; r < invaderRowCount; r++) {
@@ -334,7 +346,9 @@ function drawLevel() {
 // Function to draw the game over screen with summary
 function drawGameOver() {
   // Ensure that the game over sound is played only once
-  gameOverSound.play();
+  if (!gameOverSound.played) {
+    gameOverSound.play(); // Play the game over sound
+  }
 
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
@@ -350,6 +364,7 @@ function gameOverCondition() {
   gameOver = true;
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
+  gameOverSound.play();
 }
 
 // Restart the game when clicked
@@ -390,3 +405,4 @@ function draw() {
 // Initialize the game
 createStars();  // Create the stars
 createInvaders();
+gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
