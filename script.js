@@ -279,14 +279,14 @@ function moveInvaders() {
 // Function to draw the score
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '20px Arial';
+  ctx.font = '10px Arial';
   ctx.fillText('Score: ' + score, 8, 20);
 }
 
 // Function to draw the level
 function drawLevel() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '20px Arial';
+  ctx.font = '10px Arial';
   ctx.fillText('Level: ' + level, canvas.width - 100, 20);
 }
 
