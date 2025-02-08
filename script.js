@@ -8,12 +8,16 @@ canvas.height = window.innerHeight; // Make canvas height dynamic
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
-let invaderSpeed = 0.5;
+let invaderSpeed = 0.2;
 let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
 let gameInterval;
-let restartTextHeight = 60; // Distance of restart text from center of canvas
+let bulletSpeed = 5; // Initial bullet speed
+let shootDelay = 10; // Delay between shots in milliseconds (for faster shooting after level 6)
+let lastShotTime = 0; // Time of the last shot (to control shooting speed)
+let leaderboard = []; // Leaderboard to store players' names and scores
+let playerName = ""; // Player name from prompt
 
 // Star object
 let stars = [];
@@ -75,7 +79,7 @@ player.image.src = 'spaceship.png'; // Path to spaceship image
 
 // Bullet object
 bullets = [];
-const bulletSpeed = 4;
+const bulletSpeed = 5;
 
 // Invader object
 invaders = [];
@@ -142,6 +146,22 @@ canvas.addEventListener('touchstart', function(e) {
   }
 });
 
+// Function to get bullet color based on level
+function getBulletColor() {
+  if (level >= 26) {
+    bulletSpeed = 11; // Faster bullets after level 26
+    return 'purple'; // Purple bullets
+  } else if (level >= 16) {
+    bulletSpeed = 10; // Faster bullets after level 16
+    return 'yellow'; // Yellow bullets
+  } else if (level >= 6) {
+    bulletSpeed = 9; // Faster bullets after level 6
+    return 'cyan'; // Cyan bullets
+  } else {
+    bulletSpeed = 8; // Default bullet speed
+    return 'red'; // Red bullets for lower levels
+  }
+  
 // Keyboard event listeners for player movement
 document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowRight' || e.key === 'd') {
@@ -169,9 +189,22 @@ function shootBullet() {
     y: player.y,
     width: 4,
     height: 10,
-    dy: -bulletSpeed,
+    dy: -bulletSpeed, // Bullet speed based on level
+    color: getBulletColor(), // Get bullet color based on level
+
   };
   bullets.push(bullet);
+
+// Set glowing effect
+    ctx.shadowColor = bullets[i].color;
+    ctx.shadowBlur = 20; // Increase shadow blur for better glow effect
+    ctx.fillStyle = bullets[i].color;
+    ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
+    
+    bullets[i].y += bullets[i].dy; // Move the bullet
+  }
+  ctx.shadowBlur = 0; // Reset shadow blur after drawing bullets
+}
 
   // Play the shoot sound
   shootSound.play();
@@ -330,20 +363,44 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to draw the game over screen with summary
+// Function to update leaderboard
+function updateLeaderboard(name, score) {
+  leaderboard.push({ name, score });
+  leaderboard.sort((a, b) => b.score - a.score); // Sort by score descending
+  if (leaderboard.length > 3) {
+    leaderboard = leaderboard.slice(0, 3); // Keep only the top 3 players
+  }
+}
+
+// Function to draw the game over screen with summary and leaderboard
 function drawGameOver() {
-  // Ensure that the game over sound is played only once
-  if (!gameOverSound.played) {
-    gameOverSound.play(); // Play the game over sound
+  // Ask for player name
+  if (playerName === "") {
+    playerName = prompt("Enter your name:");
   }
 
+  // Update leaderboard with player's score
+  updateLeaderboard(playerName, score);
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+  
+  // Game over text
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
   ctx.font = '20px Arial';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-  ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
+
+  // Display leaderboard
+  ctx.font = '16px Arial';
+  ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 70);
+  for (let i = 0; i < leaderboard.length; i++) {
+    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + i * 30);
+  }
+
+  // Restart instructions
+  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + 180);
 }
 
 // Function to end the game
@@ -351,12 +408,13 @@ function gameOverCondition() {
   gameOver = true;
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
-  gameOverSound.play();
+  gameOverSound.play(); // Play game over sound
 }
 
 // Restart the game when clicked
 function restartGame() {
   if (gameOver) {
+    // Reset everything for a fresh start
     score = 0;
     level = 1;
     invaderSpeed = 0.3;
@@ -364,6 +422,7 @@ function restartGame() {
     invaderRowCount = 3;
     invaderColumnCount = 5;
     gameOver = false;
+    playerName = ""; // Reset player name
     createInvaders();
     backgroundMusic.play(); // Restart background music
     gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
@@ -377,8 +436,6 @@ function draw() {
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-  drawBackground();  // Draw the background gradient
-  drawStars();  // Draw the stars
   drawPlayer();
   drawBullets();
   drawInvaders();
@@ -390,6 +447,5 @@ function draw() {
 }
 
 // Initialize the game
-createStars();  // Create the stars
 createInvaders();
 gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
