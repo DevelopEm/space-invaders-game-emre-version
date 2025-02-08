@@ -60,19 +60,16 @@ let musicStarted = false;
 
 // Starry background variables
 const stars = [];
-const starCount = 200; // Number of stars
+const starCount = 100; // Number of stars
 const starSpeed = 0.5; // Speed of stars
 
-// Star object constructor with twinkle effect
+// Star object constructor
 function createStar() {
   return {
     x: Math.random() * canvas.width,
     y: Math.random() * canvas.height,
-    size: Math.random() * 2 + 1,  // Random size between 1 and 3
-    speed: Math.random() * starSpeed + 0.1, // Random speed for each star
-    baseBrightness: Math.random() * 0.5 + 0.5, // Random brightness
-    brightness: Math.random() * 0.5 + 0.5, // Start with a random brightness
-    twinkleSpeed: Math.random() * 0.02 + 0.005, // Speed of twinkling effect
+    size: Math.random() * 2 + 1,
+    speed: Math.random() * starSpeed + 0.2, // Random speed for each star
   };
 }
 
@@ -81,21 +78,14 @@ for (let i = 0; i < starCount; i++) {
   stars.push(createStar());
 }
 
-// Function to draw the starry background with twinkling effect
+// Function to draw the starry background
 function drawStarryBackground() {
   // Draw stars on top of the gradient
   for (let i = 0; i < stars.length; i++) {
     const star = stars[i];
-
-    // Update the brightness to create a twinkling effect
-    star.brightness += star.twinkleSpeed;
-    if (star.brightness > star.baseBrightness + 0.5 || star.brightness < star.baseBrightness - 0.5) {
-      star.twinkleSpeed = -star.twinkleSpeed; // Reverse the twinkling direction
-    }
-
     ctx.beginPath();
     ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`; // Adjust brightness based on the twinkling effect
+    ctx.fillStyle = 'white';
     ctx.fill();
   }
 
@@ -265,7 +255,7 @@ function detectCollisions() {
             score += 10; // Increase score
             if (checkWin()) {
               level++;
-              invaderSpeed = Math.min(invaderSpeed + 0.1, 1); // Increase speed as levels go up, up to a max speed
+              invaderSpeed = Math.min(invaderSpeed + 0.3, 2); // Increase speed as levels go up, up to a max speed
               if (level <= 10) {
                 invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
                 invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
@@ -348,73 +338,49 @@ function drawScore() {
 function drawLevel() {
   ctx.fillStyle = '#FFFFFF';
   ctx.font = '16px Arial';
-  ctx.fillText('Level: ' + level, canvas.width - 100, 20);
+  ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Game Over screen and restart
+// Function to handle game over condition
 function gameOverCondition() {
   gameOver = true;
-  gameOverSound.play();  // Play the game over sound
-  setTimeout(function() {
-    alert('Game Over! Your score is ' + score);
-  }, 200); // Wait for the sound to finish before showing the alert
+  gameOverSound.play(); // Play game over sound
 }
 
+// Function to restart the game
 function restartGame() {
-  // Reset all game variables and restart the game
   score = 0;
   level = 1;
   invaderSpeed = 0.05;
-  invaderDirection = 1;
   invaderRowCount = 3;
   invaderColumnCount = 5;
-  bullets = [];
-  invaders = [];
+  invaderDirection = 1;
   createInvaders();
   gameOver = false;
+  bullets = [];
   backgroundMusic.play();
-  gameLoop(); // Start the game loop again
+  update();
 }
 
-// Event listeners for user input (arrow keys for desktop, touch for mobile)
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'ArrowRight') {
-    rightPressed = true;
-  } else if (e.key === 'ArrowLeft') {
-    leftPressed = true;
-  } else if (e.key === ' ' && !gameOver) {
-    shootBullet();  // Fire a bullet on spacebar press
-  }
-});
+// Game loop to update and render the game
+function update() {
+  drawGradientBackground(); // Draw the gradient background first (black to dark blue)
+  drawStarryBackground();   // Draw stars on top of the gradient
 
-document.addEventListener('keyup', function(e) {
-  if (e.key === 'ArrowRight') {
-    rightPressed = false;
-  } else if (e.key === 'ArrowLeft') {
-    leftPressed = false;
-  }
-});
+  drawPlayer();
+  drawInvaders();
+  drawBullets();
+  movePlayer();
+  moveInvaders();
+  detectCollisions();
+  drawScore();
+  drawLevel();
 
-// Game loop function
-function gameLoop() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas before every frame
+  if (gameOver) return;
 
-  drawGradientBackground();  // Draw gradient background
-  drawStarryBackground();    // Draw twinkling stars
-  movePlayer();              // Move the player (based on touch or arrow keys)
-  moveInvaders();            // Move the invaders
-  drawPlayer();              // Draw the player spaceship
-  drawInvaders();            // Draw the invaders
-  drawBullets();             // Draw bullets
-  drawScore();               // Draw the score
-  drawLevel();               // Draw the level
-  detectCollisions();        // Detect collisions between bullets and invaders
-
-  if (!gameOver) {
-    requestAnimationFrame(gameLoop);  // Keep the game loop going
-  }
+  requestAnimationFrame(update); // Call the next frame
 }
 
-// Initialize the game
-createInvaders();  // Generate initial invaders
-gameLoop();        // Start the game loop
+// Start the game when everything is ready
+createInvaders(); // Create initial invaders
+update(); // Start the game loop
