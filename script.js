@@ -2,20 +2,9 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// Initial canvas size setup
-function setCanvasSize() {
-  canvas.width = window.innerWidth;  // Make canvas width dynamic
-  canvas.height = window.innerHeight; // Make canvas height dynamic
-}
+canvas.width = window.innerWidth;  // Make canvas width dynamic
+canvas.height = window.innerHeight; // Make canvas height dynamic
 
-setCanvasSize(); // Set canvas size on load
-
-// Re-adjust canvas size when window is resized
-window.addEventListener('resize', function () {
-  setCanvasSize(); // Update canvas size on window resize
-});
-
-// Other game variables and constants
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
