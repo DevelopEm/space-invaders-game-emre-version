@@ -8,7 +8,7 @@ canvas.height = window.innerHeight; // Make canvas height dynamic
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
-let invaderSpeed = 0.3;
+let invaderSpeed = 0.1;
 let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
@@ -17,7 +17,7 @@ let restartTextHeight = 60; // Distance of restart text from center of canvas
 
 // Star object
 let stars = [];
-const starCount = 100; // Number of stars
+const starCount = 200; // Number of stars
 
 // Leaderboard
 let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
@@ -396,7 +396,7 @@ function restartGame() {
   if (gameOver) {
     score = 0;
     level = 1;
-    invaderSpeed = 0.3;
+    invaderSpeed = 0.1;
     invaderDirection = 1;
     invaderRowCount = 3;
     invaderColumnCount = 5;
