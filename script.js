@@ -8,7 +8,7 @@ canvas.height = window.innerHeight; // Make canvas height dynamic
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
-let invaderSpeed = 0.3;
+let invaderSpeed = 0.5;
 let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
@@ -17,13 +17,10 @@ let restartTextHeight = 60; // Distance of restart text from center of canvas
 
 // Star object
 let stars = [];
-const starCount = 100; // Number of stars
+const starCount = 200; // Number of stars
 
 // Leaderboard storage
 let leaderboard = [];
-
-// Ask for player name and store in a variable
-let playerName = prompt("Enter your name:");
 
 // Create stars for the background
 function createStars() {
@@ -295,6 +292,9 @@ function moveInvaders() {
     }
   }
 }
+
+// Ask for player name and store in a variable
+let playerName = prompt("Enter your name:");
 
 // Function to draw the score
 function drawScore() {
