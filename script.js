@@ -2,8 +2,9 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-canvas.width = window.innerWidth;  // Make canvas width dynamic
-canvas.height = window.innerHeight; // Make canvas height dynamic
+// Set canvas to fill the entire window
+canvas.width = window.innerWidth;  // Full width of the window
+canvas.height = window.innerHeight; // Full height of the window
 
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
@@ -79,10 +80,7 @@ for (let i = 0; i < starCount; i++) {
 
 // Function to draw the starry background
 function drawStarryBackground() {
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, canvas.width, canvas.height); // Clear the canvas with black
-
-  // Draw stars
+  // Draw stars on top of the gradient
   for (let i = 0; i < stars.length; i++) {
     const star = stars[i];
     ctx.beginPath();
@@ -100,13 +98,13 @@ function drawStarryBackground() {
   }
 }
 
-// Gradient background for the canvas (e.g., purple to dark blue)
+// Gradient background for the canvas (e.g., black to dark blue)
 function drawGradientBackground() {
   const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, 'purple');
-  gradient.addColorStop(1, 'darkblue');
+  gradient.addColorStop(0, 'black');  // Start with black
+  gradient.addColorStop(1, 'darkblue');  // End with dark blue
   ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas with the gradient
 }
 
 // Mobile touch event listeners for mobile control
@@ -366,8 +364,8 @@ function restartGame() {
 
 // Game loop to update and render the game
 function update() {
-  drawStarryBackground(); // Draw the starry background first
-  drawGradientBackground(); // Apply the gradient on top of the stars
+  drawGradientBackground(); // Draw the gradient background first (black to dark blue)
+  drawStarryBackground();   // Draw stars on top of the gradient
 
   drawPlayer();
   drawInvaders();
