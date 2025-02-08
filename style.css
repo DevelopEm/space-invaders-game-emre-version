@@ -1,20 +1,15 @@
-body {
-    background-color: #000;
-    margin: 0;
-    padding: 0;
-    display: flexbox;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-  
-  #gameArea {
-    position: relative;
-  }
-  
-  canvas {
-    border: 1px solid white;
-    background-color: #131212;
-  }
+/* Set full-screen for body and html */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent scrolling */
+  height: 100%; /* Ensure full screen height */
+  background-color: black; /* Optional, in case of any gaps */
+}
 
-  
+/* Canvas to fill the entire window */
+canvas {
+  display: block; /* Remove any default margins/padding */
+  width: 100vw; /* Full screen width */
+  height: 100vh; /* Full screen height */
+}
