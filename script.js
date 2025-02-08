@@ -25,7 +25,7 @@ function createStars() {
     stars.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      size: Math.random() * 1 + 4, // Random size between 1 and 4
+      size: Math.random() * 0.5 + 2, // Random size between 1 and 4
       speed: Math.random() * 0.8 + 0.3, // Random speed for twinkling effect
       opacity: Math.random() * 0.5 + 0.5, // Random opacity
     });
