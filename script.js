@@ -346,11 +346,6 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Prompt for player's name and update leaderboard
-let playerName = prompt('Enter your name:');
-if (playerName) {
-  updateLeaderboard(playerName, score);
-}
 // Show leaderboard
 ctx.fillText('Top Scores:', canvas.width / 2 - 60, canvas.height / 2 + 70);
 for (let i = 0; i < leaderboard.length; i++) {
