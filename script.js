@@ -25,9 +25,10 @@ function createStars() {
     stars.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      size: Math.random() * 0.5 + 2, // Random size between 1 and 4
+      size: Math.random() * 1.5 + 1, // Random size for stars
       speed: Math.random() * 0.8 + 0.3, // Random speed for twinkling effect
       opacity: Math.random() * 0.5 + 0.5, // Random opacity
+      twinkleSpeed: Math.random() * 0.03 + 0.02 // Speed at which the star twinkles
     });
   }
 }
@@ -42,21 +43,27 @@ function drawBackground() {
   ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas with the gradient
 }
 
-// Function to draw stars
+// Function to draw stars as 5-pointed shapes
 function drawStars() {
   for (let i = 0; i < stars.length; i++) {
     let star = stars[i];
     ctx.beginPath();
-    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2, false);
-    ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`; // White with varying opacity
-    ctx.fill();
-    star.y += star.speed; // Move stars downwards
     
-    // Reset star to top if it goes off the bottom of the screen
-    if (star.y > canvas.height) {
-      star.y = 0;
-      star.x = Math.random() * canvas.width; // Random horizontal position
+    // Create a 5-pointed star at (x, y) position
+    ctx.moveTo(star.x + star.size * Math.cos(0), star.y + star.size * Math.sin(0));
+    for (let j = 1; j < 6; j++) {
+      ctx.lineTo(star.x + star.size * Math.cos(j * Math.PI * 2 / 5), star.y + star.size * Math.sin(j * Math.PI * 2 / 5));
     }
+    ctx.closePath();
+
+    // Make the star twinkle by changing opacity
+    star.opacity += star.twinkleSpeed;
+    if (star.opacity <= 0.2 || star.opacity >= 0.8) {
+      star.twinkleSpeed = -star.twinkleSpeed; // Reverse the twinkle direction when opacity reaches limits
+    }
+
+    ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`; // Set the opacity of the star
+    ctx.fill();
   }
 }
 
