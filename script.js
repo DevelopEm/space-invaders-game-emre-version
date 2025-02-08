@@ -356,14 +356,15 @@ function restartGame() {
   gameInterval = setInterval(draw, 1000 / 60); // Restart game loop at 60 FPS
 }
 
-// Function to draw twinkling stars (with gentle movement)
+// Function to draw twinkling stars (with slower movement)
 function drawStars() {
   for (let i = 0; i < 200; i++) {
     let x = Math.random() * canvas.width;
     let y = Math.random() * canvas.height;
 
-    x += Math.sin(Date.now() / 10000 + i) * 0.05;
-    y += Math.cos(Date.now() / 10000 + i) * 0.05;
+    // Slow down star movement by reducing the multiplication factor
+    x += Math.sin(Date.now() / 20000 + i) * 0.005; // Slower horizontal movement
+    y += Math.cos(Date.now() / 20000 + i) * 0.005; // Slower vertical movement
 
     let radius = Math.random() * 1.5 + 0.5;
     let opacity = Math.random() * 0.5 + 0.5;
