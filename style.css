@@ -1,20 +1,14 @@
-body {
-    background-color: #000;
+  /* Remove margin and padding for body and html */
+  * {
     margin: 0;
     padding: 0;
-    display: flexbox;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    box-sizing: border-box;
   }
-  
-  #gameArea {
-    position: relative;
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* Ensure no scrollbars */
   }
-  
   canvas {
-    border: 1px solid white;
-    background-color: #131212;
+    display: block; /* Removes any unwanted padding or borders around the canvas */
   }
-
-  
