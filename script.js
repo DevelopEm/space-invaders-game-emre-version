@@ -17,7 +17,7 @@ let restartTextHeight = 60; // Distance of restart text from center of canvas
 
 // Star object
 let stars = [];
-const starCount = 300; // Number of stars
+const starCount = 200; // Number of stars
 
 // Create stars for the background
 function createStars() {
