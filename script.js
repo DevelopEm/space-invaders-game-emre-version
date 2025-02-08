@@ -19,16 +19,6 @@ let restartTextHeight = 60; // Distance of restart text from center of canvas
 let stars = [];
 const starCount = 200; // Number of stars
 
-// Leaderboard
-let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-
-function updateLeaderboard(name, score) {
-  leaderboard.push({ name, score });
-  leaderboard.sort((a, b) => b.score - a.score); // Sort by score, descending
-  leaderboard = leaderboard.slice(0, 3); // Keep only top 3
-  localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-}
-
 // Create stars for the background
 function createStars() {
   for (let i = 0; i < starCount; i++) {
