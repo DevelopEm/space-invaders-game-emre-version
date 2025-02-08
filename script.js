@@ -54,14 +54,66 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
-// Touch event listeners for mobile control
+// Trigger to start background music after first interaction
+let musicStarted = false;
+
+// Starry background variables
+const stars = [];
+const starCount = 200; // Number of stars
+const starSpeed = 0.5; // Speed of stars
+
+// Star object constructor
+function createStar() {
+  return {
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    size: Math.random() * 2 + 1,
+    speed: Math.random() * starSpeed + 0.1, // Random speed for each star
+  };
+}
+
+// Create stars
+for (let i = 0; i < starCount; i++) {
+  stars.push(createStar());
+}
+
+// Function to draw the starry background
+function drawStarryBackground() {
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, canvas.width, canvas.height); // Clear the canvas with black
+
+  // Draw stars
+  for (let i = 0; i < stars.length; i++) {
+    const star = stars[i];
+    ctx.beginPath();
+    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+  }
+
+  // Move stars
+  for (let i = 0; i < stars.length; i++) {
+    stars[i].y += stars[i].speed;
+    if (stars[i].y > canvas.height) {
+      stars[i].y = 0; // Reset star position when it reaches the bottom
+    }
+  }
+}
+
+// Gradient background for the canvas (e.g., purple to dark blue)
+function drawGradientBackground() {
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, 'purple');
+  gradient.addColorStop(1, 'darkblue');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+// Mobile touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
 let touchStartY = 0;  // for touch movement tracking
 
 // Trigger to start background music after first interaction
-let musicStarted = false;
-
-// Touchstart event to trigger background music and track player movement
 canvas.addEventListener('touchstart', function(e) {
   e.preventDefault();  // Prevent default touch behavior (like scrolling)
   
@@ -162,6 +214,11 @@ function createInvaders() {
         image: new Image(),
       };
       invaders[c][r].image.src = 'invader.png'; // Path to invader image
+
+      // Ensure the invader image is loaded before drawing it
+      invaders[c][r].image.onload = function() {
+        // Image loaded, no action needed, but you can debug here if necessary
+      }
     }
   }
 }
@@ -286,136 +343,46 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Function to update leaderboard
-function updateLeaderboard(name, score) {
-  leaderboard.push({ name, score });
-  leaderboard.sort((a, b) => b.score - a.score); // Sort by score descending
-  if (leaderboard.length > 3) {
-    leaderboard = leaderboard.slice(0, 3); // Keep only the top 3 players
-  }
-}
-
-// Function to draw the game over screen with summary and leaderboard
-function drawGameOver() {
-  // Ask for player name
-  if (playerName === "") {
-    playerName = prompt("Enter your name:");
-  }
-
-  // Update leaderboard with player's score
-  updateLeaderboard(playerName, score);
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
-  
-  // Game over text
-  ctx.fillStyle = 'white';
-  ctx.font = '30px Arial';
-  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px Arial';
-  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
-  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-
-  // Display leaderboard
-  ctx.font = '16px Arial';
-  ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 70);
-  for (let i = 0; i < leaderboard.length; i++) {
-    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + i * 30);
-  }
-
-  // Restart instructions
-  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + 180);
-}
-
-// Function to end the game
+// Function to handle game over condition
 function gameOverCondition() {
   gameOver = true;
-  drawGameOver();
-  clearInterval(gameInterval); // Stop the game
   gameOverSound.play(); // Play game over sound
 }
 
-// Restart the game when clicked
+// Function to restart the game
 function restartGame() {
-  if (gameOver) {
-    // Reset everything for a fresh start
-    score = 0;
-    level = 1;
-    invaderRowCount = 3;
-    invaderColumnCount = 5;
-    createInvaders();
-    player.x = canvas.width / 2 - 20;
-    player.y = canvas.height - 100;
-    bullets = [];
-    gameOver = false;
-    gameInterval = setInterval(update, 1000 / 60); // Restart the game loop
-  }
+  score = 0;
+  level = 1;
+  invaderSpeed = 0.05;
+  invaderRowCount = 3;
+  invaderColumnCount = 5;
+  invaderDirection = 1;
+  createInvaders();
+  gameOver = false;
+  bullets = [];
+  backgroundMusic.play();
+  update();
 }
 
-// Function to draw the starry space background
-function drawStars() {
-  let starCount = 200; // Number of stars
-  for (let i = 0; i < starCount; i++) {
-    let x = Math.random() * canvas.width;
-    let y = Math.random() * canvas.height;
-    let radius = Math.random() * 2;
-    let alpha = Math.random() * 0.5 + 0.5; // Random opacity for twinkling effect
-
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2, false);
-    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-    ctx.fill();
-  }
-}
-
-// Function to draw the background gradient
-function drawBackground() {
-  // Create a gradient that goes from dark blue to black
-  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, '#0b0b2f'); // Dark blue
-  gradient.addColorStop(1, '#000000'); // Black
-
-  // Fill the entire canvas with the gradient
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Draw the stars
-  drawStars();
-}
-
-// Game update loop
+// Game loop to update and render the game
 function update() {
-  if (!gameOver) {
-    drawBackground(); // Draw the space background
-    movePlayer();
-    moveInvaders();
-    draw();
-    detectCollisions();
-  }
+  drawStarryBackground(); // Draw the starry background first
+  drawGradientBackground(); // Apply the gradient on top of the stars
+
+  drawPlayer();
+  drawInvaders();
+  drawBullets();
+  movePlayer();
+  moveInvaders();
+  detectCollisions();
+  drawScore();
+  drawLevel();
+
+  if (gameOver) return;
+
+  requestAnimationFrame(update); // Call the next frame
 }
 
-// Initial setup
-createInvaders();
-gameInterval = setInterval(update, 1000 / 60); // Start the game loop
-
-// Handling key events (for desktop)
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'ArrowRight' || e.key === 'd') {
-    rightPressed = true;
-  } else if (e.key === 'ArrowLeft' || e.key === 'a') {
-    leftPressed = true;
-  } else if (e.key === ' ' || e.key === 'Enter') {
-    if (!gameOver && Date.now() - lastShotTime > shootDelay) {
-      shootBullet();
-    } else if (gameOver) {
-      restartGame();
-    }
-  }
-});
-
-document.addEventListener('keyup', function(e) {
-  if (e.key === 'ArrowRight' || e.key === 'd') {
-    rightPressed = false;
-  } else if (e.key === 'ArrowLeft' || e.key === 'a') {
-    leftPressed = false;
-  }
-});
+// Start the game when everything is ready
+createInvaders(); // Create initial invaders
+update(); // Start the game loop
