@@ -2,9 +2,20 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-canvas.width = window.innerWidth;  // Make canvas width dynamic
-canvas.height = window.innerHeight; // Make canvas height dynamic
+// Initial canvas size setup
+function setCanvasSize() {
+  canvas.width = window.innerWidth;  // Make canvas width dynamic
+  canvas.height = window.innerHeight; // Make canvas height dynamic
+}
 
+setCanvasSize(); // Set canvas size on load
+
+// Re-adjust canvas size when window is resized
+window.addEventListener('resize', function () {
+  setCanvasSize(); // Update canvas size on window resize
+});
+
+// Other game variables and constants
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
@@ -254,7 +265,7 @@ function detectCollisions() {
             score += 10; // Increase score
             if (checkWin()) {
               level++;
-              invaderSpeed = Math.min(invaderSpeed + 0.2, 1); // Increase speed as levels go up, up to a max speed
+              invaderSpeed = Math.min(invaderSpeed + 0.3, 1); // Increase speed as levels go up, up to a max speed
               if (level <= 10) {
                 invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
                 invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
