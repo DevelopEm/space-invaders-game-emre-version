@@ -25,38 +25,46 @@ function createStars() {
     stars.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      size: Math.random() * 0.5 + 2, // Random size between 1 and 4
-      speed: Math.random() * 0.8 + 0.4, // Random speed for twinkling effect
+      size: Math.random() * 0.5 + 1, // Random size between 1 and 1.5
+      speed: Math.random() * 0.8 + 0.3, // Random speed for twinkling effect
       opacity: Math.random() * 0.5 + 0.5, // Random opacity
+      opacityDirection: Math.random() < 0.5 ? 1 : -1, // Direction of opacity change
+      glowColor: `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.5})`, // Random glow color for twinkle effect
     });
   }
 }
 
-// Function to draw the gradient background
-function drawBackground() {
-  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, 'black');
-  gradient.addColorStop(1, '#00008B'); // Dark blue
-
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas with the gradient
-}
-
-// Function to draw stars
+// Function to draw the stars with a 5D glowing and twinkling effect
 function drawStars() {
   for (let i = 0; i < stars.length; i++) {
     let star = stars[i];
+
+    // Create glowing effect using the glowColor
     ctx.beginPath();
     ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2, false);
-    ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`; // White with varying opacity
+    ctx.fillStyle = star.glowColor; // Twinkling color
     ctx.fill();
-    star.y += star.speed; // Move stars downwards
+
+    // Move stars downwards
+    star.y += star.speed;
     
+    // Adjust opacity for twinkling effect
+    if (star.opacityDirection === 1) {
+      star.opacity += 0.01; // Increase opacity
+      if (star.opacity >= 1) star.opacityDirection = -1; // Change direction if max opacity reached
+    } else {
+      star.opacity -= 0.01; // Decrease opacity
+      if (star.opacity <= 0.4) star.opacityDirection = 1; // Change direction if min opacity reached
+    }
+
     // Reset star to top if it goes off the bottom of the screen
     if (star.y > canvas.height) {
       star.y = 0;
       star.x = Math.random() * canvas.width; // Random horizontal position
     }
+
+    // Update the twinkle color as it moves and changes opacity
+    star.glowColor = `rgba(255, 255, 255, ${star.opacity})`; // Dynamic opacity for a "twinkle" effect
   }
 }
 
