@@ -60,7 +60,7 @@ let musicStarted = false;
 
 // Starry background variables
 const stars = [];
-const starCount = 100; // Number of stars
+const starCount = 200; // Number of stars
 const starSpeed = 0.5; // Speed of stars
 
 // Star object constructor
@@ -69,7 +69,7 @@ function createStar() {
     x: Math.random() * canvas.width,
     y: Math.random() * canvas.height,
     size: Math.random() * 2 + 1,
-    speed: Math.random() * starSpeed + 0.2, // Random speed for each star
+    speed: Math.random() * starSpeed + 0.1, // Random speed for each star
   };
 }
 
@@ -145,6 +145,33 @@ canvas.addEventListener('touchstart', function(e) {
   }
 });
 
+// Keyboard control variables
+rightPressed = false;
+leftPressed = false;
+spacePressed = false;
+
+// Listen for keydown events (when keys are pressed)
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'd') {
+    rightPressed = true;
+  } else if (e.key === 'ArrowLeft' || e.key === 'a') {
+    leftPressed = true;
+  } else if (e.key === ' ' || e.key === 'Enter') {  // Spacebar or Enter to shoot
+    spacePressed = true;
+  }
+});
+
+// Listen for keyup events (when keys are released)
+document.addEventListener('keyup', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'd') {
+    rightPressed = false;
+  } else if (e.key === 'ArrowLeft' || e.key === 'a') {
+    leftPressed = false;
+  } else if (e.key === ' ' || e.key === 'Enter') {
+    spacePressed = false;
+  }
+});
+
 // Function to get bullet color based on level
 function getBulletColor() {
   if (level >= 26) {
@@ -212,11 +239,6 @@ function createInvaders() {
         image: new Image(),
       };
       invaders[c][r].image.src = 'invader.png'; // Path to invader image
-
-      // Ensure the invader image is loaded before drawing it
-      invaders[c][r].image.onload = function() {
-        // Image loaded, no action needed, but you can debug here if necessary
-      }
     }
   }
 }
@@ -255,7 +277,7 @@ function detectCollisions() {
             score += 10; // Increase score
             if (checkWin()) {
               level++;
-              invaderSpeed = Math.min(invaderSpeed + 0.3, 2); // Increase speed as levels go up, up to a max speed
+              invaderSpeed = Math.min(invaderSpeed + 0.1, 1); // Increase speed as levels go up, up to a max speed
               if (level <= 10) {
                 invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
                 invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
@@ -288,6 +310,10 @@ function movePlayer() {
     player.x += player.speed;
   } else if (leftPressed && player.x > 0) {
     player.x -= player.speed;
+  }
+  
+  if (spacePressed && Date.now() - lastShotTime > shootDelay) {
+    shootBullet();  // Fire a bullet when space is pressed
   }
 }
 
@@ -338,13 +364,19 @@ function drawScore() {
 function drawLevel() {
   ctx.fillStyle = '#FFFFFF';
   ctx.font = '16px Arial';
-  ctx.fillText('Level: ' + level, canvas.width - 80, 20);
+  ctx.fillText('Level: ' + level, canvas.width - 100, 20);
 }
 
-// Function to handle game over condition
+// Function to display the game over screen
 function gameOverCondition() {
   gameOver = true;
   gameOverSound.play(); // Play game over sound
+  clearInterval(gameInterval); // Stop the game loop
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '32px Arial';
+  ctx.fillText('Game Over', canvas.width / 2 - 100, canvas.height / 2);
+  ctx.font = '24px Arial';
+  ctx.fillText('Score: ' + score, canvas.width / 2 - 60, canvas.height / 2 + 40);
 }
 
 // Function to restart the game
@@ -354,33 +386,29 @@ function restartGame() {
   invaderSpeed = 0.05;
   invaderRowCount = 3;
   invaderColumnCount = 5;
-  invaderDirection = 1;
-  createInvaders();
   gameOver = false;
   bullets = [];
-  backgroundMusic.play();
-  update();
-}
-
-// Game loop to update and render the game
-function update() {
-  drawGradientBackground(); // Draw the gradient background first (black to dark blue)
-  drawStarryBackground();   // Draw stars on top of the gradient
-
-  drawPlayer();
-  drawInvaders();
-  drawBullets();
+  createInvaders();
   movePlayer();
   moveInvaders();
-  detectCollisions();
-  drawScore();
-  drawLevel();
-
-  if (gameOver) return;
-
-  requestAnimationFrame(update); // Call the next frame
+  gameInterval = setInterval(update, 1000 / 60); // Restart the game loop
 }
 
-// Start the game when everything is ready
-createInvaders(); // Create initial invaders
-update(); // Start the game loop
+// Main update function
+function update() {
+  if (!gameOver) {
+    drawStarryBackground();
+    drawGradientBackground();
+    movePlayer();
+    moveInvaders();
+    detectCollisions();
+    drawScore();
+    drawLevel();
+    drawPlayer();
+    drawInvaders();
+    drawBullets();
+  }
+}
+
+// Start the game loop
+gameInterval = setInterval(update, 1000 / 60);  // 60 frames per second
