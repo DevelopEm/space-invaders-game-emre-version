@@ -215,6 +215,108 @@ function detectCollisions() {
   }
 }
 
+let invaderBullets = [];  // Array to store invader bullets
+let invaderShootCooldown = 2000;  // Time between invader shots in milliseconds
+let lastInvaderShootTime = 0;  // Track last invader shoot time
+
+// Function to create invaders (with shooting capability at level 16)
+function createInvaders() {
+  invaders = [];
+  for (let c = 0; c < invaderColumnCount; c++) {
+    invaders[c] = [];
+    for (let r = 0; r < invaderRowCount; r++) {
+      invaders[c][r] = {
+        x: c * (invaderWidth + invaderPadding) + invaderOffsetLeft,
+        y: r * (invaderHeight + invaderPadding) + invaderOffsetTop,
+        status: 1,
+        image: new Image(),
+        lastShootTime: 0, // Time when this invader last shot
+      };
+      invaders[c][r].image.src = 'invader.png';
+    }
+  }
+}
+
+// Function to allow invaders to shoot back
+function invaderShoot() {
+  if (level >= 16) { // Only allow shooting from level 16 and above
+    let currentTime = Date.now();
+    
+    for (let c = 0; c < invaderColumnCount; c++) {
+      for (let r = 0; r < invaderRowCount; r++) {
+        let invader = invaders[c][r];
+        if (invader.status === 1 && currentTime - invader.lastShootTime > invaderShootCooldown) {
+          // Create a bullet from this invader
+          let invaderBullet = {
+            x: invader.x + invaderWidth / 2 - 2, // Start from the invader's position
+            y: invader.y + invaderHeight,  // Start just below the invader
+            width: 4,
+            height: 10,
+            dy: 2, // Bullet speed (slower than player bullets)
+            color: 'green', // Invader bullet color
+          };
+          invaderBullets.push(invaderBullet);
+          invader.lastShootTime = currentTime; // Update last shot time
+        }
+      }
+    }
+  }
+}
+
+// Function to draw invader bullets
+function drawInvaderBullets() {
+  for (let i = 0; i < invaderBullets.length; i++) {
+    if (invaderBullets[i].y > canvas.height) {
+      invaderBullets.splice(i, 1); // Remove bullets that go off-screen
+      continue;
+    }
+    
+    // Draw the invader bullet
+    ctx.fillStyle = invaderBullets[i].color;
+    ctx.fillRect(invaderBullets[i].x, invaderBullets[i].y, invaderBullets[i].width, invaderBullets[i].height);
+    
+    invaderBullets[i].y += invaderBullets[i].dy; // Move the bullet
+  }
+}
+
+// Function to detect collisions between invader bullets and the player
+function detectInvaderBulletCollisions() {
+  for (let i = 0; i < invaderBullets.length; i++) {
+    if (
+      invaderBullets[i].x > player.x &&
+      invaderBullets[i].x < player.x + player.width &&
+      invaderBullets[i].y > player.y &&
+      invaderBullets[i].y < player.y + player.height
+    ) {
+      gameOverCondition(); // Player hit, game over
+      invaderBullets.splice(i, 1); // Remove the bullet
+      break;
+    }
+  }
+}
+
+// Modify the main game loop
+function draw() {
+  if (gameOver) {
+    return;
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+  drawStars(); // Draw stars in the background
+  drawPlayer();
+  drawBullets();
+  drawInvaders();
+  drawInvaderBullets(); // Draw invader bullets
+  drawScore();
+  drawLevel();
+  detectCollisions();
+  detectInvaderBulletCollisions(); // Detect collisions between invader bullets and the player
+  movePlayer();
+  moveInvaders();
+  invaderShoot(); // Check if invaders should shoot
+}
+
+
 // Check if all invaders are destroyed
 function checkWin() {
   for (let c = 0; c < invaderColumnCount; c++) {
@@ -288,7 +390,7 @@ function drawLevel() {
 
 // Function to draw the starfield background
 function drawStars() {
-  for (let i = 0; i < 200; i++) {
+  for (let i = 0; i < 150; i++) {
     let x = Math.random() * canvas.width;
     let y = Math.random() * canvas.height;
     let alpha = Math.random();
