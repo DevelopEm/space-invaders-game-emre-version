@@ -25,10 +25,9 @@ function createStars() {
     stars.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      size: Math.random() * 1.5 + 1, // Random size for stars
-      speed: Math.random() * 1 + 1, // Random speed for twinkling effect
+      size: Math.random() * 0.5 + 2, // Random size between 1 and 4
+      speed: Math.random() * 0.8 + 0.3, // Random speed for twinkling effect
       opacity: Math.random() * 0.5 + 0.5, // Random opacity
-      twinkleSpeed: Math.random() * 0.03 + 0.02 // Speed at which the star twinkles
     });
   }
 }
@@ -43,27 +42,21 @@ function drawBackground() {
   ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas with the gradient
 }
 
-// Function to draw stars as 5-pointed shapes
+// Function to draw stars
 function drawStars() {
   for (let i = 0; i < stars.length; i++) {
     let star = stars[i];
     ctx.beginPath();
-    
-    // Create a 5-pointed star at (x, y) position
-    ctx.moveTo(star.x + star.size * Math.cos(0), star.y + star.size * Math.sin(0));
-    for (let j = 1; j < 6; j++) {
-      ctx.lineTo(star.x + star.size * Math.cos(j * Math.PI * 2 / 5), star.y + star.size * Math.sin(j * Math.PI * 2 / 5));
-    }
-    ctx.closePath();
-
-    // Make the star twinkle by changing opacity
-    star.opacity += star.twinkleSpeed;
-    if (star.opacity <= 0.2 || star.opacity >= 0.8) {
-      star.twinkleSpeed = -star.twinkleSpeed; // Reverse the twinkle direction when opacity reaches limits
-    }
-
-    ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`; // Set the opacity of the star
+    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2, false);
+    ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`; // White with varying opacity
     ctx.fill();
+    star.y += star.speed; // Move stars downwards
+    
+    // Reset star to top if it goes off the bottom of the screen
+    if (star.y > canvas.height) {
+      star.y = 0;
+      star.x = Math.random() * canvas.width; // Random horizontal position
+    }
   }
 }
 
@@ -325,24 +318,29 @@ function moveInvaders() {
 
 // Function to draw the score
 function drawScore() {
-  ctx.fillStyle = 'yellow'; // Set yellow color for space font
-  ctx.font = '30px "Orbitron", sans-serif'; // Apply yellow space-like font
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '16px Arial';
   ctx.fillText('Score: ' + score, 8, 20);
 }
 
 // Function to draw the level
 function drawLevel() {
-  ctx.fillStyle = 'yellow'; // Set yellow color for space font
-  ctx.font = '30px "Orbitron", sans-serif'; // Apply yellow space-like font
-  ctx.fillText('Level: ' + level, canvas.width - 120, 20);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '16px Arial';
+  ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
 // Function to draw the game over screen with summary
 function drawGameOver() {
-  ctx.fillStyle = 'yellow'; // Set yellow color for space font
-  ctx.font = '40px "Orbitron", sans-serif'; // Large space font for game over title
+  // Ensure that the game over sound is played only once
+  if (!gameOverSound.played) {
+    gameOverSound.play(); // Play the game over sound
+  }
+
+  ctx.fillStyle = 'white';
+  ctx.font = '30px Arial';
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '30px "Orbitron", sans-serif'; // Smaller space font for score and level
+  ctx.font = '20px Arial';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
   ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
