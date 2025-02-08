@@ -54,49 +54,184 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
-// Stars for the twinkling effect
+// Twinkling stars variables
 let stars = [];
+let maxStars = 150; // Maximum number of stars
 
-// Create stars (each star will have random properties)
-function createStars(numStars) {
-  for (let i = 0; i < numStars; i++) {
-    stars.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      size: Math.random() * 2 + 1, // Random size between 1 and 3
-      opacity: Math.random(), // Random opacity for twinkling effect
-      twinkleSpeed: Math.random() * 0.02 + 0.01, // Speed of twinkling
-    });
+// Star object
+function createStar() {
+  return {
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    size: Math.random() * 2 + 1,  // Random size between 1 and 3
+    speed: Math.random() * 0.15 + 0.05, // Slower random speed between 0.05 and 0.2
+    opacity: Math.random() * 0.5 + 0.5,  // Random opacity for twinkling effect
+  };
+}
+
+// Create all stars
+for (let i = 0; i < maxStars; i++) {
+  stars.push(createStar());
+}
+
+// Touch event listeners for mobile control
+let touchStartX = 0;  // for touch movement tracking
+let touchStartY = 0;  // for touch movement tracking
+
+// Trigger to start background music after first interaction
+let musicStarted = false;
+
+// Touchstart event to trigger background music and track player movement
+canvas.addEventListener('touchstart', function(e) {
+  e.preventDefault();  // Prevent default touch behavior (like scrolling)
+  
+  if (!musicStarted) {
+    backgroundMusic.play(); // Play background music after first touch
+    musicStarted = true; // Prevent restarting background music on subsequent touches
+  }
+
+  touchStartX = e.touches[0].clientX;  // Track the starting X position of touch
+  touchStartY = e.touches[0].clientY;  // Track the starting Y position of touch
+});
+
+// Touchmove event to track player movement
+canvas.addEventListener('touchmove', function(e) {
+  e.preventDefault();
+  let touchEndX = e.touches[0].clientX;  // Track the current X position of touch
+  if (touchEndX < touchStartX && player.x > 0) {
+    player.x -= player.speed;  // Move left
+  } else if (touchEndX > touchStartX && player.x < canvas.width - player.width) {
+    player.x += player.speed;  // Move right
+  }
+  touchStartX = touchEndX;  // Update the touch start X to current position for continuous movement
+});
+
+// Touch event to fire bullets
+canvas.addEventListener('touchstart', function(e) {
+  if (!gameOver && Date.now() - lastShotTime > shootDelay) {
+    shootBullet();  // Fire a bullet when the screen is touched
+  } else if (gameOver) {
+    restartGame();  // Restart the game if game over screen is active
+  }
+});
+
+// Function to get bullet color based on level
+function getBulletColor() {
+  if (level >= 26) {
+    bulletSpeed = 11; // Faster bullets after level 26
+    return 'purple'; // Purple bullets
+  } else if (level >= 16) {
+    bulletSpeed = 10; // Faster bullets after level 16
+    return 'yellow'; // Yellow bullets
+  } else if (level >= 6) {
+    bulletSpeed = 9; // Faster bullets after level 6
+    return 'cyan'; // Cyan bullets
+  } else {
+    bulletSpeed = 8; // Default bullet speed
+    return 'red'; // Red bullets for lower levels
   }
 }
 
-// Update and draw the gradient background and stars
-function drawBackground() {
-  // Create a space-like gradient background
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, '#000428'); // Dark space blue
-  gradient.addColorStop(1, '#004e92'); // Lighter blue for the deep space feel
-  ctx.fillStyle = gradient;
+// Function to shoot a bullet
+function shootBullet() {
+  if (gameOver) return;
+  let bullet = {
+    x: player.x + player.width / 2 - 2,
+    y: player.y,
+    width: 4,
+    height: 10,
+    dy: -bulletSpeed, // Bullet speed based on level
+    color: getBulletColor(), // Get bullet color based on level
+  };
+  bullets.push(bullet);
+
+  // Play the shoot sound
+  shootSound.play();
+  lastShotTime = Date.now(); // Update the last shot time to prevent fast shooting
+}
+
+// Function to draw the space background with gradient and stars
+function drawSpaceBackground() {
+  // Draw gradient background
+  let grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  grd.addColorStop(0, 'black');
+  grd.addColorStop(1, '#0a1a2e');
+  ctx.fillStyle = grd;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw stars with twinkle effect
-  for (let i = 0; i < stars.length; i++) {
-    const star = stars[i];
-    star.opacity += star.twinkleSpeed; // Change opacity over time
-
-    // Reverse opacity direction when limits are reached (twinkling effect)
-    if (star.opacity > 1 || star.opacity < 0) {
-      star.twinkleSpeed = -star.twinkleSpeed;
-    }
-
+  // Draw stars
+  stars.forEach(star => {
     ctx.beginPath();
-    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`; // White stars with twinkle
+    ctx.arc(star.x, star.y, star.size, 0, 2 * Math.PI);
+    ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
     ctx.fill();
+    star.y += star.speed;
+    if (star.y > canvas.height) {
+      star.y = 0; // Reset to the top when the star reaches the bottom
+    }
+  });
+}
+
+// Function to draw the player (spaceship)
+function drawPlayer() {
+  ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
+}
+
+// Function to draw invaders
+function drawInvaders() {
+  for (let c = 0; c < invaderColumnCount; c++) {
+    for (let r = 0; r < invaderRowCount; r++) {
+      if (invaders[c][r].status === 1) {
+        ctx.drawImage(invaders[c][r].image, invaders[c][r].x, invaders[c][r].y, invaderWidth, invaderHeight);
+      }
+    }
   }
 }
 
-// Player object, Bullet, Invaders, etc. remain as they are...
+// Function to detect collisions between bullets and invaders
+function detectCollisions() {
+  for (let i = 0; i < bullets.length; i++) {
+    for (let c = 0; c < invaderColumnCount; c++) {
+      for (let r = 0; r < invaderRowCount; r++) {
+        let invader = invaders[c][r];
+        if (invader.status === 1) {
+          if (
+            bullets[i].x > invader.x &&
+            bullets[i].x < invader.x + invaderWidth &&
+            bullets[i].y > invader.y &&
+            bullets[i].y < invader.y + invaderHeight
+          ) {
+            invader.status = 0; // Destroy the invader
+            bullets.splice(i, 1); // Remove the bullet
+            score += 10; // Increase score
+            if (checkWin()) {
+              level++;
+              invaderSpeed = Math.min(invaderSpeed + 0.1, 1); // Increase speed as levels go up, up to a max speed
+              if (level <= 10) {
+                invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
+                invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
+              }
+              createInvaders();  // Regenerate the invaders with updated count and speed
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Check if all invaders are destroyed
+function checkWin() {
+  for (let c = 0; c < invaderColumnCount; c++) {
+    for (let r = 0; r < invaderRowCount; r++) {
+      if (invaders[c][r].status === 1) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
 // Function to move the player
 function movePlayer() {
@@ -229,7 +364,9 @@ function draw() {
     return;
   }
 
-  drawBackground();  // Draw the background with gradient and stars
+  // Draw space background with stars
+  drawSpaceBackground();
+
   drawPlayer();
   drawBullets();
   drawInvaders();
@@ -242,5 +379,4 @@ function draw() {
 
 // Initialize the game
 createInvaders();
-createStars(100); // Generate 100 stars for the background
 gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
