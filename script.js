@@ -54,14 +54,14 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
-// Trigger to start background music after first interaction
-let musicStarted = false;
-
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
 let touchStartY = 0;  // for touch movement tracking
 
 // Trigger to start background music after first interaction
+let musicStarted = false;
+
+// Touchstart event to trigger background music and track player movement
 canvas.addEventListener('touchstart', function(e) {
   e.preventDefault();  // Prevent default touch behavior (like scrolling)
   
@@ -340,64 +340,50 @@ function restartGame() {
     // Reset everything for a fresh start
     score = 0;
     level = 1;
-    invaderSpeed = 0.05;
-    invaderDirection = 1;
     invaderRowCount = 3;
     invaderColumnCount = 5;
-    bullets = [];
     createInvaders();
+    player.x = canvas.width / 2 - 20;
+    player.y = canvas.height - 100;
+    bullets = [];
     gameOver = false;
-    gameInterval = setInterval(gameLoop, 1000 / 60);
+    gameInterval = setInterval(update, 1000 / 60); // Restart the game loop
   }
 }
 
-// Function to draw the background (gradient space with stars)
-function drawBackground() {
-  // Create gradient for space background
-  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, '#000046'); // Dark blue at top
-  gradient.addColorStop(1, '#1a1a3c'); // Dark purple at bottom
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Draw glowing stars
-  drawStars();
-}
-
-// Function to draw glowing stars
-function drawStars() {
-  const numStars = 100;
-  ctx.shadowColor = 'white';
-  ctx.shadowBlur = 15;
-
-  for (let i = 0; i < numStars; i++) {
-    let x = Math.random() * canvas.width;
-    let y = Math.random() * canvas.height;
-    let size = Math.random() * 2 + 1;
-    ctx.beginPath();
-    ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.fillStyle = 'white';
-    ctx.fill();
+// Game update loop
+function update() {
+  if (!gameOver) {
+    movePlayer();
+    moveInvaders();
+    draw();
+    detectCollisions();
   }
-
-  ctx.shadowBlur = 0;
 }
 
-// Game loop
-function gameLoop() {
-  if (gameOver) return;
+// Initial setup
+createInvaders();
+gameInterval = setInterval(update, 1000 / 60); // Start the game loop
 
-  drawBackground();  // Draw space background
-  drawPlayer();
-  drawBullets();
-  drawInvaders();
-  drawScore();
-  drawLevel();
-  
-  detectCollisions();
-  movePlayer();
-  moveInvaders();
-}
+// Handling key events (for desktop)
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'd') {
+    rightPressed = true;
+  } else if (e.key === 'ArrowLeft' || e.key === 'a') {
+    leftPressed = true;
+  } else if (e.key === ' ' || e.key === 'Enter') {
+    if (!gameOver && Date.now() - lastShotTime > shootDelay) {
+      shootBullet();
+    } else if (gameOver) {
+      restartGame();
+    }
+  }
+});
 
-// Set up the game interval
-gameInterval = setInterval(gameLoop, 1000 / 60);
+document.addEventListener('keyup', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'd') {
+    rightPressed = false;
+  } else if (e.key === 'ArrowLeft' || e.key === 'a') {
+    leftPressed = false;
+  }
+});
