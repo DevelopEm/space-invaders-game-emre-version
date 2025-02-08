@@ -95,6 +95,28 @@ canvas.addEventListener('touchstart', function(e) {
   }
 });
 
+// Keyboard event listeners for desktop support
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'd') {
+    rightPressed = true;
+  }
+  if (e.key === 'ArrowLeft' || e.key === 'a') {
+    leftPressed = true;
+  }
+  if (e.key === ' ' && !gameOver && Date.now() - lastShotTime > shootDelay) {
+    shootBullet();
+  }
+});
+
+document.addEventListener('keyup', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'd') {
+    rightPressed = false;
+  }
+  if (e.key === 'ArrowLeft' || e.key === 'a') {
+    leftPressed = false;
+  }
+});
+
 // Function to get bullet color based on level
 function getBulletColor() {
   if (level >= 26) {
@@ -245,174 +267,135 @@ function moveInvaders() {
       let invader = invaders[c][r];
       if (invader.status === 1) {
         invader.x += invaderSpeed * invaderDirection;
-
-        // Check if invader reaches the edge of the screen
-        if (invader.x + invaderWidth > canvas.width || invader.x < 0) {
-          invaderDirection = -invaderDirection;
+        if (invader.x > canvas.width - invaderWidth || invader.x < 0) {
           shouldMoveDown = true;
-        }
-
-        // Check if invader reaches the bottom (player)
-        if (invader.y + invaderHeight >= player.y && invader.status === 1) {
-          gameOverCondition(); // End the game
-          return;
         }
       }
     }
   }
 
   if (shouldMoveDown) {
+    invaderDirection = -invaderDirection;
     for (let c = 0; c < invaderColumnCount; c++) {
       for (let r = 0; r < invaderRowCount; r++) {
-        if (invaders[c][r].status === 1) {
-          invaders[c][r].y += invaderHeight; // Move all invaders down a row
-        }
+        invaders[c][r].y += 10; // Move down if edge is reached
       }
     }
   }
 }
 
-// Function to draw the score
+// Function to check for game over
+function checkGameOver() {
+  for (let c = 0; c < invaderColumnCount; c++) {
+    for (let r = 0; r < invaderRowCount; r++) {
+      let invader = invaders[c][r];
+      if (invader.status === 1 && invader.y + invaderHeight >= player.y) {
+        gameOver = true;  // Game over if any invader reaches the player's level
+        gameOverSound.play();
+        break;
+      }
+    }
+  }
+}
+
+// Function to display score
 function drawScore() {
-  ctx.fillStyle = '#FFFFFF';
   ctx.font = '16px Arial';
-  ctx.fillText('Score: ' + score, 8, 20);
+  ctx.fillStyle = '#fff';
+  ctx.fillText(`Score: ${score}`, 10, 20);
 }
 
-// Function to draw the level
+// Function to draw level
 function drawLevel() {
-  ctx.fillStyle = '#FFFFFF';
   ctx.font = '16px Arial';
-  ctx.fillText('Level: ' + level, canvas.width - 80, 20);
+  ctx.fillStyle = '#fff';
+  ctx.fillText(`Level: ${level}`, canvas.width - 100, 20);
 }
 
-// Function to update leaderboard
-function updateLeaderboard(name, score) {
-  leaderboard.push({ name, score });
-  leaderboard.sort((a, b) => b.score - a.score); // Sort by score descending
-  if (leaderboard.length > 3) {
-    leaderboard = leaderboard.slice(0, 3); // Keep only the top 3 players
-  }
-}
-
-// Function to draw the game over screen with summary and leaderboard
+// Function to display game over text
 function drawGameOver() {
-  // Ask for player name
-  if (playerName === "") {
-    playerName = prompt("Enter your name:");
-  }
-
-  // Update leaderboard with player's score
-  updateLeaderboard(playerName, score);
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
-  
-  // Draw gradient background (black to dark blue)
-  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, 'black');
-  gradient.addColorStop(1, '#003366'); // Dark blue color
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Draw stars (twinkling effect)
-  drawStars();
-
-  // Game over text
-  ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
-  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px Arial';
-  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
-  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
-
-  // Display leaderboard
-  ctx.font = '16px Arial';
-  ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 70);
-  for (let i = 0; i < leaderboard.length; i++) {
-    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + i * 30);
-  }
-
-  // Restart instructions
-  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + 180);
+  ctx.fillStyle = 'red';
+  ctx.fillText('Game Over', canvas.width / 2 - 90, canvas.height / 2);
+  ctx.fillText(`Final Score: ${score}`, canvas.width / 2 - 120, canvas.height / 2 + 40);
+  ctx.fillText('Click or Tap to Restart', canvas.width / 2 - 140, canvas.height / 2 + 80);
 }
 
-// Function to draw twinkling stars (random positions)
-function drawStars() {
-  for (let i = 0; i < 200; i++) {
-    let x = Math.random() * canvas.width;
-    let y = Math.random() * canvas.height;
-    let radius = Math.random() * 2;
-    ctx.fillStyle = 'white';
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
-
-// Function to end the game
-function gameOverCondition() {
-  gameOver = true;
-  drawGameOver();
-  clearInterval(gameInterval); // Stop the game
-  gameOverSound.play(); // Play game over sound
-}
-
-// Restart the game when clicked
+// Function to restart the game
 function restartGame() {
-  if (gameOver) {
-    // Reset everything for a fresh start
-    score = 0;
-    level = 1;
-    invaderSpeed = 0.3;
-    invaderDirection = 1;
-    invaderRowCount = 3;
-    invaderColumnCount = 5;
-    gameOver = false;
-    playerName = ""; // Reset player name
-    createInvaders();
-    backgroundMusic.play(); // Restart background music
-    gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
-  }
+  score = 0;
+  level = 1;
+  invaderSpeed = 0.05;
+  invaderRowCount = 3;
+  invaderColumnCount = 5;
+  bullets = [];
+  invaders = [];
+  createInvaders();
+  gameOver = false;
 }
 
 // Main game loop
-function draw() {
-  if (gameOver) {
-    return;
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+
+  if (!gameOver) {
+    drawStars(); // Draw moving stars
+    drawPlayer(); // Draw the player
+    drawBullets(); // Draw the bullets
+    drawInvaders(); // Draw the invaders
+    drawScore(); // Display score
+    drawLevel(); // Display level
+
+    movePlayer(); // Move player based on keyboard or touch input
+    moveInvaders(); // Move invaders based on their logic
+    detectCollisions(); // Check for collisions between bullets and invaders
+    checkGameOver(); // Check if the game is over
+  } else {
+    drawGameOver(); // Draw game over text
   }
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-  
-  // Draw gradient background (black to dark blue)
-  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, 'black');
-  gradient.addColorStop(1, '#003366'); // Dark blue color
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  requestAnimationFrame(gameLoop); // Continue the loop
+}
 
-  // Draw stars
-  drawStars();
+// Create stars array
+let stars = [];
+function createStars() {
+  stars = [];
+  for (let i = 0; i < 200; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * 2,
+      speed: Math.random() * 0.5 + 0.1, // Random speed for each star
+      opacity: Math.random() * 0.5 + 0.5, // Random opacity for twinkling effect
+    });
+  }
+}
 
-  // Draw player, bullets, invaders, score, and level
-  drawPlayer();
-  drawBullets();
-  drawInvaders();
-  drawScore();
-  drawLevel();
-  
-  // Handle collisions, movements
-  detectCollisions();
-  movePlayer();
-  moveInvaders();
+// Function to draw and animate stars
+function drawStars() {
+  ctx.fillStyle = 'white';
+  for (let i = 0; i < stars.length; i++) {
+    let star = stars[i];
+
+    // Subtle movement of stars
+    star.x += star.speed;
+    if (star.x > canvas.width) {
+      star.x = 0;
+    }
+
+    // Twinkling effect
+    star.opacity += (Math.random() * 0.02 - 0.01);
+    if (star.opacity > 1) star.opacity = 1;
+    if (star.opacity < 0.2) star.opacity = 0.2;
+
+    // Draw the star
+    ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+    ctx.fillRect(star.x, star.y, star.size, star.size);
+  }
 }
 
 // Initialize the game
+createStars();
 createInvaders();
-gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
-
-// Resize event to ensure the game is always full screen
-window.addEventListener('resize', function() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  player.x = canvas.width / 2 - 20;  // Re-center the player
-});
+gameLoop(); // Start the game loop
