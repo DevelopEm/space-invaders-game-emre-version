@@ -8,7 +8,7 @@ canvas.height = window.innerHeight; // Make canvas height dynamic
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
-let invaderSpeed = 0.5;
+let invaderSpeed = 0.3;
 let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
@@ -18,9 +18,6 @@ let restartTextHeight = 60; // Distance of restart text from center of canvas
 // Star object
 let stars = [];
 const starCount = 200; // Number of stars
-
-// Leaderboard storage
-let leaderboard = [];
 
 // Create stars for the background
 function createStars() {
@@ -39,8 +36,8 @@ function createStars() {
 function drawBackground() {
   // Create gradient (black to dark blue)
   let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, '#000000'); // Black at the top
-  gradient.addColorStop(1, '#00008B'); // Dark blue at the bottom
+  gradient.addColorStop(0, 'black');
+  gradient.addColorStop(1, '#00008B'); // Dark blue
 
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas with the gradient
@@ -52,7 +49,7 @@ function drawStars() {
     let star = stars[i];
     ctx.beginPath();
     ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2, false);
-    ctx.fillStyle = rgba(255, 255, 255, ${star.opacity}); // White with varying opacity
+    ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`; // White with varying opacity
     ctx.fill();
     star.y += star.speed; // Move stars downwards
     
@@ -293,9 +290,6 @@ function moveInvaders() {
   }
 }
 
-// Ask for player name and store in a variable
-let playerName = prompt("Enter your name:");
-
 // Function to draw the score
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
@@ -312,12 +306,6 @@ function drawLevel() {
 
 // Function to draw the game over screen with summary
 function drawGameOver() {
-  // Save the score and level in the leaderboard
-  leaderboard.push({ name: playerName, score: score, level: level });
-  
-  // Sort leaderboard by score
-  leaderboard.sort((a, b) => b.score - a.score);
-
   // Ensure that the game over sound is played only once
   if (!gameOverSound.played) {
     gameOverSound.play(); // Play the game over sound
@@ -330,12 +318,6 @@ function drawGameOver() {
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
   ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
-
-  // Draw leaderboard when game over
-  ctx.fillText('Leaderboard', canvas.width / 2 - 70, canvas.height / 2 + 100);
-  for (let i = 0; i < leaderboard.length; i++) {
-    ctx.fillText(${leaderboard[i].name} - Score: ${leaderboard[i].score} - Level: ${leaderboard[i].level}, canvas.width / 2 - 150, canvas.height / 2 + 140 + (i * 30));
-  }
 }
 
 // Function to end the game
