@@ -200,7 +200,7 @@ function detectCollisions() {
             score += 10; // Increase score
             if (checkWin()) {
               level++;
-              invaderSpeed = Math.min(invaderSpeed + 0.1, 3); // Increase speed as levels go up, up to a max speed
+              invaderSpeed = Math.min(invaderSpeed + 0.1, 1); // Increase speed as levels go up, up to a max speed
               if (level <= 10) {
                 invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
                 invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
@@ -275,28 +275,15 @@ function moveInvaders() {
 // Function to draw the score
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '30px Arial';
+  ctx.font = '16px Arial';
   ctx.fillText('Score: ' + score, 8, 20);
 }
 
 // Function to draw the level
 function drawLevel() {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '30px Arial';
-  ctx.fillText('Level: ' + level, canvas.width - 100, 20);
-}
-
-// Function to draw the starfield background
-function drawStars() {
-  for (let i = 0; i < 100; i++) {
-    let x = Math.random() * canvas.width;
-    let y = Math.random() * canvas.height;
-    let alpha = Math.random();
-    let size = Math.random() * 1;
-    
-    ctx.fillStyle = 'rgba(255, 255, 255, ' + alpha + ')'; // Random brightness for twinkling effect
-    ctx.fillRect(x, y, size, size);
-  }
+  ctx.font = '16px Arial';
+  ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
 // Function to update leaderboard
@@ -308,77 +295,87 @@ function updateLeaderboard(name, score) {
   }
 }
 
-// Function to draw the game over screen with summary and leaderboard
+// Function to create the starry background with gradient
+function drawBackground() {
+  // Create a space-like gradient background
+  let gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  gradient.addColorStop(0, 'black');  // Dark space color at top
+  gradient.addColorStop(1, '#1a1a4b');  // Slightly purple-blue at the bottom
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Draw stars in the background
+  for (let i = 0; i < 100; i++) {
+    let x = Math.random() * canvas.width;
+    let y = Math.random() * canvas.height;
+    let size = Math.random() * 2;  // Star size
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+  }
+}
+
+// Function to draw the glowing game over screen
 function drawGameOver() {
-  // Ask for player name
   if (playerName === "") {
     playerName = prompt("Enter your name:");
   }
 
-  // Update leaderboard with player's score
   updateLeaderboard(playerName, score);
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
-  
-  // Fancy background color fade
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-  // Fancy Game Over text with glow
-  ctx.shadowColor = 'white';
-  ctx.shadowBlur = 30;
-  ctx.fillStyle = 'cyan';
+  // Clear canvas and draw the background
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBackground();  // Draw the starry background
+
+  // Game over text with cyan glow
+  ctx.shadowColor = 'cyan';  // Apply cyan glow
+  ctx.shadowBlur = 20;
+  ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '30px Arial';
+  ctx.font = '20px Arial';
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
 
-  // Display leaderboard
-  ctx.font = '20px Arial';
+  // Display leaderboard with updated real-time scoreboard
+  ctx.font = '16px Arial';
   ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 70);
   for (let i = 0; i < leaderboard.length; i++) {
-    ctx.fillText(${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}, canvas.width / 2 - 60, canvas.height / 2 + 100 + i * 30);
+    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + i * 30);
   }
+
+  // Reset shadow blur after drawing the game over text
+  ctx.shadowBlur = 0;
 
   // Restart instructions
   ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + 180);
 }
 
-// Function to end the game
-function gameOverCondition() {
-  gameOver = true;
-  drawGameOver();
-  clearInterval(gameInterval); // Stop the game
-  gameOverSound.play(); // Play game over sound
-}
-
-// Restart the game when clicked
+// Function to restart the game
 function restartGame() {
-  if (gameOver) {
-    // Reset everything for a fresh start
-    score = 0;
-    level = 1;
-    invaderSpeed = 0.3;
-    invaderDirection = 1;
-    invaderRowCount = 3;
-    invaderColumnCount = 5;
-    gameOver = false;
-    playerName = ""; // Reset player name
-    createInvaders();
-    backgroundMusic.play(); // Restart background music
-    gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
-  }
+  level = 1;
+  score = 0;
+  invaderSpeed = 0.05;
+  invaderDirection = 1;
+  invaderRowCount = 3;
+  invaderColumnCount = 5;
+  createInvaders();
+  bullets = [];
+  gameOver = false;
+  draw();  // Restart game loop
+  gameInterval = setInterval(update, 1000 / 60); // Restart game interval
 }
 
 // Main game loop
-function draw() {
+function update() {
   if (gameOver) {
     return;
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-  drawStars(); // Draw stars in the background
+  drawBackground();  // Draw the space background
   drawPlayer();
   drawBullets();
   drawInvaders();
@@ -389,6 +386,4 @@ function draw() {
   moveInvaders();
 }
 
-// Initialize the game
-createInvaders();
-gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
+gameInterval = setInterval(update, 1000 / 60); // Start the game loop
