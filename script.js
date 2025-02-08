@@ -369,27 +369,6 @@ function update() {
   drawLevel();
 }
 
-// Function to handle keyboard events for player movement and shooting
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'ArrowRight') {
-    rightPressed = true;
-  } else if (e.key === 'ArrowLeft') {
-    leftPressed = true;
-  } else if (e.key === ' ' || e.key === 'ArrowUp') {
-    spacePressed = true;
-  }
-});
-
-document.addEventListener('keyup', function(e) {
-  if (e.key === 'ArrowRight') {
-    rightPressed = false;
-  } else if (e.key === 'ArrowLeft') {
-    leftPressed = false;
-  } else if (e.key === ' ' || e.key === 'ArrowUp') {
-    spacePressed = false;
-  }
-});
-
 // Initialize the game
 createInvaders();
 gameInterval = setInterval(update, 1000 / 60); // Update the game every 60 FPS
