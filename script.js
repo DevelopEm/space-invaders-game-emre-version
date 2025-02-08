@@ -142,6 +142,10 @@ canvas.addEventListener('touchstart', function(e) {
   }
 });
 
+// Bullet object
+bullets = [];
+let bulletSpeed = 4; // Default bullet speed
+
 // Keyboard event listeners for player movement
 document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowRight' || e.key === 'd') {
@@ -172,6 +176,31 @@ function shootBullet() {
     dy: -bulletSpeed,
   };
   bullets.push(bullet);
+
+// Function to change bullet color based on level
+function getBulletColor() {
+  if (level >= 20) return 'pink';
+  if (level >= 15) return 'green';
+  if (level >= 10) return 'yellow';
+  if (level >= 5) return 'cyan';
+  return '#FF0000'; // Default red
+}
+
+// Function to add glow effect on bullets
+function drawBullets() {
+  for (let i = 0; i < bullets.length; i++) {
+    if (bullets[i].y < 0) {
+      bullets.splice(i, 1);
+      continue;
+    }
+    
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = getBulletColor(); // Add glow effect with the bullet color
+    ctx.fillStyle = getBulletColor(); // Set bullet color
+    ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
+    bullets[i].y += bullets[i].dy;
+  }
+}
 
   // Play the shoot sound
   shootSound.play();
