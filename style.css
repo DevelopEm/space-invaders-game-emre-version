@@ -1,23 +1,25 @@
-/* CSS for body and canvas styling */
-body {
-    background-color: #000;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden; /* Prevents scrollbars */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-#gameArea {
-    position: relative;
-    width: 100%;
-    height: 100%;
+body {
+  background-color: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
+
+#gameContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 canvas {
-    display: block; /* Ensures no extra space around the canvas */
-    border: 1px solid white;
-    background-color: #131212; /* Dark space-like background */
+  display: block; /* Ensure the canvas is a block element */
 }
