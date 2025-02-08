@@ -351,98 +351,70 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 100, 20);
 }
 
-// Function to restart the game
+// Game Over screen and restart
+function gameOverCondition() {
+  gameOver = true;
+  gameOverSound.play();  // Play the game over sound
+  setTimeout(function() {
+    alert('Game Over! Your score is ' + score);
+  }, 200); // Wait for the sound to finish before showing the alert
+}
+
 function restartGame() {
+  // Reset all game variables and restart the game
   score = 0;
   level = 1;
   invaderSpeed = 0.05;
   invaderDirection = 1;
   invaderRowCount = 3;
   invaderColumnCount = 5;
+  bullets = [];
+  invaders = [];
   createInvaders();
   gameOver = false;
+  backgroundMusic.play();
+  gameLoop(); // Start the game loop again
 }
 
-// Game over condition
-function gameOverCondition() {
-  gameOver = true;
-  gameOverSound.play();  // Play the game over sound
-}
-
-// Game loop
-function gameLoop() {
-  // Clear the canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Draw the background gradient and stars
-  drawGradientBackground();
-  drawStarryBackground();
-
-  // Move the player and invaders
-  movePlayer();
-  moveInvaders();
-
-  // Draw player, invaders, bullets, score, and level
-  drawPlayer();
-  drawInvaders();
-  drawBullets();
-  drawScore();
-  drawLevel();
-
-  // Detect collisions between bullets and invaders
-  detectCollisions();
-
-  // Game over condition
-  if (gameOver) {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '30px Arial';
-    ctx.fillText('GAME OVER', canvas.width / 2 - 80, canvas.height / 2);
-    ctx.font = '20px Arial';
-    ctx.fillText('Tap to Restart', canvas.width / 2 - 70, canvas.height / 2 + 40);
-  }
-
-  // Request next frame
-  if (!gameOver) {
-    requestAnimationFrame(gameLoop);
-  }
-}
-
-// Keyboard events for desktop control
+// Event listeners for user input (arrow keys for desktop, touch for mobile)
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Right' || e.key === 'ArrowRight') {
+  if (e.key === 'ArrowRight') {
     rightPressed = true;
-  } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
+  } else if (e.key === 'ArrowLeft') {
     leftPressed = true;
-  } else if (e.key === ' ' || e.key === 'Spacebar') {
-    spacePressed = true;
-    shootBullet();
+  } else if (e.key === ' ' && !gameOver) {
+    shootBullet();  // Fire a bullet on spacebar press
   }
 });
 
 document.addEventListener('keyup', function(e) {
-  if (e.key === 'Right' || e.key === 'ArrowRight') {
+  if (e.key === 'ArrowRight') {
     rightPressed = false;
-  } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
+  } else if (e.key === 'ArrowLeft') {
     leftPressed = false;
-  } else if (e.key === ' ' || e.key === 'Spacebar') {
-    spacePressed = false;
   }
 });
 
-// Start the game once the player interacts
-canvas.addEventListener('click', function() {
-  if (!musicStarted) {
-    backgroundMusic.play(); // Play background music after first click
-    musicStarted = true;
-  }
+// Game loop function
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas before every frame
 
-  if (gameOver) {
-    restartGame(); // Restart game when clicked after game over
-  }
-});
+  drawGradientBackground();  // Draw gradient background
+  drawStarryBackground();    // Draw twinkling stars
+  movePlayer();              // Move the player (based on touch or arrow keys)
+  moveInvaders();            // Move the invaders
+  drawPlayer();              // Draw the player spaceship
+  drawInvaders();            // Draw the invaders
+  drawBullets();             // Draw bullets
+  drawScore();               // Draw the score
+  drawLevel();               // Draw the level
+  detectCollisions();        // Detect collisions between bullets and invaders
 
-// Initialize invaders and start the game loop
-createInvaders();
-gameLoop();
+  if (!gameOver) {
+    requestAnimationFrame(gameLoop);  // Keep the game loop going
+  }
+}
+
+// Initialize the game
+createInvaders();  // Generate initial invaders
+gameLoop();        // Start the game loop
