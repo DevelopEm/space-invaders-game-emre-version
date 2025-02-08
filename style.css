@@ -1,45 +1,20 @@
-/* Reset some default styles */
-* {
-  margin: 0;  /* Remove any default margin */
-  padding: 0; /* Remove any default padding */
-  box-sizing: border-box; /* Ensures padding and borders are included in width/height calculations */
-}
-
-html, body {
-  height: 100%; /* Ensure the body takes full height */
-  width: 100%; /* Ensure the body takes full width */
-  overflow: hidden; /* Prevents scrolling */
-  background-color: black; /* Set the background to black */
-}
-
 body {
-  display: flex; /* Use flexbox to center content */
-  justify-content: center; /* Horizontally center the canvas */
-  align-items: center; /* Vertically center the canvas */
-  height: 100vh; /* Make sure the body takes up the entire viewport height */
-  margin: 0; /* Remove any margin from the body */
-}
+    background-color: #000;
+    margin: 0;
+    padding: 0;
+    display: flexbox;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  #gameArea {
+    position: relative;
+  }
+  
+  canvas {
+    border: 1px solid white;
+    background-color: #131212;
+  }
 
-canvas {
-  display: block; /* Remove any extra space below the canvas */
-  background-color: black; /* Ensure canvas background is black */
-  width: 100vw; /* Make the canvas fill the entire viewport width */
-  height: 100vh; /* Make the canvas fill the entire viewport height */
-}
-
-/* Style for score and level text */
-.score-level {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  color: white;
-  font-family: Arial, sans-serif;
-  font-size: 5vw; /* Scales the font size based on viewport width */
-  z-index: 10; /* Ensures score and level are above other elements */
-}
-
-#gameArea {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
+  
