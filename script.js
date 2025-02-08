@@ -76,7 +76,7 @@ player.image.src = 'spaceship.png'; // Path to spaceship image
 // Bullet object
 bullets = [];
 const bulletSpeed = 4;
-let bulletColor = 'cyan';  // Default bullet color
+let bulletColor = 'red';  // Default bullet color
 
 // Invader object
 invaders = [];
