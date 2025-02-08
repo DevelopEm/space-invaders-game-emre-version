@@ -359,10 +359,25 @@ function loadLeaderboard() {
   }
 }
 
-// Function to draw the game over screen with leaderboard
-function drawGameOver() {
-  // Sort leaderboard by score (highest first)
-  leaderboard.sort((a, b) => b.score - a.score);
+  // Check if game over sound has already been played
+  if (!gameOverSoundPlayed) {
+    gameOverSound.play();  // Play the game over sound
+    gameOverSoundPlayed = true;  // Set the flag to true to prevent re-playing the sound
+  }
+// Flag to track whether game over sound has been played
+let gameOverSoundPlayed = false;
+
+function gameOverCondition() {
+  gameOver = true;
+
+  // Check if game over sound has already been played
+  if (!gameOverSoundPlayed) {
+    gameOverSound.play();  // Play the game over sound
+    gameOverSoundPlayed = true;  // Set the flag to true to prevent re-playing the sound
+  }
+
+  saveLeaderboard();  // Save the leaderboard before showing the game over screen
+}
 
   // Ensure that the game over sound is played only once
   if (!gameOverSound.played) {
