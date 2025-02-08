@@ -54,14 +54,14 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
+// Trigger to start background music after first interaction
+let musicStarted = false;
+
 // Touch event listeners for mobile control
 let touchStartX = 0;  // for touch movement tracking
 let touchStartY = 0;  // for touch movement tracking
 
 // Trigger to start background music after first interaction
-let musicStarted = false;
-
-// Touchstart event to trigger background music and track player movement
 canvas.addEventListener('touchstart', function(e) {
   e.preventDefault();  // Prevent default touch behavior (like scrolling)
   
@@ -314,61 +314,98 @@ function drawGameOver() {
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw stars (twinkling effect)
+  // Draw stars with gentle twinkling effect
   drawStars();
+  
+  ctx.fillStyle = "#FFFFFF";
+  ctx.font = "40px Arial";
+  ctx.fillText("Game Over", canvas.width / 2 - 100, canvas.height / 2 - 40);
 
-  // Game over text
-  ctx.fillStyle = 'white';
-  ctx.font = '30px Arial';
-  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px Arial';
-  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
-  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
+  ctx.font = "20px Arial";
+  ctx.fillText("Score: " + score, canvas.width / 2 - 60, canvas.height / 2);
 
-  // Display leaderboard
-  ctx.font = '16px Arial';
-  ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 80);
-  for (let i = 0; i < leaderboard.length; i++) {
-    ctx.fillText(leaderboard[i].name + ': ' + leaderboard[i].score, canvas.width / 2 - 60, canvas.height / 2 + 110 + i * 30);
-  }
+  ctx.fillText("Leaderboard", canvas.width / 2 - 80, canvas.height / 2 + 40);
+  
+  leaderboard.forEach((entry, index) => {
+    ctx.fillText(`${index + 1}. ${entry.name}: ${entry.score}`, canvas.width / 2 - 80, canvas.height / 2 + 60 + index * 30);
+  });
+
+  ctx.fillText("Tap to restart", canvas.width / 2 - 80, canvas.height / 2 + 160);
+}
+
+// Function to handle game over condition
+function gameOverCondition() {
+  gameOver = true;
+  gameOverSound.play();  // Play game over sound
+  drawGameOver(); // Show game over screen
 }
 
 // Function to restart the game
 function restartGame() {
   score = 0;
   level = 1;
+  invaderSpeed = 0.05;
+  invaderDirection = 1;
   invaderRowCount = 3;
   invaderColumnCount = 5;
-  invaderSpeed = 0.05;
-  bullets = [];
-  invaders = [];
   createInvaders();
-  player.x = canvas.width / 2 - 20;
-  player.y = canvas.height - 100;
   gameOver = false;
-  gameInterval = setInterval(update, 1000 / 60); // Start the game again
+  bullets = [];
+  player.x = canvas.width / 2 - player.width / 2;
+  player.y = canvas.height - 100;
+  gameInterval = setInterval(draw, 1000 / 60); // Restart game loop at 60 FPS
 }
 
-// Function to update the game state
-function update() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-  
+// Function to draw twinkling stars (with gentle movement)
+function drawStars() {
+  for (let i = 0; i < 200; i++) {
+    let x = Math.random() * canvas.width;
+    let y = Math.random() * canvas.height;
+
+    x += Math.sin(Date.now() / 10000 + i) * 0.05;
+    y += Math.cos(Date.now() / 10000 + i) * 0.05;
+
+    let radius = Math.random() * 1.5 + 0.5;
+    let opacity = Math.random() * 0.5 + 0.5;
+
+    ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// Main game loop
+function draw() {
   if (gameOver) {
-    drawGameOver(); // Display game over screen
     return;
   }
 
-  movePlayer();
-  moveInvaders();
-  detectCollisions();
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+  
+  // Draw gradient background (black to dark blue)
+  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, 'black');
+  gradient.addColorStop(1, '#003366'); // Dark blue color
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  // Draw stars with gentle twinkling effect
+  drawStars();
+
+  // Draw player, bullets, invaders, score, and level
   drawPlayer();
-  drawInvaders();
   drawBullets();
+  drawInvaders();
   drawScore();
   drawLevel();
+  
+  // Handle collisions, movements
+  detectCollisions();
+  movePlayer();
+  moveInvaders();
 }
 
 // Initialize the game
 createInvaders();
-gameInterval = setInterval(update, 1000 / 60); // Update the game every 60 FPS
+gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
