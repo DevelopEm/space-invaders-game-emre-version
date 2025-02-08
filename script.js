@@ -362,12 +362,12 @@ function gameLoop() {
 let stars = [];
 function createStars() {
   stars = [];
-  for (let i = 0; i < 200; i++) {
+  for (let i = 0; i < 100; i++) {
     stars.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       size: Math.random() * 2,
-      speed: Math.random() * 0.5 + 0.1, // Random speed for each star
+      speed: Math.random() * 0.2 + 0.1, // Random speed for each star
       opacity: Math.random() * 0.5 + 0.5, // Random opacity for twinkling effect
     });
   }
