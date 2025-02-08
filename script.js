@@ -8,7 +8,7 @@ canvas.height = window.innerHeight; // Make canvas height dynamic
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
-let invaderSpeed = 0.1;
+let invaderSpeed = 0.3;
 let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
@@ -17,7 +17,17 @@ let restartTextHeight = 60; // Distance of restart text from center of canvas
 
 // Star object
 let stars = [];
-const starCount = 200; // Number of stars
+const starCount = 100; // Number of stars
+
+// Leaderboard
+let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+
+function updateLeaderboard(name, score) {
+  leaderboard.push({ name, score });
+  leaderboard.sort((a, b) => b.score - a.score); // Sort by score, descending
+  leaderboard = leaderboard.slice(0, 3); // Keep only top 3
+  localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+}
 
 // Create stars for the background
 function createStars() {
@@ -25,46 +35,38 @@ function createStars() {
     stars.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      size: Math.random() * 0.5 + 1, // Random size between 1 and 1.5
-      speed: Math.random() * 0.8 + 0.3, // Random speed for twinkling effect
+      size: Math.random() * 3 + 1, // Random size between 1 and 4
+      speed: Math.random() * 0.5 + 0.1, // Random speed for twinkling effect
       opacity: Math.random() * 0.5 + 0.5, // Random opacity
-      opacityDirection: Math.random() < 0.5 ? 1 : -1, // Direction of opacity change
-      glowColor: `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.5})`, // Random glow color for twinkle effect
     });
   }
 }
 
-// Function to draw the stars with a 5D glowing and twinkling effect
+// Function to draw the gradient background
+function drawBackground() {
+  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, 'black');
+  gradient.addColorStop(1, '#00008B'); // Dark blue
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas with the gradient
+}
+
+// Function to draw stars
 function drawStars() {
   for (let i = 0; i < stars.length; i++) {
     let star = stars[i];
-
-    // Create glowing effect using the glowColor
     ctx.beginPath();
     ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2, false);
-    ctx.fillStyle = star.glowColor; // Twinkling color
+    ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`; // White with varying opacity
     ctx.fill();
-
-    // Move stars downwards
-    star.y += star.speed;
+    star.y += star.speed; // Move stars downwards
     
-    // Adjust opacity for twinkling effect
-    if (star.opacityDirection === 1) {
-      star.opacity += 0.01; // Increase opacity
-      if (star.opacity >= 1) star.opacityDirection = -1; // Change direction if max opacity reached
-    } else {
-      star.opacity -= 0.01; // Decrease opacity
-      if (star.opacity <= 0.4) star.opacityDirection = 1; // Change direction if min opacity reached
-    }
-
     // Reset star to top if it goes off the bottom of the screen
     if (star.y > canvas.height) {
       star.y = 0;
       star.x = Math.random() * canvas.width; // Random horizontal position
     }
-
-    // Update the twinkle color as it moves and changes opacity
-    star.glowColor = `rgba(255, 255, 255, ${star.opacity})`; // Dynamic opacity for a "twinkle" effect
   }
 }
 
@@ -150,10 +152,6 @@ canvas.addEventListener('touchstart', function(e) {
   }
 });
 
-// Bullet object
-bullets = [];
-let bulletSpeed = 4; // Default bullet speed
-
 // Keyboard event listeners for player movement
 document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowRight' || e.key === 'd') {
@@ -185,25 +183,25 @@ function shootBullet() {
   };
   bullets.push(bullet);
 
-// Function to add glow effect on bullets
-function drawBullets() {
-  for (let i = 0; i < bullets.length; i++) {
-    if (bullets[i].y < 0) {
-      bullets.splice(i, 1);
-      continue;
-    }
-    
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = getBulletColor(); // Add glow effect with the bullet color
-    ctx.fillStyle = getBulletColor(); // Set bullet color
-    ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
-    bullets[i].y += bullets[i].dy;
-  }
-}
-
   // Play the shoot sound
   shootSound.play();
 }
+
+
+
+// Function to increase bullet speed based on level
+function increaseBulletSpeed() {
+  if (level >= 20) {
+    bulletSpeed = 8;
+  } else if (level >= 15) {
+    bulletSpeed = 7;
+  } else if (level >= 10) {
+    bulletSpeed = 6;
+  } else if (level >= 5) {
+    bulletSpeed = 5;
+  }
+}
+
 
 // Function to create invaders
 function createInvaders() {
@@ -222,19 +220,6 @@ function createInvaders() {
       };
       invaders[c][r].image.src = 'invader.png'; // Path to invader image
     }
-  }
-}
-
-// Function to increase bullet speed based on level
-function increaseBulletSpeed() {
-  if (level >= 20) {
-    bulletSpeed = 8;
-  } else if (level >= 15) {
-    bulletSpeed = 7;
-  } else if (level >= 10) {
-    bulletSpeed = 6;
-  } else if (level >= 5) {
-    bulletSpeed = 5;
   }
 }
 
@@ -285,7 +270,7 @@ function detectCollisions() {
             score += 10; // Increase score
             if (checkWin()) {
               level++;
-              invaderSpeed = Math.min(invaderSpeed + 0.1, 1); // Increase speed as levels go up, up to a max speed
+              invaderSpeed = Math.min(invaderSpeed + 0.2, 2); // Increase speed as levels go up, up to a max speed
               if (level <= 5) {
                 invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
                 invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
@@ -371,6 +356,17 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
+// Prompt for player's name and update leaderboard
+let playerName = prompt('Enter your name:');
+if (playerName) {
+  updateLeaderboard(playerName, score);
+}
+// Show leaderboard
+ctx.fillText('Top Scores:', canvas.width / 2 - 60, canvas.height / 2 + 70);
+for (let i = 0; i < leaderboard.length; i++) {
+  ctx.fillText(`${i + 1}. ${leaderboard[i].name} - ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + (i * 30));
+}
+
 // Function to draw the game over screen with summary
 function drawGameOver() {
   // Ensure that the game over sound is played only once
@@ -387,18 +383,6 @@ function drawGameOver() {
   ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
 }
 
-// Prompt for player's name and update leaderboard
-  let playerName = prompt('Enter your name:');
-  if (playerName) {
-    updateLeaderboard(playerName, score);
-  }
-  // Show leaderboard
-  ctx.fillText('Top Scores:', canvas.width / 2 - 60, canvas.height / 2 + 70);
-  for (let i = 0; i < leaderboard.length; i++) {
-    ctx.fillText(`${i + 1}. ${leaderboard[i].name} - ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + (i * 30));
-  }
-}
-
 // Function to end the game
 function gameOverCondition() {
   gameOver = true;
@@ -412,7 +396,7 @@ function restartGame() {
   if (gameOver) {
     score = 0;
     level = 1;
-    invaderSpeed = 0.1;
+    invaderSpeed = 0.3;
     invaderDirection = 1;
     invaderRowCount = 3;
     invaderColumnCount = 5;
