@@ -307,76 +307,78 @@ function checkWin() {
   for (let c = 0; c < invaderColumnCount; c++) {
     for (let r = 0; r < invaderRowCount; r++) {
       if (invaders[c][r].status === 1) {
-        return false;
+        return false;  // If at least one invader is still active, return false
       }
     }
   }
-  return true;
+  return true;  // All invaders destroyed
 }
 
-// Function to move the player
+// Function to move the player (spaceship) based on key inputs
 function movePlayer() {
   if (rightPressed && player.x < canvas.width - player.width) {
     player.x += player.speed;
-  } else if (leftPressed && player.x > 0) {
+  }
+  if (leftPressed && player.x > 0) {
     player.x -= player.speed;
   }
 }
 
 // Function to move the invaders
 function moveInvaders() {
+  let hitEdge = false;
+
   for (let c = 0; c < invaderColumnCount; c++) {
     for (let r = 0; r < invaderRowCount; r++) {
-      if (invaders[c][r].status === 1) {
-        invaders[c][r].x += invaderSpeed * invaderDirection;
-        // Reverse direction and move down when an invader hits the canvas boundary
-        if (invaders[c][r].x + invaderWidth > canvas.width || invaders[c][r].x < 0) {
-          invaderDirection = -invaderDirection;
-          for (let c2 = 0; c2 < invaderColumnCount; c2++) {
-            for (let r2 = 0; r2 < invaderRowCount; r2++) {
-              invaders[c2][r2].y += invaderHeight; // Move invaders down when they reach the edge
-            }
-          }
+      let invader = invaders[c][r];
+      if (invader.status === 1) {
+        invader.x += invaderSpeed * invaderDirection;
+
+        // Check if an invader hits the edge of the canvas
+        if (invader.x + invaderWidth >= canvas.width || invader.x <= 0) {
+          hitEdge = true;
         }
+      }
+    }
+  }
+
+  if (hitEdge) {
+    invaderDirection = -invaderDirection;  // Change direction of invader movement
+    for (let c = 0; c < invaderColumnCount; c++) {
+      for (let r = 0; r < invaderRowCount; r++) {
+        invaders[c][r].y += invaderHeight;  // Move the invaders down by one row
       }
     }
   }
 }
 
-// Function to restart the game
+// Function to handle game over
+function gameOverScreen() {
+  gameOver = true;
+  backgroundMusic.pause(); // Stop the background music when the game ends
+  gameOverSound.play(); // Play the game over sound
+  ctx.fillStyle = 'white';
+  ctx.font = '30px Arial';
+  ctx.fillText('Game Over! Score: ' + score, canvas.width / 2 - 100, canvas.height / 2); 
+  ctx.fillText('Tap to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
+}
+
+// Restart the game
 function restartGame() {
   score = 0;
   level = 1;
   invaderSpeed = 0.1;
+  invaderDirection = 1;
   invaderRowCount = 3;
   invaderColumnCount = 5;
-  invaderDirection = 1;
-  bullets = [];
-  invaders = [];
-  createInvaders();
   gameOver = false;
-  player.x = canvas.width / 2 - 20;
-  player.y = canvas.height - 100;
-  gameInterval = setInterval(gameLoop, 16);
-  backgroundMusic.play();  // Restart background music
+  bullets = [];
+  createInvaders();
+  createStars();
+  gameInterval = setInterval(gameLoop, 1000 / 60);
 }
 
-// Function to display game over screen
-function gameOverScreen() {
-  gameOver = true;
-  backgroundMusic.pause();  // Pause the background music when the game is over
-  gameOverSound.play(); // Play game over sound
-  
-  // Display "Game Over" and "Press to Restart" messages
-  ctx.fillStyle = 'white';
-  ctx.font = '50px Arial';
-  ctx.fillText('Game Over', canvas.width / 2 - 150, canvas.height / 2 - 50);
-  ctx.font = '30px Arial';
-  ctx.fillText('Press to Restart', canvas.width / 2 - 140, canvas.height / 2 + 20);
-  ctx.fillText(`Score: ${score}`, canvas.width / 2 - 70, canvas.height / 2 + 70);
-}
-
-// Game loop
+// Game loop function
 function gameLoop() {
   if (gameOver) return;
   drawBackground();  // Draw the background
@@ -388,8 +390,18 @@ function gameLoop() {
   drawBullets();
   drawInvaders();
   detectCollisions();
+  drawInfo();  // Draw score and level
+}
+
+// Function to draw score and level
+function drawInfo() {
+  ctx.fillStyle = 'white';
+  ctx.font = '20px Arial';
+  ctx.fillText('Score: ' + score, 20, 30);  // Display the score at the top left
+  ctx.fillText('Level: ' + level, 20, 60);  // Display the level at the top left below score
 }
 
 // Start the game
 createInvaders();
-gameInterval = setInterval(gameLoop, 16);
+createStars();
+gameInterval = setInterval(gameLoop, 1000 / 60);
