@@ -26,7 +26,7 @@ function createStars() {
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       size: Math.random() * 1.5 + 1, // Random size for stars
-      speed: Math.random() * 1 + 4, // Random speed for twinkling effect
+      speed: Math.random() * 1 + 1, // Random speed for twinkling effect
       opacity: Math.random() * 0.5 + 0.5, // Random opacity
       twinkleSpeed: Math.random() * 0.03 + 0.02 // Speed at which the star twinkles
     });
@@ -325,29 +325,24 @@ function moveInvaders() {
 
 // Function to draw the score
 function drawScore() {
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px Arial';
+  ctx.fillStyle = 'yellow'; // Set yellow color for space font
+  ctx.font = '30px "Orbitron", sans-serif'; // Apply yellow space-like font
   ctx.fillText('Score: ' + score, 8, 20);
 }
 
 // Function to draw the level
 function drawLevel() {
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '16px Arial';
-  ctx.fillText('Level: ' + level, canvas.width - 80, 20);
+  ctx.fillStyle = 'yellow'; // Set yellow color for space font
+  ctx.font = '30px "Orbitron", sans-serif'; // Apply yellow space-like font
+  ctx.fillText('Level: ' + level, canvas.width - 120, 20);
 }
 
 // Function to draw the game over screen with summary
 function drawGameOver() {
-  // Ensure that the game over sound is played only once
-  if (!gameOverSound.played) {
-    gameOverSound.play(); // Play the game over sound
-  }
-
-  ctx.fillStyle = 'white';
-  ctx.font = '30px Arial';
+  ctx.fillStyle = 'yellow'; // Set yellow color for space font
+  ctx.font = '40px "Orbitron", sans-serif'; // Large space font for game over title
   ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.font = '20px Arial';
+  ctx.font = '30px "Orbitron", sans-serif'; // Smaller space font for score and level
   ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
   ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
   ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
