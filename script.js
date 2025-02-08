@@ -54,78 +54,44 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
-// Twinkling star variables
-let stars = [];
-const numStars = 200; // Number of stars
-const maxStarSize = 2; // Maximum size of stars
-const minStarSize = 0.5; // Minimum size of stars
+// Touch event listeners for mobile control
+let touchStartX = 0;  // for touch movement tracking
+let touchStartY = 0;  // for touch movement tracking
 
-// Function to create stars
-function createStars() {
-  stars = [];
-  for (let i = 0; i < numStars; i++) {
-    stars.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      size: Math.random() * (maxStarSize - minStarSize) + minStarSize,
-      brightness: Math.random() * 0.5 + 0.5, // Random brightness between 0.5 and 1
-      speed: Math.random() * 0.2 + 0.05, // Slow random movement speed
-    });
-  }
-}
+// Trigger to start background music after first interaction
+let musicStarted = false;
 
-// Function to draw the space background with gradient
-function drawSpaceBackground() {
-  // Create gradient for the background (black to dark blue)
-  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, 'black');
-  gradient.addColorStop(1, '#1b2a49');
-
-  // Fill background with gradient
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Draw twinkling stars
-  for (let i = 0; i < stars.length; i++) {
-    let star = stars[i];
-    ctx.beginPath();
-    ctx.arc(star.x, star.y, star.size, 0, 2 * Math.PI);
-    ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`; // Adjust brightness
-    ctx.fill();
+// Touchstart event to trigger background music and track player movement
+canvas.addEventListener('touchstart', function(e) {
+  e.preventDefault();  // Prevent default touch behavior (like scrolling)
+  
+  if (!musicStarted) {
+    backgroundMusic.play(); // Play background music after first touch
+    musicStarted = true; // Prevent restarting background music on subsequent touches
   }
 
-  // Animate stars with gentle movement
-  for (let i = 0; i < stars.length; i++) {
-    let star = stars[i];
-    star.x += star.speed; // Move stars horizontally
-    if (star.x > canvas.width) {
-      star.x = 0; // Wrap around when reaching the right edge
-    }
-    star.y += star.speed; // Move stars vertically
-    if (star.y > canvas.height) {
-      star.y = 0; // Wrap around when reaching the bottom
-    }
-  }
-}
-
-// Keyboard event listeners for laptop controls
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'ArrowRight' || e.key === 'd') {
-    rightPressed = true;
-  } else if (e.key === 'ArrowLeft' || e.key === 'a') {
-    leftPressed = true;
-  } else if (e.key === ' ' || e.key === 'Enter') {
-    spacePressed = true;
-  }
+  touchStartX = e.touches[0].clientX;  // Track the starting X position of touch
+  touchStartY = e.touches[0].clientY;  // Track the starting Y position of touch
 });
 
-document.addEventListener('keyup', function(e) {
-  if (e.key === 'ArrowRight' || e.key === 'd') {
-    rightPressed = false;
-  } else if (e.key === 'ArrowLeft' || e.key === 'a') {
-    leftPressed = false;
-  } else if (e.key === ' ' || e.key === 'Enter') {
-    spacePressed = false;
+// Touchmove event to track player movement
+canvas.addEventListener('touchmove', function(e) {
+  e.preventDefault();
+  let touchEndX = e.touches[0].clientX;  // Track the current X position of touch
+  if (touchEndX < touchStartX && player.x > 0) {
+    player.x -= player.speed;  // Move left
+  } else if (touchEndX > touchStartX && player.x < canvas.width - player.width) {
+    player.x += player.speed;  // Move right
+  }
+  touchStartX = touchEndX;  // Update the touch start X to current position for continuous movement
+});
+
+// Touch event to fire bullets
+canvas.addEventListener('touchstart', function(e) {
+  if (!gameOver && Date.now() - lastShotTime > shootDelay) {
+    shootBullet();  // Fire a bullet when the screen is touched
+  } else if (gameOver) {
+    restartGame();  // Restart the game if game over screen is active
   }
 });
 
@@ -329,7 +295,7 @@ function updateLeaderboard(name, score) {
   }
 }
 
-// Function to draw the game over screen with gradient and stars
+// Function to draw the game over screen with summary and leaderboard
 function drawGameOver() {
   // Ask for player name
   if (playerName === "") {
@@ -341,9 +307,6 @@ function drawGameOver() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
   
-  // Draw space background for game over screen
-  drawSpaceBackground();
-
   // Game over text
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
@@ -356,40 +319,106 @@ function drawGameOver() {
   ctx.font = '16px Arial';
   ctx.fillText('Leaderboard:', canvas.width / 2 - 60, canvas.height / 2 + 70);
   for (let i = 0; i < leaderboard.length; i++) {
-    ctx.fillText(`${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + (i * 30));
+    ctx.fillText(`${i + 1}. ${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + i * 30);
   }
 
-  // Play game over sound
-  gameOverSound.play();
+  // Restart instructions
+  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + 180);
 }
 
-// Function to handle game over conditions
+// Function to end the game
 function gameOverCondition() {
   gameOver = true;
-  gameInterval && clearInterval(gameInterval);
   drawGameOver();
-  backgroundMusic.pause();
+  clearInterval(gameInterval); // Stop the game
+  gameOverSound.play(); // Play game over sound
+}
+
+// Function to restart the game
+function restartGame() {
+  if (gameOver) {
+    // Reset everything for a fresh start
+    score = 0;
+    level = 1;
+    invaderSpeed = 0.3;
+    invaderDirection = 1;
+    invaderRowCount = 3;
+    invaderColumnCount = 5;
+    gameOver = false;
+    playerName = ""; // Reset player name
+    createInvaders();
+    backgroundMusic.play(); // Restart background music
+    gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
+  }
+}
+
+// Function to create a gradient background
+function createBackground() {
+  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, 'black');
+  gradient.addColorStop(1, 'darkblue');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+// Function to generate stars in the background
+let stars = [];
+
+function createStars() {
+  // Randomly generate stars
+  while (stars.length < 100) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * 2 + 1,  // Random size between 1 and 3
+      brightness: Math.random() * 0.5 + 0.5,  // Random brightness between 0.5 and 1
+      dx: (Math.random() - 0.5) * 0.1,  // Slow horizontal movement
+      dy: (Math.random() - 0.5) * 0.1,  // Slow vertical movement
+    });
+  }
+}
+
+// Function to draw stars
+function drawStars() {
+  ctx.fillStyle = 'white';
+  stars.forEach(star => {
+    ctx.globalAlpha = star.brightness;  // Adjust brightness
+    ctx.beginPath();
+    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Move stars slowly for the twinkle effect
+    star.x += star.dx;
+    star.y += star.dy;
+
+    // Reset positions when stars move off the screen
+    if (star.x < 0) star.x = canvas.width;
+    if (star.x > canvas.width) star.x = 0;
+    if (star.y < 0) star.y = canvas.height;
+    if (star.y > canvas.height) star.y = 0;
+  });
 }
 
 // Main game loop
-function gameLoop() {
-  if (gameOver) return;
+function draw() {
+  if (gameOver) {
+    return;
+  }
 
-  // Clear screen and draw the game background
-  drawSpaceBackground();
+  createBackground();  // Draw space background
+  drawStars();  // Draw twinkling stars
+  
   drawPlayer();
   drawBullets();
   drawInvaders();
-  movePlayer();
-  moveInvaders();
-  detectCollisions();
   drawScore();
   drawLevel();
-  
-  // Set the loop rate based on the current level (faster at higher levels)
-  gameInterval = setTimeout(gameLoop, Math.max(20, 100 - level * 2)); // 100ms minus level multiplier
+  detectCollisions();
+  movePlayer();
+  moveInvaders();
 }
 
-createStars();
+// Initialize the game
 createInvaders();
-gameLoop();
+createStars();  // Initialize stars
+gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
