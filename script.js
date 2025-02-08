@@ -250,8 +250,9 @@ function drawInvaders() {
   }
 }
 
-// Function to detect collisions between bullets and invaders
+// Function to detect collisions between bullets, invaders, and the player (spaceship)
 function detectCollisions() {
+  // Check if any bullet collides with an invader
   for (let i = 0; i < bullets.length; i++) {
     for (let c = 0; c < invaderColumnCount; c++) {
       for (let r = 0; r < invaderRowCount; r++) {
@@ -277,6 +278,24 @@ function detectCollisions() {
             }
             break;
           }
+        }
+      }
+    }
+  }
+
+  // Check if any invader touches the player (spaceship)
+  for (let c = 0; c < invaderColumnCount; c++) {
+    for (let r = 0; r < invaderRowCount; r++) {
+      let invader = invaders[c][r];
+      if (invader.status === 1) {
+        if (
+          invader.x < player.x + player.width &&
+          invader.x + invaderWidth > player.x &&
+          invader.y < player.y + player.height &&
+          invader.y + invaderHeight > player.y
+        ) {
+          gameOverScreen();  // End the game when an invader hits the spaceship
+          return;
         }
       }
     }
@@ -310,48 +329,18 @@ function moveInvaders() {
     for (let r = 0; r < invaderRowCount; r++) {
       if (invaders[c][r].status === 1) {
         invaders[c][r].x += invaderSpeed * invaderDirection;
-        // Reverse direction when invader hits the wall
+        // Reverse direction and move down when an invader hits the canvas boundary
         if (invaders[c][r].x + invaderWidth > canvas.width || invaders[c][r].x < 0) {
-          invaderDirection *= -1;
+          invaderDirection = -invaderDirection;
           for (let c2 = 0; c2 < invaderColumnCount; c2++) {
             for (let r2 = 0; r2 < invaderRowCount; r2++) {
-              invaders[c2][r2].y += invaderHeight; // Move invaders down
+              invaders[c2][r2].y += invaderHeight; // Move invaders down when they reach the edge
             }
           }
-          break;
         }
       }
     }
   }
-}
-
-// Function to draw the score on screen
-function drawScore() {
-  ctx.font = '16px Arial';
-  ctx.fillStyle = 'white';
-  ctx.fillText(`Score: ${score}`, 8, 20);
-}
-
-// Function to draw the level on screen
-function drawLevel() {
-  ctx.font = '16px Arial';
-  ctx.fillStyle = 'white';
-  ctx.fillText(`Level: ${level}`, canvas.width - 80, 20);
-}
-
-// Function to end the game
-function gameOverScreen() {
-  gameOverSound.play();
-  ctx.fillStyle = 'black';
-  ctx.globalAlpha = 0.7;
-  ctx.fillRect(0, canvas.height / 2 - 50, canvas.width, 100);
-  ctx.globalAlpha = 1.0;
-  ctx.font = '30px Arial';
-  ctx.fillStyle = 'white';
-  ctx.fillText(`Game Over! Final Score: ${score}`, canvas.width / 2 - 150, canvas.height / 2);
-  ctx.font = '20px Arial';
-  ctx.fillText('Click to Restart', canvas.width / 2 - 60, canvas.height / 2 + 30);
-  gameOver = true;
 }
 
 // Function to restart the game
@@ -359,34 +348,49 @@ function restartGame() {
   score = 0;
   level = 1;
   invaderSpeed = 0.1;
+  invaderRowCount = 3;
+  invaderColumnCount = 5;
   invaderDirection = 1;
-  createInvaders();
   bullets = [];
+  invaders = [];
+  createInvaders();
   gameOver = false;
-  gameInterval = setInterval(draw, 10);
+  player.x = canvas.width / 2 - 20;
+  player.y = canvas.height - 100;
+  gameInterval = setInterval(gameLoop, 16);
+  backgroundMusic.play();  // Restart background music
 }
 
-// Main game loop
-function draw() {
-  if (gameOver) {
-    return;
-  }
+// Function to display game over screen
+function gameOverScreen() {
+  gameOver = true;
+  backgroundMusic.pause();  // Pause the background music when the game is over
+  gameOverSound.play(); // Play game over sound
   
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-  drawBackground();  // Draw the background gradient
-  drawStars();  // Draw the stars
-  drawPlayer();
-  drawBullets(); // Draw bullets with dynamic color and glow effect
-  drawInvaders();
-  drawScore();
-  drawLevel();
-  detectCollisions();
+  // Display "Game Over" and "Press to Restart" messages
+  ctx.fillStyle = 'white';
+  ctx.font = '50px Arial';
+  ctx.fillText('Game Over', canvas.width / 2 - 150, canvas.height / 2 - 50);
+  ctx.font = '30px Arial';
+  ctx.fillText('Press to Restart', canvas.width / 2 - 140, canvas.height / 2 + 20);
+  ctx.fillText(`Score: ${score}`, canvas.width / 2 - 70, canvas.height / 2 + 70);
+}
+
+// Game loop
+function gameLoop() {
+  if (gameOver) return;
+  drawBackground();  // Draw the background
+  drawStars(); // Draw stars
+  increaseBulletAttributes();  // Adjust bullet speed and color as per level
   movePlayer();
   moveInvaders();
-  increaseBulletAttributes(); // Update bullet attributes based on level
+  drawPlayer();
+  drawBullets();
+  drawInvaders();
+  detectCollisions();
 }
 
 // Start the game
-createStars();
 createInvaders();
-gameInterval = setInterval(draw, 10);
+gameInterval = setInterval(gameLoop, 16);
+
