@@ -185,15 +185,6 @@ function shootBullet() {
   };
   bullets.push(bullet);
 
-// Function to change bullet color based on level
-function getBulletColor() {
-  if (level >= 20) return 'pink';
-  if (level >= 15) return 'green';
-  if (level >= 10) return 'yellow';
-  if (level >= 5) return 'cyan';
-  return '#FF0000'; // Default red
-}
-
 // Function to add glow effect on bullets
 function drawBullets() {
   for (let i = 0; i < bullets.length; i++) {
