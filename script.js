@@ -230,6 +230,8 @@ function shootBullet() {
   shootSound.play();
 }
 
+
+
 // Function to increase bullet speed based on level
 function increaseBulletSpeed() {
   if (level >= 20) {
@@ -242,6 +244,7 @@ function increaseBulletSpeed() {
     bulletSpeed = 5;
   }
 }
+
 
 // Function to create invaders
 function createInvaders() {
@@ -292,59 +295,90 @@ function drawInvaders() {
   }
 }
 
-// Function to move invaders
-function moveInvaders() {
-  for (let c = 0; c < invaderColumnCount; c++) {
-    for (let r = 0; r < invaderRowCount; r++) {
-      if (invaders[c][r].status === 1) {
-        invaders[c][r].x += invaderSpeed * invaderDirection;
-      }
-    }
-  }
-
-  // Check for edge collision
-  let edge = false;
-  for (let c = 0; c < invaderColumnCount; c++) {
-    for (let r = 0; r < invaderRowCount; r++) {
-      if (invaders[c][r].status === 1) {
-        if (invaders[c][r].x + invaderWidth >= canvas.width || invaders[c][r].x <= 0) {
-          edge = true;
-        }
-      }
-    }
-  }
-
-  if (edge) {
-    invaderDirection *= -1;
+// Function to detect collisions between bullets and invaders
+function detectCollisions() {
+  for (let i = 0; i < bullets.length; i++) {
     for (let c = 0; c < invaderColumnCount; c++) {
       for (let r = 0; r < invaderRowCount; r++) {
-        invaders[c][r].y += invaderHeight; // Move invaders down if they hit an edge
+        let invader = invaders[c][r];
+        if (invader.status === 1) {
+          if (
+            bullets[i].x > invader.x &&
+            bullets[i].x < invader.x + invaderWidth &&
+            bullets[i].y > invader.y &&
+            bullets[i].y < invader.y + invaderHeight
+          ) {
+            invader.status = 0; // Destroy the invader
+            bullets.splice(i, 1); // Remove the bullet
+            score += 10; // Increase score
+            if (checkWin()) {
+              level++;
+              invaderSpeed = Math.min(invaderSpeed + 0.2, 2); // Increase speed as levels go up, up to a max speed
+              if (level <= 5) {
+                invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
+                invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
+              }
+              createInvaders();  // Regenerate the invaders with updated count and speed
+            }
+            break;
+          }
+        }
       }
     }
   }
 }
 
-// Function to detect collision between bullets and invaders
-function detectBulletCollision() {
-  for (let i = 0; i < bullets.length; i++) {
+// Check if all invaders are destroyed
+function checkWin() {
+  for (let c = 0; c < invaderColumnCount; c++) {
+    for (let r = 0; r < invaderRowCount; r++) {
+      if (invaders[c][r].status === 1) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+// Function to move the player
+function movePlayer() {
+  if (rightPressed && player.x < canvas.width - player.width) {
+    player.x += player.speed;
+  } else if (leftPressed && player.x > 0) {
+    player.x -= player.speed;
+  }
+}
+
+// Function to move the invaders
+function moveInvaders() {
+  let shouldMoveDown = false;
+
+  for (let c = 0; c < invaderColumnCount; c++) {
+    for (let r = 0; r < invaderRowCount; r++) {
+      let invader = invaders[c][r];
+      if (invader.status === 1) {
+        invader.x += invaderSpeed * invaderDirection;
+
+        // Check if invader reaches the edge of the screen
+        if (invader.x + invaderWidth > canvas.width || invader.x < 0) {
+          invaderDirection = -invaderDirection;
+          shouldMoveDown = true;
+        }
+
+        // Check if invader reaches the bottom (player)
+        if (invader.y + invaderHeight >= player.y && invader.status === 1) {
+          gameOverCondition(); // End the game
+          return;
+        }
+      }
+    }
+  }
+
+  if (shouldMoveDown) {
     for (let c = 0; c < invaderColumnCount; c++) {
       for (let r = 0; r < invaderRowCount; r++) {
         if (invaders[c][r].status === 1) {
-          if (
-            bullets[i].x > invaders[c][r].x &&
-            bullets[i].x < invaders[c][r].x + invaderWidth &&
-            bullets[i].y > invaders[c][r].y &&
-            bullets[i].y < invaders[c][r].y + invaderHeight
-          ) {
-            invaders[c][r].status = 0; // Mark invader as hit
-            bullets.splice(i, 1); // Remove bullet
-            score += 10;
-            if (score % 50 === 0) {
-              level++;
-              increaseBulletSpeed();
-            }
-            return;
-          }
+          invaders[c][r].y += invaderHeight; // Move all invaders down a row
         }
       }
     }
@@ -353,103 +387,99 @@ function detectBulletCollision() {
 
 // Function to draw the score
 function drawScore() {
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '16px Arial';
+  ctx.fillText('Score: ' + score, 8, 20);
+}
+
+// Function to draw the level
+function drawLevel() {
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '16px Arial';
+  ctx.fillText('Level: ' + level, canvas.width - 80, 20);
+}
+
+// Leaderboard
+let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+
+function updateLeaderboard(name, score) {
+  leaderboard.push({ name, score });
+  leaderboard.sort((a, b) => b.score - a.score); // Sort by score, descending
+  leaderboard = leaderboard.slice(0, 3); // Keep only top 3
+  localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+}
+
+// Prompt for player's name and update leaderboard
+let playerName = prompt('Enter your name:');
+if (playerName) {
+  updateLeaderboard(playerName, score);
+}
+// Show leaderboard
+ctx.fillText('Top Scores:', canvas.width / 2 - 60, canvas.height / 2 + 70);
+for (let i = 0; i < leaderboard.length; i++) {
+  ctx.fillText(`${i + 1}. ${leaderboard[i].name} - ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + (i * 30));
+}
+
+// Function to draw the game over screen with summary
+function drawGameOver() {
+  // Ensure that the game over sound is played only once
+  if (!gameOverSound.played) {
+    gameOverSound.play(); // Play the game over sound
+  }
+
+  ctx.fillStyle = 'white';
+  ctx.font = '30px Arial';
+  ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2 - 40);
   ctx.font = '20px Arial';
-  ctx.fillStyle = '#fff';
-  ctx.fillText(`Score: ${score}`, 20, 30);
-  ctx.fillText(`Level: ${level}`, canvas.width - 100, 30);
+  ctx.fillText('Level: ' + level, canvas.width / 2 - 40, canvas.height / 2);
+  ctx.fillText('Score: ' + score, canvas.width / 2 - 40, canvas.height / 2 + 30);
+  ctx.fillText('Touch to Restart', canvas.width / 2 - 80, canvas.height / 2 + restartTextHeight);
 }
 
 // Function to end the game
-function gameOverScreen() {
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-  ctx.fillStyle = 'white';
-  ctx.font = '40px Arial';
-  ctx.fillText('Game Over', canvas.width / 2 - 100, canvas.height / 2 - 40);
-  ctx.fillText(`Score: ${score}`, canvas.width / 2 - 80, canvas.height / 2 + 10);
-  
-  ctx.font = '20px Arial';
-  ctx.fillText('Press Enter to Restart', canvas.width / 2 - 100, canvas.height / 2 + 40);
-  ctx.fillText('Leaderboard (Top 3 Scores)', canvas.width / 2 - 115, canvas.height / 2 + 70);
-  
-  // Play the game over sound when the game ends
-  if (!gameOverSound.paused) {
-    gameOverSound.pause(); // Pause the sound if it is already playing
-    gameOverSound.currentTime = 0; // Reset the sound to the beginning
-  }
-  gameOverSound.play(); // Play the game over sound
-  
-  // Display leaderboard
-  let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-  leaderboard.push({ name: 'Player', score: score });
-  leaderboard.sort((a, b) => b.score - a.score); // Sort leaderboard by score
-  leaderboard = leaderboard.slice(0, 3); // Keep top 3 scores
-  
-  for (let i = 0; i < leaderboard.length; i++) {
-    ctx.fillText(`${leaderboard[i].name}: ${leaderboard[i].score}`, canvas.width / 2 - 100, canvas.height / 2 + 100 + i * 30);
-  }
+function gameOverCondition() {
+  gameOver = true;
+  drawGameOver();
+  clearInterval(gameInterval); // Stop the game
+  gameOverSound.play();
 }
 
-// Function to prompt for player's name after game over and restart game
-function promptPlayerName() {
-  const name = prompt('Enter your name for the leaderboard:') || 'Player';
-  const leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-  leaderboard.push({ name: name, score: score });
-  leaderboard.sort((a, b) => b.score - a.score); // Sort leaderboard by score
-  localStorage.setItem('leaderboard', JSON.stringify(leaderboard.slice(0, 3))); // Store top 3 scores
-  restartGame();
-}
-
-// Function to restart the game
+// Restart the game when clicked
 function restartGame() {
-  score = 0;
-  level = 1;
-  invaderSpeed = 0.3;
-  invaderDirection = 1;
-  invaderRowCount = 3;
-  invaderColumnCount = 5;
-  createInvaders();
-  bullets = [];
-  player.x = canvas.width / 2 - 20;
-  player.y = canvas.height - 100;
-  gameOver = false;
-  clearInterval(gameInterval);
-  gameInterval = setInterval(gameLoop, 1000 / 60);
-  gameOverSound.pause(); // Stop game over sound
-  gameOverSound.currentTime = 0; // Reset game over sound
-  promptPlayerName(); // Prompt for player name
+  if (gameOver) {
+    score = 0;
+    level = 1;
+    invaderSpeed = 0.3;
+    invaderDirection = 1;
+    invaderRowCount = 3;
+    invaderColumnCount = 5;
+    gameOver = false;
+    createInvaders();
+    backgroundMusic.play(); // Restart background music
+    gameInterval = setInterval(draw, 1000 / 60); // Restart the game loop
+  }
 }
 
 // Main game loop
-function gameLoop() {
-  drawBackground();
-  drawStars();
-  drawScore();
+function draw() {
+  if (gameOver) {
+    return;
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+  drawBackground();  // Draw the background gradient
+  drawStars();  // Draw the stars
   drawPlayer();
   drawBullets();
   drawInvaders();
+  drawScore();
+  drawLevel();
+  detectCollisions();
+  movePlayer();
   moveInvaders();
-  detectBulletCollision();
-
-  if (gameOver) {
-    gameOverScreen();
-  }
-
-  // Handle player movement
-  if (rightPressed && player.x < canvas.width - player.width) {
-    player.x += player.speed;
-  } else if (leftPressed && player.x > 0) {
-    player.x -= player.speed;
-  }
-
-  if (score >= level * 50) {
-    level++;
-    invaderSpeed += 0.1; // Speed up invaders with each level
-  }
 }
 
-// Initialize game
-createStars();
+// Initialize the game
+createStars();  // Create the stars
 createInvaders();
-gameInterval = setInterval(gameLoop, 1000 / 60);
+gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
