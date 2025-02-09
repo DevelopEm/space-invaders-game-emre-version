@@ -445,10 +445,6 @@ function moveInvaders() {
   }
 }
 
-  // Play the shoot sound
-  gameOver.play();
-}
-
 // Function to draw the score
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
@@ -472,11 +468,6 @@ function updateLeaderboard(name, score) {
   leaderboard = leaderboard.slice(0, 3); // Keep only top 3
   localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
 }
-
-// Prompt for player's name and update leaderboard
-let playerName = prompt('Enter your name:');
-if (playerName) {
-  updateLeaderboard(playerName, score);
   
 }
 // Show leaderboard
@@ -487,10 +478,6 @@ for (let i = 0; i < leaderboard.length; i++) {
 
 // Function to draw the game over screen with summary
 function drawGameOver() {
-  // Ensure that the game over sound is played only once
-  if (!gameOverSound.played) {
-    gameOverSound.play(); // Play the game over sound
-  }
 
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
@@ -506,8 +493,13 @@ function gameOverCondition() {
   gameOver = true;
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
-  gameOverSound.play();
+  gameOver.play(); // Play the game over sound
 }
+
+// Prompt for player's name and update leaderboard
+let playerName = prompt('Enter your name:');
+if (playerName) {
+  updateLeaderboard(playerName, score);
 
 // Restart the game when clicked
 function restartGame() {
