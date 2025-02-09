@@ -478,9 +478,9 @@ function drawGameOver() {
 // Function to end the game
 function gameOverCondition() {
   gameOver = true;
+  gameOverSound.play();
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
-  gameOverSound.play();
 }
 
 // Restart the game when clicked
