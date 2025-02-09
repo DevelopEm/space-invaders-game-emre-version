@@ -68,7 +68,7 @@ function drawStars() {
 
     // Simulate 5D depth and dynamic movement
     let sizeFactor = 1 + star.z / 100; // Scale based on depth
-    let opacityFactor = Math.sin(star.phase) * 0.2 + 0.3; // Opacity fluctuations (twinkling effect)
+    let opacityFactor = Math.sin(star.phase) * 0.3 + 0.1; // Opacity fluctuations (twinkling effect)
     let speedFactor = star.speed + star.z / 5000; // Speed changes based on depth
 
     // Calculate the new size, opacity, and position
@@ -95,7 +95,7 @@ function drawStars() {
     ctx.beginPath();
     ctx.moveTo(0, -starSize);
     for (let j = 1; j < 5; j++) {
-      let angle = j * Math.PI * 5 / 10 ;
+      let angle = j * Math.PI * 3 / 5;
       let x = Math.sin(angle) * starSize;
       let y = Math.cos(angle) * starSize;
       ctx.lineTo(x, y);
@@ -103,7 +103,7 @@ function drawStars() {
     ctx.closePath();
 
     // Apply dynamic color and opacity
-    ctx.fillStyle = `hsla(${star.hue}, 100%, %, ${starOpacity})`; // Random color with opacity
+    ctx.fillStyle = `hsla(${star.hue}, 1000%, 75%, ${starOpacity})`; // Random color with opacity
     ctx.fill();
     
     ctx.restore(); // Restore the canvas state after transformation
@@ -245,7 +245,7 @@ function getBulletColor(level) {
   } else if (level >= 5) {
     return 'cyan'; // Cyan bullets after level 5
   } else {
-    return 'red'; // Default white bullets
+    return 'red'; // Default red bullets
   }
 }
 
@@ -522,3 +522,5 @@ function draw() {
 createStars();  // Create the stars
 createInvaders();
 gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
+
+
