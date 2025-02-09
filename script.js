@@ -290,6 +290,51 @@ function drawBullets() {
   ctx.shadowBlur = 0;
 }
 
+// Function to shoot a bullet
+function shootBullet() {
+  if (gameOver) return;
+  let bullet = {
+    x: player.x + player.width / 2 - 2,
+    y: player.y,
+    width: 4,
+    height: 10,
+    dy: -bulletSpeed,
+  };
+  bullets.push(bullet);
+
+  // Play the shoot sound
+  shootSound.play();
+}
+
+// Function to get bullet color based on level
+function getBulletColor(level) {
+  if (level >= 20) {
+    return 'green'; // Green bullets after level 20
+  } else if (level >= 15) {
+    return 'pink'; // Pink bullets after level 15
+  } else if (level >= 10) {
+    return 'yellow'; // Yellow bullets after level 10
+  } else if (level >= 5) {
+    return 'cyan'; // Cyan bullets after level 5
+  } else {
+    return 'white'; // Default white bullets
+  }
+}
+
+// Function to increase bullet speed based on level
+function increaseBulletSpeed() {
+  if (level >= 20) {
+    bulletSpeed = 8;
+  } else if (level >= 15) {
+    bulletSpeed = 7;
+  } else if (level >= 10) {
+    bulletSpeed = 6;
+  } else if (level >= 5) {
+    bulletSpeed = 5;
+  }
+}
+
+
 // Function to create invaders
 function createInvaders() {
   invaders = [];
@@ -443,10 +488,9 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Prompt for player's name and update leaderboard
-let playerName = prompt('Enter your name:');
-if (playerName) {
-  updateLeaderboard(playerName, score);
+// Leaderboard
+let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+
 function updateLeaderboard(name, score) {
   leaderboard.push({ name, score });
   leaderboard.sort((a, b) => b.score - a.score); // Sort by score, descending
@@ -454,6 +498,10 @@ function updateLeaderboard(name, score) {
   localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
 }
 
+// Prompt for player's name and update leaderboard
+let playerName = prompt('Enter your name:');
+if (playerName) {
+  updateLeaderboard(playerName, score);
 }
 // Show leaderboard
 ctx.fillText('Top Scores:', canvas.width / 2 - 60, canvas.height / 2 + 70);
