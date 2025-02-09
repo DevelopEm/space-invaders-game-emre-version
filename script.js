@@ -445,6 +445,10 @@ function moveInvaders() {
   }
 }
 
+  // Play the shoot sound
+  gameOver.play();
+}
+
 // Function to draw the score
 function drawScore() {
   ctx.fillStyle = '#FFFFFF';
@@ -473,6 +477,7 @@ function updateLeaderboard(name, score) {
 let playerName = prompt('Enter your name:');
 if (playerName) {
   updateLeaderboard(playerName, score);
+  
 }
 // Show leaderboard
 ctx.fillText('Top Scores:', canvas.width / 2 - 60, canvas.height / 2 + 70);
