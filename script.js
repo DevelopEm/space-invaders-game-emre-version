@@ -245,7 +245,7 @@ function getBulletColor(level) {
   } else if (level >= 5) {
     return 'cyan'; // Cyan bullets after level 5
   } else {
-    return 'white'; // Default white bullets
+    return 'red'; // Default red bullets
   }
 }
 
@@ -461,6 +461,10 @@ function drawLevel() {
 
 // Function to draw the game over screen with summary
 function drawGameOver() {
+  // Ensure that the game over sound is played only once
+  if (!gameOverSound.played) {
+    gameOverSound.play(); // Play the game over sound
+  }
 
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
@@ -474,9 +478,9 @@ function drawGameOver() {
 // Function to end the game
 function gameOverCondition() {
   gameOver = true;
-  gameOverSound.play(); // Play the game over sound
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
+  gameOverSound.play();
 }
 
 // Restart the game when clicked
