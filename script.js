@@ -8,7 +8,7 @@ canvas.height = window.innerHeight; // Make canvas height dynamic
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
-let invaderSpeed = 0.1;
+let invaderSpeed = 0.3;
 let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
@@ -17,17 +17,20 @@ let restartTextHeight = 60; // Distance of restart text from center of canvas
 
 // Star object
 let stars = [];
-const starCount = 300; // Number of stars
+const starCount = 100; // Number of stars
 
-// Create stars for the background
+// Create stars for the background with a "5D" effect
 function createStars() {
   for (let i = 0; i < starCount; i++) {
     stars.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      size: Math.random() * 3 + 1, // Random size between 1 and 4
-      speed: Math.random() * 0.5 + 0.1, // Random speed for twinkling effect
-      opacity: Math.random() * 0.5 + 0.5, // Random opacity
+      z: Math.random() * 100,  // Depth (fake 3rd dimension)
+      size: Math.random() * 2 + 1, // Random size between 1 and 4
+      speed: Math.random() * 0.2 + 0.1, // Random speed for twinkling effect
+      opacity: Math.random() * 0.1 + 0.3, // Random opacity
+      hue: Math.random() * 360, // Random color (hue)
+      phase: Math.random() * 2 * Math.PI, // Phase for rotation or fluctuation
     });
   }
 }
@@ -42,31 +45,81 @@ function drawBackground() {
   ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas with the gradient
 }
 
-// Function to draw stars
+// Create stars for the background with a "5D" effect
+function createStars() {
+  for (let i = 0; i < starCount; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      z: Math.random() * 100,  // Depth (fake 3rd dimension)
+      size: Math.random() * 2 + 1, // Random size between 1 and 4
+      speed: Math.random() * 0.2 + 0.1, // Random speed for twinkling effect
+      opacity: Math.random() * 0.1 + 0.3, // Random opacity
+      hue: Math.random() * 360, // Random color (hue)
+      phase: Math.random() * 2 * Math.PI, // Phase for rotation or fluctuation
+      rotation: Math.random() * 360,  // Rotation angle for 5D effect
+    });
+  }
+}
+// Function to draw stars with a "5D" effect
 function drawStars() {
   for (let i = 0; i < stars.length; i++) {
     let star = stars[i];
-    ctx.beginPath();
-    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2, false);
-    ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`; // White with varying opacity
-    ctx.fill();
-    star.y += star.speed; // Move stars downwards
+
+    // Simulate 5D depth and dynamic movement
+    let sizeFactor = 1 + star.z / 100; // Scale based on depth
+    let opacityFactor = Math.sin(star.phase) * 0.3 + 0.1; // Opacity fluctuations (twinkling effect)
+    let speedFactor = star.speed + star.z / 200; // Speed changes based on depth
+
+    // Calculate the new size, opacity, and position
+    let starSize = star.size * sizeFactor;
+    let starOpacity = star.opacity * opacityFactor;
     
+    // Change position based on speed and depth
+    star.y += speedFactor;
+    star.x += Math.sin(star.phase) * speedFactor; // Horizontal fluctuation
+
     // Reset star to top if it goes off the bottom of the screen
     if (star.y > canvas.height) {
       star.y = 0;
       star.x = Math.random() * canvas.width; // Random horizontal position
+      star.z = Math.random() * 200;  // Reset depth (simulate movement in 5D space)
     }
+
+    // Apply rotation and scaling for the 5D effect
+    ctx.save(); // Save the current canvas state before transformation
+    ctx.translate(star.x, star.y); // Move to the star's position
+    ctx.rotate(star.rotation * Math.PI / 100); // Rotate the star
+
+    // Draw a polygon star (a 5-pointed star for example)
+    ctx.beginPath();
+    ctx.moveTo(0, -starSize);
+    for (let j = 1; j < 5; j++) {
+      let angle = j * Math.PI * 3 / 5;
+      let x = Math.sin(angle) * starSize;
+      let y = Math.cos(angle) * starSize;
+      ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+
+    // Apply dynamic color and opacity
+    ctx.fillStyle = `hsla(${star.hue}, 100%, 75%, ${starOpacity})`; // Random color with opacity
+    ctx.fill();
+    
+    ctx.restore(); // Restore the canvas state after transformation
+
+    // Update the phase to create continuous movement (simulating "rotation")
+    star.phase += 0.2; // Adjust this value to make the effect more noticeable
+    star.rotation += 1; // Gradually change rotation for spinning effect
   }
 }
-
 // Player object (spaceship)
 player = {
   x: canvas.width / 2 - 20,
   y: canvas.height - 100, // 100px from the bottom
-  width: 40,
+  width: 50,
   height: 40,
-  speed: 5,
+  speed: 6,
   dx: 0,
   image: new Image(),
 };
@@ -260,7 +313,7 @@ function detectCollisions() {
             score += 10; // Increase score
             if (checkWin()) {
               level++;
-              invaderSpeed = Math.min(invaderSpeed + 0.1, 1); // Increase speed as levels go up, up to a max speed
+              invaderSpeed = Math.min(invaderSpeed + 0.2, 2); // Increase speed as levels go up, up to a max speed
               if (level <= 5) {
                 invaderRowCount = Math.min(invaderRowCount + 1, 4); // Increase rows slightly
                 invaderColumnCount = Math.min(invaderColumnCount + 1, 7); // Increase columns slowly
@@ -354,8 +407,8 @@ function updateLeaderboard(name, score) {
   leaderboard.sort((a, b) => b.score - a.score); // Sort by score, descending
   leaderboard = leaderboard.slice(0, 3); // Keep only top 3
   localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-
 }
+
 // Prompt for player's name and update leaderboard
 let playerName = prompt('Enter your name:');
 if (playerName) {
