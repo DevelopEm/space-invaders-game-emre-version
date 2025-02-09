@@ -459,9 +459,6 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-// Leaderboard
-let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-
 function updateLeaderboard(name, score) {
   leaderboard.push({ name, score });
   leaderboard.sort((a, b) => b.score - a.score); // Sort by score, descending
@@ -493,13 +490,9 @@ function gameOverCondition() {
   gameOver = true;
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
-  gameOver.play(); // Play the game over sound
+  gameOverSound.play(); // Play the game over sound
 }
 
-// Prompt for player's name and update leaderboard
-let playerName = prompt('Enter your name:');
-if (playerName) {
-  updateLeaderboard(playerName, score);
 
 // Restart the game when clicked
 function restartGame() {
