@@ -8,7 +8,7 @@ canvas.height = window.innerHeight; // Make canvas height dynamic
 let player, bullets, invaders, gameOver, rightPressed, leftPressed, spacePressed;
 let score = 0;
 let level = 1;
-let invaderSpeed = 0.1;
+let invaderSpeed = 0.3;
 let invaderDirection = 1; // 1 for right, -1 for left
 let invaderRowCount = 3;
 let invaderColumnCount = 5;
@@ -18,6 +18,10 @@ let restartTextHeight = 60; // Distance of restart text from center of canvas
 // Star object
 let stars = [];
 const starCount = 100; // Number of stars
+
+// Bullet properties
+let bulletSpeed = 5;  // Default bullet speed
+let bulletColor = 'red';  // Default bullet color
 
 // Create stars for the background with a "5D" effect
 function createStars() {
@@ -87,7 +91,7 @@ function drawStars() {
     ctx.closePath();
 
     // Apply dynamic color and opacity
-    ctx.fillStyle = `hsla(${star.hue}, 1000%, 75%, ${starOpacity})`; // Random color with opacity
+    ctx.fillStyle = `hsla(${star.hue}, 100%, 75%, ${starOpacity})`; // Random color with opacity
     ctx.fill();
     
     ctx.restore(); // Restore the canvas state after transformation
@@ -113,7 +117,6 @@ player.image.src = 'spaceship.png'; // Path to spaceship image
 
 // Bullet object
 bullets = [];
-const bulletSpeed = 6;
 
 // Invader object
 invaders = [];
@@ -163,11 +166,51 @@ canvas.addEventListener('touchstart', function(e) {
   }
 });
 
-// Game Over Sound fix - Play sound after user interaction
-function playGameOverSound() {
-  if (!gameOverSound.played) {
-    gameOverSound.play();
-    gameOverSound.played = true;
+// Function to adjust bullet color and speed based on level
+function adjustBulletSpeedAndColor() {
+  if (level >= 25) {
+    bulletColor = 'white';
+    bulletSpeed = 9;  // 9 for level 25 and above
+  } else if (level >= 20) {
+    bulletColor = 'pink';
+    bulletSpeed = 8;  // 8 for level 20 to 24
+  } else if (level >= 15) {
+    bulletColor = 'green';
+    bulletSpeed = 7;  // 7 for level 15 to 19
+  } else if (level >= 10) {
+    bulletColor = 'yellow';
+    bulletSpeed = 6;  // 6 for level 10 to 14
+  }
+}
+
+// Function to shoot bullets
+function shootBullet() {
+  if (gameOver) return; // Do nothing if the game is over
+
+  let newBullet = {
+    x: player.x + player.width / 2 - 2, // Center the bullet with the player
+    y: player.y,
+    width: 4,
+    height: 10,
+    color: bulletColor,  // Set the bullet color dynamically
+  };
+  bullets.push(newBullet);
+  shootSound.play();  // Play shooting sound
+}
+
+// Function to draw bullets
+function drawBullets() {
+  ctx.fillStyle = bulletColor;  // Bullet color is dynamically set based on level
+  for (let i = 0; i < bullets.length; i++) {
+    let bullet = bullets[i];
+    ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+    bullet.y -= bulletSpeed;  // Move bullet upwards based on current speed
+
+    // Remove bullets that go off screen
+    if (bullet.y < 0) {
+      bullets.splice(i, 1);
+      i--;
+    }
   }
 }
 
@@ -225,6 +268,7 @@ function draw() {
   detectCollisions();
   movePlayer();
   moveInvaders();
+  adjustBulletSpeedAndColor();  // Adjust bullet color and speed based on level
 }
 
 // Initialize the game
