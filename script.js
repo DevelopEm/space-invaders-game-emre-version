@@ -459,20 +459,6 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
-function updateLeaderboard(name, score) {
-  leaderboard.push({ name, score });
-  leaderboard.sort((a, b) => b.score - a.score); // Sort by score, descending
-  leaderboard = leaderboard.slice(0, 3); // Keep only top 3
-  localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-}
-  
-}
-// Show leaderboard
-ctx.fillText('Top Scores:', canvas.width / 2 - 60, canvas.height / 2 + 70);
-for (let i = 0; i < leaderboard.length; i++) {
-  ctx.fillText(`${i + 1}. ${leaderboard[i].name} - ${leaderboard[i].score}`, canvas.width / 2 - 60, canvas.height / 2 + 100 + (i * 30));
-}
-
 // Function to draw the game over screen with summary
 function drawGameOver() {
 
@@ -488,11 +474,10 @@ function drawGameOver() {
 // Function to end the game
 function gameOverCondition() {
   gameOver = true;
+  gameOverSound.play(); // Play the game over sound
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
-  gameOverSound.play(); // Play the game over sound
 }
-
 
 // Restart the game when clicked
 function restartGame() {
