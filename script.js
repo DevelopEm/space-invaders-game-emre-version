@@ -249,6 +249,11 @@ function getBulletColor(level) {
   }
 }
 
+// Update bullet color dynamically when the level increases
+function changeBulletColor() {
+  bulletColor = getBulletColor(level); // Set bullet color according to level
+}
+
 // Function to get bullet speed based on level
 function getBulletSpeed(level) {
   if (level >= 20) {
