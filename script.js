@@ -149,11 +149,7 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
-// Touch event listeners for mobile control
-let touchStartX = 0;  // for touch movement tracking
-let touchStartY = 0;  // for touch movement tracking
-
-// Trigger to start background music after first interaction
+// Background music trigger
 let musicStarted = false;
 
 // Keyboard input tracking
@@ -249,24 +245,19 @@ function getBulletColor(level) {
   }
 }
 
-// Function to get bullet speed based on level
-function getBulletSpeed(level) {
+// Function to get bullet glow effect based on level
+function getBulletGlow(level) {
   if (level >= 20) {
-    return 9; // Speed 9 after level 20
+    return 'green'; // Glow effect for green bullets after level 20
   } else if (level >= 15) {
-    return 8; // Speed 8 after level 15
+    return 'pink'; // Glow effect for pink bullets after level 15
   } else if (level >= 10) {
-    return 7; // Speed 7 after level 10
+    return 'yellow'; // Glow effect for yellow bullets after level 10
   } else if (level >= 5) {
-    return 6; // Speed 6 after level 5
+    return 'cyan'; // Glow effect for cyan bullets after level 5
   } else {
-    return 5; // Default speed before level 5
+    return 'red'; // Default red glow effect
   }
-}
-
-// Update bullet speed dynamically when the level increases
-function increaseBulletSpeed() {
-  bulletSpeed = getBulletSpeed(level); // Set bullet speed according to level
 }
 
 // Function to draw bullets
@@ -288,22 +279,6 @@ function drawBullets() {
   // Reset shadow settings after drawing bullets
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
-}
-
-// Function to shoot a bullet
-function shootBullet() {
-  if (gameOver) return;
-  let bullet = {
-    x: player.x + player.width / 2 - 2,
-    y: player.y,
-    width: 4,
-    height: 10,
-    dy: -bulletSpeed,
-  };
-  bullets.push(bullet);
-
-  // Play the shoot sound
-  shootSound.play();
 }
 
 // Function to create invaders
@@ -479,6 +454,20 @@ function gameOverCondition() {
   gameOverSound.play();
 }
 
+// Fix for Game Over sound on mobile
+canvas.addEventListener('touchstart', function(e) {
+  e.preventDefault();
+
+  if (!musicStarted) {
+    backgroundMusic.play(); // Play background music after first touch
+    musicStarted = true; // Prevent restarting background music on subsequent touches
+  }
+
+  if (gameOver) {
+    gameOverSound.play(); // Play Game Over sound on mobile
+  }
+});
+
 // Restart the game when clicked
 function restartGame() {
   if (gameOver) {
@@ -512,7 +501,7 @@ function draw() {
   detectCollisions();
   movePlayer();
   moveInvaders();
-}
+}  
 
 // Initialize the game
 createStars();  // Create the stars
