@@ -249,11 +249,6 @@ function getBulletColor(level) {
   }
 }
 
-// Update bullet color dynamically when the level increases
-function changeBulletColor() {
-  bulletColor = getBulletColor(level); // Set bullet color according to level
-}
-
 // Function to get bullet speed based on level
 function getBulletSpeed(level) {
   if (level >= 20) {
@@ -530,6 +525,6 @@ function draw() {
 // Initialize the game
 createStars();  // Create the stars
 createInvaders();
-gameInterval = setInterval(draw, 1000 / 60); // 60 FPS
+gameInterval = setInterval(draw, 1000 / 80); // 60 FPS
 
 
