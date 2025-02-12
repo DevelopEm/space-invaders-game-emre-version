@@ -95,7 +95,7 @@ function drawStars() {
     ctx.beginPath();
     ctx.moveTo(0, -starSize);
     for (let j = 1; j < 5; j++) {
-      let angle = j * Math.PI * 6 / 10;
+      let angle = j * Math.PI * 3 / 5;
       let x = Math.sin(angle) * starSize;
       let y = Math.cos(angle) * starSize;
       ctx.lineTo(x, y);
@@ -103,7 +103,7 @@ function drawStars() {
     ctx.closePath();
 
     // Apply dynamic color and opacity
-    ctx.fillStyle = `hsla(${star.hue}, 100%, 75%, ${starOpacity})`; // Random color with opacity
+    ctx.fillStyle = `hsla(${star.hue}, 1000%, 75%, ${starOpacity})`; // Random color with opacity
     ctx.fill();
     
     ctx.restore(); // Restore the canvas state after transformation
@@ -119,7 +119,7 @@ player = {
   y: canvas.height - 100, // 100px from the bottom
   width: 50,
   height: 40,
-  speed: 7,
+  speed: 6,
   dx: 0,
   image: new Image(),
 };
@@ -128,15 +128,15 @@ player.image.src = 'spaceship.png'; // Path to spaceship image
 
 // Bullet object
 bullets = [];
-const bulletSpeed = 6;
+const bulletSpeed = 5;
 
 // Invader object
 invaders = [];
 const invaderWidth = 40;
 const invaderHeight = 40;
 const invaderPadding = 10;
-const invaderOffsetTop = 40;
-const invaderOffsetLeft = 20;
+const invaderOffsetTop = 30;
+const invaderOffsetLeft = 30;
 
 gameOver = false;
 
@@ -149,7 +149,11 @@ const backgroundMusic = new Audio('BackgroundMusic.wav'); // Path to background 
 backgroundMusic.loop = true; // Loop background music
 backgroundMusic.volume = 0.3; // Adjust volume if needed
 
-// Background music trigger
+// Touch event listeners for mobile control
+let touchStartX = 0;  // for touch movement tracking
+let touchStartY = 0;  // for touch movement tracking
+
+// Trigger to start background music after first interaction
 let musicStarted = false;
 
 // Keyboard input tracking
@@ -217,7 +221,7 @@ function shootBullet() {
   let bullet = {
     x: player.x + player.width / 2 - 2,
     y: player.y,
-    width: 5,
+    width: 4,
     height: 10,
     dy: -bulletSpeed,
     color: getBulletColor(level),  // Set bullet color based on level
@@ -245,19 +249,24 @@ function getBulletColor(level) {
   }
 }
 
-// Function to get bullet glow effect based on level
-function getBulletGlow(level) {
+// Function to get bullet speed based on level
+function getBulletSpeed(level) {
   if (level >= 20) {
-    return 'green'; // Glow effect for green bullets after level 20
+    return 9; // Speed 9 after level 20
   } else if (level >= 15) {
-    return 'pink'; // Glow effect for pink bullets after level 15
+    return 8; // Speed 8 after level 15
   } else if (level >= 10) {
-    return 'yellow'; // Glow effect for yellow bullets after level 10
+    return 7; // Speed 7 after level 10
   } else if (level >= 5) {
-    return 'cyan'; // Glow effect for cyan bullets after level 5
+    return 6; // Speed 6 after level 5
   } else {
-    return 'red'; // Default red glow effect
+    return 5; // Default speed before level 5
   }
+}
+
+// Update bullet speed dynamically when the level increases
+function increaseBulletSpeed() {
+  bulletSpeed = getBulletSpeed(level); // Set bullet speed according to level
 }
 
 // Function to draw bullets
@@ -270,7 +279,7 @@ function drawBullets() {
 
     // Set the bullet's color and glow based on its level
     ctx.shadowColor = bullets[i].color;  // Apply the glow effect
-    ctx.shadowBlur = 30; // Apply glow blur effect
+    ctx.shadowBlur = 15; // Apply glow blur effect
     ctx.fillStyle = bullets[i].color;
     ctx.fillRect(bullets[i].x, bullets[i].y, bullets[i].width, bullets[i].height);
     bullets[i].y += bullets[i].dy;
@@ -279,6 +288,22 @@ function drawBullets() {
   // Reset shadow settings after drawing bullets
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
+}
+
+// Function to shoot a bullet
+function shootBullet() {
+  if (gameOver) return;
+  let bullet = {
+    x: player.x + player.width / 2 - 2,
+    y: player.y,
+    width: 4,
+    height: 10,
+    dy: -bulletSpeed,
+  };
+  bullets.push(bullet);
+
+  // Play the shoot sound
+  shootSound.play();
 }
 
 // Function to create invaders
@@ -434,8 +459,16 @@ function drawLevel() {
   ctx.fillText('Level: ' + level, canvas.width - 80, 20);
 }
 
+// Flag to check if the game over sound has played
+let gameOverSoundPlayed = false;
+
 // Function to draw the game over screen with summary
 function drawGameOver() {
+  // Ensure that the game over sound is played only once
+  if (!gameOverSoundPlayed) {
+    gameOverSound.play(); // Play the game over sound
+    gameOverSoundPlayed = true; // Set flag to true to prevent multiple plays
+  }
 
   ctx.fillStyle = 'white';
   ctx.font = '30px Arial';
@@ -451,22 +484,7 @@ function gameOverCondition() {
   gameOver = true;
   drawGameOver();
   clearInterval(gameInterval); // Stop the game
-  gameOverSound.play();
 }
-
-// Fix for Game Over sound on mobile
-canvas.addEventListener('touchstart', function(e) {
-  e.preventDefault();
-
-  if (!musicStarted) {
-    backgroundMusic.play(); // Play background music after first touch
-    musicStarted = true; // Prevent restarting background music on subsequent touches
-  }
-
-  if (gameOver) {
-    gameOverSound.play(); // Play Game Over sound on mobile
-  }
-});
 
 // Restart the game when clicked
 function restartGame() {
@@ -501,7 +519,7 @@ function draw() {
   detectCollisions();
   movePlayer();
   moveInvaders();
-}  
+}
 
 // Initialize the game
 createStars();  // Create the stars
